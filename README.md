@@ -1,0 +1,133 @@
+# Lorehallow
+
+**A small pixel-art fantasy MMO built around a shared world.** You log in and other people are already there. Someone runs past on the road, a group is fighting at the edge of the woods, and the town square is busy.
+
+Lorehallow draws on the early days of World of Warcraft: a persistent world, zones, quests, grouping, and the sense that the world goes on without you. It is drawn in a warm, readable, top-down pixel-art style: mossy forests, lantern-lit towns and old stone ruins.
+
+<!-- Phase 1 adds a live progress badge here: https://lorehallow.com/progress.svg -->
+
+| | |
+|---|---|
+| **Website** | [lorehallow.com](https://lorehallow.com) (launches in Phase 1) |
+| **Progress** | [BUILD.md](BUILD.md), tracked live at [lorehallow.com/progress](https://lorehallow.com/progress) |
+| **Devlog** | [lorehallow.com/devlog](https://lorehallow.com/devlog) |
+| **Source** | [GitHub](https://github.com/dunamismax/lorehallow) · [Codeberg](https://codeberg.org/dunamismax/lorehallow) |
+
+## Status
+
+**Phase 0: Foundations. Pre-alpha, nothing to play yet.**
+
+The repository is being scaffolded. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+
+## The project
+
+Lorehallow is a hobby project with two goals of equal weight:
+
+1. **Make a small online world that's fun to be in**, even with only a few players.
+2. **Learn real multiplayer and backend engineering by building it**: networking, authoritative servers, persistence, deployment and operations. Every system should teach something, and every phase ends with a written walkthrough in [`docs/walkthroughs/`](docs/walkthroughs/).
+
+### Design pillars
+
+1. **The world is shared.** Every feature should make other players more visible, more useful or more present.
+2. **Small but alive.** One handcrafted zone that feels alive beats ten empty ones.
+3. **Readable pixel art.** Clear silhouettes, a locked palette and consistent scale.
+4. **The server decides.** The server owns the truth. Clients send what the player is trying to do and draw what the server reports back.
+5. **Playable every milestone.** Every phase ends with something you can launch, play and show someone.
+
+### What it is not
+
+- No monetization, cash shop or pay-to-win. Ever.
+- No 3D, isometric or mixed art styles.
+- No mobile clients.
+- Not built for thousands of players. Dozens is the real target; hundreds would be a stretch.
+
+## Roadmap
+
+The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.md).
+
+| Phase | What | Version |
+|---|---|---|
+| 0 | Foundations: repo, toolchain, protobuf pipeline, art pipeline, first art | |
+| 1 | lorehallow.com: landing page, live progress tracker, devlog, downloads | |
+| 2 | Two players, one world | v0.2.0 |
+| 3 | Many players: prediction, reconciliation, load testing | v0.3.0 |
+| 4 | Accounts and characters | v0.4.0 |
+| 5 | Chat and presence | v0.5.0 |
+| 6 | Combat | v0.6.0 |
+| 7 | Interest management and a larger world | v0.7.0 |
+| 8 | Items and loot | v0.8.0 |
+| 9 | Quests, NPCs and progression | v0.9.0 |
+| 10 | Grouping | v0.10.0 |
+| 11 | Zones | v0.11.0 |
+| 12 | Operations | v0.12.0 |
+| 13 | Classes and the v1 world | v0.13.0 |
+| 14 | Audio, UI and polish | v0.14.0 |
+| 15 | Distribution and releases | v0.15.0 |
+| 16 | Security and hardening | v0.16.0 |
+| 17 | Closed alpha | v0.17.0 |
+| 18 | Open beta | v0.18.0 |
+| 19 | Launch | **v1.0.0** |
+
+## Technology
+
+| Layer | Choice |
+|---|---|
+| Client | Godot 4 + GDScript (Windows, macOS, Linux) |
+| Game server | Go |
+| Transport | WebSocket over TLS (`wss://`) |
+| Protocol | Protobuf, schemas in [`proto/`](proto/) shared by client and server |
+| Persistence | PostgreSQL |
+| Website | Astro static site |
+| Hosting | Self-hosted behind lorehallow.com (Caddy, systemd) |
+
+**Networking model:** the server is authoritative and simulates at 20 Hz. Clients send inputs, never positions. Remote players are interpolated about 100 ms behind the latest snapshot, your own character is predicted and reconciled, and each player only receives updates about what is near them.
+
+## Repository layout
+
+```
+lorehallow/
+├── AGENTS.md      # How work gets done here: workflow, conventions, decisions
+├── BUILD.md       # The build plan, phase 0 to v1.0, tracked by the website
+├── client/        # Godot 4 project (GDScript)
+├── server/        # Go module: game server, bots, admin tools
+├── proto/         # Protobuf schemas and golden test vectors
+├── content/       # Data-driven game content: maps, items, quests, mobs
+├── web/           # lorehallow.com
+├── tools/         # Art intake pipeline, codegen and dev helpers
+├── art/
+│   ├── style/     # Locked palette, style guide, reference sheet
+│   ├── batches/   # Image prompts, manifests and intake reports per batch
+│   ├── inbox/     # Raw generated images, never edited
+│   └── processed/ # Cleaned, grid-snapped, palette-locked assets
+├── deploy/        # Host setup, Caddy, systemd units, deploy scripts
+└── docs/          # Walkthroughs, design notes, decisions, runbooks
+```
+
+Most of these directories are created in Phase 0.
+
+## Development
+
+The commands below exist once Phase 0 is complete. Run `make help` for the full list.
+
+```bash
+make doctor   # check the toolchain is installed at the pinned versions
+make setup    # install project dependencies
+make check    # format checks, linters and every test suite (what CI runs)
+make server   # run the game server locally
+make client   # launch the Godot client against the local server
+make web-dev  # run the website locally
+```
+
+Prerequisites: Go, Godot 4, Node.js (LTS), Python with [uv](https://docs.astral.sh/uv/), [buf](https://buf.build) and GNU Make. Exact versions are pinned in [AGENTS.md](AGENTS.md).
+
+## How it's made
+
+Lorehallow is built in the open, one phase at a time. The project owner sets the direction, chooses what comes next and playtests every build. AI coding agents do most of the design, programming, testing and infrastructure work, following [AGENTS.md](AGENTS.md) and checking off [BUILD.md](BUILD.md) as they go. Art starts as AI-generated pixel art that runs through an intake pipeline: snapped to a true pixel grid, quantized to the locked palette, sliced, checked and then tested in-game.
+
+## Contributing
+
+This is a personal learning project, so outside code contributions are not being accepted for now. Bug reports, ideas and kind words are welcome as issues on [GitHub](https://github.com/dunamismax/lorehallow/issues) or [Codeberg](https://codeberg.org/dunamismax/lorehallow/issues).
+
+## License
+
+To be decided in Phase 0. Until a license is added, all rights are reserved.
