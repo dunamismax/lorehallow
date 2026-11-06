@@ -4,6 +4,7 @@
 
 Lorehallow draws on the early days of World of Warcraft: a persistent world, zones, quests, grouping, and the sense that the world goes on without you. It is drawn in a warm, readable, top-down pixel-art style: mossy forests, lantern-lit towns and old stone ruins.
 
+[![CI](https://github.com/dunamismax/lorehallow/actions/workflows/ci.yml/badge.svg)](https://github.com/dunamismax/lorehallow/actions/workflows/ci.yml)
 <!-- Phase 1 adds a live progress badge here: https://lorehallow.com/progress.svg -->
 
 | | |

@@ -1,0 +1,65 @@
+# Runs `make check` (exactly what agents run locally) on every push to main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: make check (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history so buf breaking can compare against the previous push.
+          fetch-depth: 0
+
+      - name: Read pinned versions
+        run: grep -E '^[A-Z_]+=' toolchain.env >> "$GITHUB_ENV"
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: server/go.sum
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          # npm caching is added with the website's package-lock.json in Phase 1.
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: tools/art/uv.lock
+
+      - name: Cache downloaded tools
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/lorehallow-tools
+          key: tools-${{ runner.os }}-${{ hashFiles('toolchain.env') }}
+
+      - name: Install pinned tools
+        run: |
+          ./tools/scripts/ci-install-tools.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: make doctor
+        run: make doctor
+
+      - name: make setup
+        run: make setup
+
+      - name: make check
+        # Compare protocol changes against the commit before this push.
+        run: make check BUF_AGAINST_REF=${{ github.event.before || 'HEAD~1' }}

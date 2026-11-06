@@ -351,7 +351,7 @@ Code never waits on art. Use placeholder sprites (flat-colored shapes or simple 
 
 ## 9. Quality gates
 
-`make check` is the single gate, run locally before every commit and in CI on every push. It covers:
+`make check` is the single gate, run locally before every commit and in CI on every push. CI runs on **GitHub Actions** (`.github/workflows/ci.yml`, Linux, same pinned versions from `toolchain.env`). **Codeberg is a mirror**: it receives every push but runs no CI. It covers:
 
 - **Server:** `gofmt` check, `go vet`, `golangci-lint`, `go test -race ./...`, `govulncheck`
 - **Protocol:** `buf lint`, `buf breaking`, generated code up to date, golden round-trip tests on both sides

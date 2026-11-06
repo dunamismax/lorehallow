@@ -76,6 +76,7 @@ check node "$NODE_VERSION" major "$(hint node 'https://nodejs.org/en/download (o
 check uv "$UV_VERSION" minor "$(hint uv 'curl -LsSf https://astral.sh/uv/install.sh | sh')  (or: uv self update)" uv --version
 check python "$PYTHON_VERSION" minor "uv python install $PYTHON_VERSION" uv run --no-project --python "$PYTHON_VERSION" python --version
 check buf "$BUF_VERSION" minor "$(hint bufbuild/buf/buf 'https://buf.build/docs/cli/installation/')" buf --version
+# shellcheck disable=SC2016 # $(go env GOPATH) is printed for the user to run
 check golangci-lint "$GOLANGCI_LINT_VERSION" minor "$(hint golangci-lint 'curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v'"$GOLANGCI_LINT_VERSION")" golangci-lint --version
 check gdtoolkit "$GDTOOLKIT_VERSION" minor "uv tool install gdtoolkit==$GDTOOLKIT_VERSION" gdformat --version
 check make 4.0 major "$(hint make 'sudo apt install make') (GNU Make 4+; on macOS put gnubin first on PATH)" make --version
