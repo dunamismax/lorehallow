@@ -82,12 +82,15 @@ check gdtoolkit "$GDTOOLKIT_VERSION" minor "uv tool install gdtoolkit==$GDTOOLKI
 check make 4.0 major "$(hint make 'sudo apt install make') (GNU Make 4+; on macOS put gnubin first on PATH)" make --version
 check git 2.30 major "$(hint git 'sudo apt install git')" git --version
 
-if [[ -f "$ROOT/client/addons/gut/plugin.cfg" ]]; then
-  gut="$(grep -E '^version=' "$ROOT/client/addons/gut/plugin.cfg" | tr -d '"' | cut -d= -f2)"
-  if [[ "$gut" == "$GUT_VERSION" ]]; then ok GUT "$gut"; else bad GUT "found $gut, want $GUT_VERSION" "make setup"; fi
-else
-  bad GUT "not installed (want $GUT_VERSION)" "make setup"
-fi
+# Project-local dependencies are installed by `make setup`, which runs
+# after doctor on a fresh clone, so they are reported but never fail.
+note() { printf '  \033[33mnote\033[0m  %-14s %s\n' "$1" "$2"; }
+for addon in "gut:$GUT_VERSION" "godobuf:$GODOBUF_VERSION"; do
+  name="${addon%%:*}"; want="${addon#*:}"
+  stamp="$ROOT/client/addons/$name/.lorehallow-version"
+  if [[ -f "$stamp" && "$(cat "$stamp")" == "$want" ]]; then ok "$name" "$want"
+  else note "$name" "not installed at $want yet; make setup installs it"; fi
+done
 
 if (( fail )); then
   echo; echo "Some tools are missing or at the wrong version."; exit 1

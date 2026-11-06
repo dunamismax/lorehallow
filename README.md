@@ -104,11 +104,11 @@ lorehallow/
 └── docs/          # Walkthroughs, design notes, decisions, runbooks
 ```
 
-Most of these directories are created in Phase 0.
+Each directory has its own README.
 
 ## Development
 
-The commands below exist once Phase 0 is complete. Run `make help` for the full list.
+Run `make help` for the full list. (`make web-dev` arrives with the website in Phase 1.)
 
 ```bash
 make doctor   # check the toolchain is installed at the pinned versions
@@ -119,7 +119,7 @@ make client   # launch the Godot client against the local server
 make web-dev  # run the website locally
 ```
 
-Prerequisites: Go, Godot 4, Node.js (LTS), Python with [uv](https://docs.astral.sh/uv/), [buf](https://buf.build) and GNU Make. Exact versions are pinned in [AGENTS.md](AGENTS.md).
+Prerequisites: Go, Godot 4, Node.js (LTS), [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
 
 ## How it's made
 
