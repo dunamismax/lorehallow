@@ -1,0 +1,50 @@
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Environment and secrets (only .env.example is committed)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Go
+/server/bin/
+/bin/
+*.test
+*.out
+coverage.*
+
+# Godot
+.godot/
+/client/export/
+/client/build/
+*.translation
+export_credentials.cfg
+
+# Node / web
+node_modules/
+dist/
+.astro/
+/web/.lighthouseci/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Build and scratch output
+/build/
+/tmp/

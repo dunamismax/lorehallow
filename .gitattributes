@@ -1,0 +1,30 @@
+# Normalize text to LF everywhere.
+* text=auto eol=lf
+
+# Binaries: never diff or normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.ase binary
+*.aseprite binary
+*.psd binary
+*.wav binary
+*.ogg binary
+*.mp3 binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.zip binary
+*.pck binary
+*.bin binary
+*.pb binary
+
+# Generated code: collapse in diffs.
+server/internal/pb/** linguist-generated=true
+client/net/pb/** linguist-generated=true
+client/addons/** linguist-vendored=true

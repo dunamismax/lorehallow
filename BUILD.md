@@ -69,11 +69,11 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 0.2 Repository skeleton
 
 - [x] Add `CLAUDE.md` that points Claude Code sessions at AGENTS.md.
-- [ ] Create the directory layout from AGENTS.md section 7, each top-level directory with a short README saying what belongs there.
-- [ ] Add `.gitignore` covering Go build output, Godot `.godot/` and export output, `node_modules/` and `dist/`, Python `.venv/` and caches, `.env*` (except `.env.example`), and OS cruft.
-- [ ] Add `.editorconfig` and `.gitattributes` (LF line endings, images and other binaries marked binary).
+- [x] Create the directory layout from AGENTS.md section 7, each top-level directory with a short README saying what belongs there.
+- [x] Add `.gitignore` covering Go build output, Godot `.godot/` and export output, `node_modules/` and `dist/`, Python `.venv/` and caches, `.env*` (except `.env.example`), and OS cruft.
+- [x] Add `.editorconfig` and `.gitattributes` (LF line endings, images and other binaries marked binary).
 - [ ] Add LICENSE files for the licenses chosen in 0.1 and fill in the license section of README.md.
-- [ ] Add `docs/decisions/0000-template.md` and ADR 0001 recording the stack decisions already in the AGENTS.md decision log.
+- [x] Add `docs/decisions/0000-template.md` and ADR 0001 recording the stack decisions already in the AGENTS.md decision log.
 
 ### 0.3 Toolchain and command runner
 
