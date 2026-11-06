@@ -37,7 +37,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           # npm caching is added with the website's package-lock.json in Phase 1.
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           version: ${{ env.UV_VERSION }}
           enable-cache: true
