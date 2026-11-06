@@ -86,3 +86,33 @@ def test_map_entries_and_errors():
         parse_map({"files": {"a.png": "nope"}}, m)
     with pytest.raises(ManifestError, match="crop"):
         parse_map({"files": {"a.png": {"asset": "grass", "crop": [1, 2]}}}, m)
+
+
+def test_tileset_frames_with_names():
+    m = parse_manifest(
+        base(
+            kind="tileset",
+            size=[64, 32],
+            grid={"cell": [32, 32], "columns": 2, "rows": 1},
+            frames={"count": 1, "names": ["grass_a"]},
+        )
+    )
+    assert m.assets[0].frame_names() == ["grass_a"]
+    with pytest.raises(ManifestError, match="only sheets have a baseline"):
+        parse_manifest(
+            base(
+                kind="tileset",
+                size=[64, 32],
+                grid={"cell": [32, 32], "columns": 2, "rows": 1},
+                frames={"count": 2, "baseline": 3},
+            )
+        )
+    with pytest.raises(ManifestError, match="unique names"):
+        parse_manifest(
+            base(
+                kind="tileset",
+                size=[64, 32],
+                grid={"cell": [32, 32], "columns": 2, "rows": 1},
+                frames={"count": 2, "names": ["a", "a"]},
+            )
+        )

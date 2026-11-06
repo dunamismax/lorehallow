@@ -1,0 +1,111 @@
+# Batch 02: brand and website art. Schema: tools/art/src/lorehallow_art/manifest.py
+# Web art uses the same palette and rules at larger logical sizes, and is
+# always shown at whole-number scales.
+batch: "02"
+title: Brand and website art
+palette: art/style/palette.hex
+key_color: "#FF00FF"
+assets:
+  - id: logo_wordmark
+    prompt: 02-01
+    target: web/logo_wordmark.png
+    kind: web
+    size: [192, 64]
+    notes: Shown at 2x to 4x in the site header and hero. Transparent background.
+
+  - id: emblem
+    prompt: 02-02
+    target: icons/emblem.png
+    kind: web
+    size: [32, 32]
+    notes: Square emblem. Source for the 32, 192 and 512 px favicons and the client app icon.
+
+  - id: emblem_16
+    prompt: 02-03
+    target: icons/emblem_16.png
+    kind: web
+    size: [16, 16]
+    notes: Hand-reduced emblem for the 16 px favicon (pixel art can't be halved cleanly).
+
+  - id: hero_scene
+    prompt: 02-04
+    target: web/hero_scene.png
+    kind: web
+    size: [240, 160]
+    notes: Landing-page key art, the composite of the three parallax layers.
+
+  - id: parallax_far
+    prompt: 02-05
+    target: web/parallax_far.png
+    kind: web
+    size: [240, 160]
+    notes: Back layer, fully opaque sky and distant hills.
+
+  - id: parallax_mid
+    prompt: 02-06
+    target: web/parallax_mid.png
+    kind: web
+    size: [240, 160]
+    notes: Middle layer, forest edge and town roofs, transparent where the far layer shows.
+
+  - id: parallax_near
+    prompt: 02-07
+    target: web/parallax_near.png
+    kind: web
+    size: [240, 160]
+    notes: Front layer, foreground grass, ferns and a lantern post, transparent above.
+
+  - id: character_lineup
+    prompt: 02-08
+    target: web/character_lineup.png
+    kind: web
+    size: [192, 128]
+    notes: Five adventurers side by side, for the landing page and /world.
+
+  - id: section_icons
+    prompt: 02-09
+    target: icons/section_icons.png
+    kind: tileset
+    size: [64, 64]
+    grid: {cell: [16, 16], columns: 4, rows: 4}
+    frames:
+      count: 16
+      names: [shared_world, small_but_alive, readable_art, server_decides,
+              playable_milestones, explore, quest, group_up,
+              fight, devlog, progress, downloads,
+              world, about, faq, source]
+
+  - id: progress_landmarks
+    prompt: 02-10
+    target: web/progress_landmarks.png
+    kind: tileset
+    size: [160, 128]
+    grid: {cell: [32, 32], columns: 5, rows: 4}
+    frames:
+      count: 20
+      names: [phase_00_campfire, phase_01_signpost, phase_02_crossroads, phase_03_market_stall,
+              phase_04_inn, phase_05_bell_tower, phase_06_training_dummies, phase_07_watchtower,
+              phase_08_treasure_chest, phase_09_quest_board, phase_10_banner_camp, phase_11_bridge,
+              phase_12_lighthouse, phase_13_guild_hall, phase_14_bard_stage, phase_15_harbor,
+              phase_16_city_gate, phase_17_mountain_pass, phase_18_great_tree, phase_19_castle]
+    notes: One landmark per BUILD.md phase, drawn along the /progress quest map.
+
+  - id: devlog_header
+    prompt: 02-11
+    target: web/devlog_header.png
+    kind: web
+    size: [240, 80]
+
+  - id: og_card
+    prompt: 02-12
+    target: web/og_card.png
+    kind: web
+    size: [240, 126]
+    notes: Shown at exactly 5x as the 1200×630 Open Graph card background.
+
+  - id: not_found
+    prompt: 02-13
+    target: web/not_found.png
+    kind: web
+    size: [160, 120]
+    notes: Art for the 404 page.

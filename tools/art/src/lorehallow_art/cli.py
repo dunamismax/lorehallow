@@ -11,9 +11,11 @@ import argparse
 import sys
 from pathlib import Path
 
+from .assets import palette_problems, stale_generated, write_generated
 from .intake import run_batch
 from .manifest import ManifestError, load_manifest, load_map
 from .palette import Palette
+from .placeholders import write_placeholders
 from .sync import sync
 
 
@@ -42,10 +44,19 @@ def _validate(args: argparse.Namespace) -> int:
     palette = root / "art" / "style" / "palette.hex"
     if palette.exists():
         try:
-            Palette.load(palette)
+            for problem in palette_problems(Palette.load(palette)):
+                print(f"{palette}: {problem}")
+                errors += 1
+            for path in stale_generated(root):
+                print(f"{path} is stale; run make art-generate")
+                errors += 1
         except ValueError as e:
             print(f"{palette}: {e}")
             errors += 1
+    stale = sync(root, dry_run=True)
+    if stale:
+        print(f"synced art is stale ({len(stale)} changes); run make sync")
+        errors += 1
     for path in sorted((root / "art" / "batches").glob("batch-*/manifest.yaml")):
         try:
             m = load_manifest(path)
@@ -61,6 +72,20 @@ def _validate(args: argparse.Namespace) -> int:
             errors += 1
     print("validate: ok" if not errors else f"validate: {errors} problem(s)")
     return 1 if errors else 0
+
+
+def _generate(args: argparse.Namespace) -> int:
+    for path in write_generated(Path(args.root)):
+        print(f"wrote {path}")
+    print("generate: done")
+    return 0
+
+
+def _placeholders(args: argparse.Namespace) -> int:
+    for line in write_placeholders(Path(args.root)):
+        print(line)
+    print("placeholders: done")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -83,6 +108,14 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("validate", help="check manifests, maps and the palette")
     p.add_argument("--root", default=".")
     p.set_defaults(func=_validate)
+
+    p = sub.add_parser("generate", help="rebuild palette.png, palette.gpl and prompts.md files")
+    p.add_argument("--root", default=".")
+    p.set_defaults(func=_generate)
+
+    p = sub.add_parser("placeholders", help="write placeholder art for assets not processed yet")
+    p.add_argument("--root", default=".")
+    p.set_defaults(func=_placeholders)
 
     args = parser.parse_args(argv)
     return int(args.func(args))

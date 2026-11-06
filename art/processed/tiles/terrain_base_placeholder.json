@@ -1,0 +1,148 @@
+{
+  "id": "terrain_base",
+  "kind": "tileset",
+  "size": [
+    128,
+    128
+  ],
+  "frame_size": [
+    32,
+    32
+  ],
+  "columns": 4,
+  "rows": 4,
+  "frames": [
+    {
+      "index": 0,
+      "name": "grass_a",
+      "x": 0,
+      "y": 0,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 1,
+      "name": "grass_b",
+      "x": 32,
+      "y": 0,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 2,
+      "name": "grass_c",
+      "x": 64,
+      "y": 0,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 3,
+      "name": "grass_flowers",
+      "x": 96,
+      "y": 0,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 4,
+      "name": "grass_tuft",
+      "x": 0,
+      "y": 32,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 5,
+      "name": "dirt_a",
+      "x": 32,
+      "y": 32,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 6,
+      "name": "dirt_b",
+      "x": 64,
+      "y": 32,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 7,
+      "name": "dirt_pebbles",
+      "x": 96,
+      "y": 32,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 8,
+      "name": "stone_a",
+      "x": 0,
+      "y": 64,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 9,
+      "name": "stone_b",
+      "x": 32,
+      "y": 64,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 10,
+      "name": "stone_cracked",
+      "x": 64,
+      "y": 64,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 11,
+      "name": "stone_moss",
+      "x": 96,
+      "y": 64,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 12,
+      "name": "cobble_a",
+      "x": 0,
+      "y": 96,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 13,
+      "name": "cobble_b",
+      "x": 32,
+      "y": 96,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 14,
+      "name": "flagstone",
+      "x": 64,
+      "y": 96,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 15,
+      "name": "grass_stones",
+      "x": 96,
+      "y": 96,
+      "w": 32,
+      "h": 32
+    }
+  ],
+  "pivot": null,
+  "baseline": null,
+  "source": "placeholder",
+  "batch": "01"
+}

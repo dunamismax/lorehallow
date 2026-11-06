@@ -152,6 +152,14 @@ art-intake: ## Process one art batch: make art-intake BATCH=01
 	@if [ -z "$(BATCH)" ]; then echo "usage: make art-intake BATCH=01"; exit 2; fi
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art intake --root $(ROOT) --batch $(BATCH)
 
+.PHONY: art-generate
+art-generate: ## Rebuild palette.png, palette.gpl and every batch prompts.md from palette.hex
+	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art generate --root $(ROOT)
+
+.PHONY: art-placeholders
+art-placeholders: ## Write placeholder art for every manifest asset not processed yet
+	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art placeholders --root $(ROOT)
+
 .PHONY: sync
 sync: ## Mirror art/processed into client/assets/art and web/src/assets/art
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art sync --root $(ROOT)

@@ -36,7 +36,7 @@ Statuses: `accepted`, `fixed`, `regenerate` (failed a check) and `missing` (no i
 
 ## Sync
 
-`make sync` copies `art/processed/` to `client/assets/art/` and `web/src/assets/art/`, removes files that no longer exist in the source, and keeps Godot's `.import` files for images that still exist.
+`make sync` copies `art/processed/` to `web/src/assets/art/` and, except the website-only `web/` category, to `client/assets/art/`. It removes files that no longer exist in the source, and keeps Godot's `.import` files for images that still exist.
 
 ## Tests
 

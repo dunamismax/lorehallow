@@ -35,6 +35,8 @@ def make_asset(kind, size, **extra):
         pytest.param(32, 32, 30.0, {"shift": 9, "noise": 5}, id="off-palette"),
         pytest.param(96, 64, 10.667, {"jitter": 1.0, "blur": 1.0, "noise": 4}, id="tileset-scale"),
         pytest.param(192, 192, 5.333, {"jitter": 0.5, "blur": 0.4, "noise": 3}, id="sheet-scale"),
+        # A 3:1 wordmark centered on a 3:2 canvas with tall key margins.
+        pytest.param(48, 16, 32.0, {"offset": (0, 128), "pad": (0, 128)}, id="wide-on-canvas"),
     ],
 )
 def test_recovers_exact_art(rng, palette, w, h, scale, opts):

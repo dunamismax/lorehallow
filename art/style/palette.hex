@@ -1,0 +1,46 @@
+; Lorehallow locked palette v1 (draft, awaiting owner approval). 32 colors.
+; One color per line, Lospec .hex style. Ramps run dark to light.
+; Never add #FF00FF: it is the key color for backgrounds.
+; Edit this file, then run `make art-generate` to rebuild palette.png, palette.gpl and prompts.
+;
+; Shadows and outline
+1a1420 ; ink: outline and deepest shadow
+2e2433 ; night plum
+4a3d4d ; dusk violet-grey
+; Stone
+5e5a66 ; slate
+807c86 ; stone
+aaa4a6 ; pale stone
+; Earth and wood
+3b2a24 ; dark soil
+5c3f2e ; bark
+7f5a3a ; earth
+a67c4e ; dry path
+; Lantern light
+b8642a ; ember
+e09a3c ; amber
+f2c45a ; lantern gold
+fbe39b ; glow
+; Moss and leaf
+1f3326 ; deep forest
+2f4f2f ; moss shadow
+4d7136 ; moss
+77953f ; leaf
+a8bf5a ; sunlit leaf
+; Dusk and water
+1f2a44 ; deep dusk
+2f4466 ; dusk blue
+4a6a8f ; river
+7a9cbf ; sky
+b4cde0 ; mist
+; Skin
+9e5a4f ; skin deep
+cc8a6c ; skin mid
+efc4a0 ; skin light
+; Accents
+8f2f2f ; banner red
+c94a3a ; berry
+5e4a86 ; arcane violet
+3f8f86 ; teal glass
+; Highlight
+f4ecd8 ; parchment white

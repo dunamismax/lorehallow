@@ -135,10 +135,10 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.8 Art Batch 01: style foundation
 
-- [ ] Draft the locked palette (about 32 colors for warm storybook fantasy: moss and leaf greens, lantern ambers, stone greys, dusk blues, earth browns, skin tones, a dark outline color and a near-white) as `art/style/palette.hex`, a swatch PNG and a `.gpl` palette file.
+- [x] Draft the locked palette (about 32 colors for warm storybook fantasy: moss and leaf greens, lantern ambers, stone greys, dusk blues, earth browns, skin tones, a dark outline color and a near-white) as `art/style/palette.hex`, a swatch PNG and a `.gpl` palette file.
 - [ ] `HUMAN` Approve the palette or ask for changes.
-- [ ] Write `art/style/STYLE.md`: grid, scale, perspective, light, outlines, shading steps, character proportions, animation rules, and do and don't examples.
-- [ ] Write Batch 01 prompts and manifest: a style reference sheet, one character concept (32×48) and a grass, dirt and stone tileset (32×32, including transitions).
+- [x] Write `art/style/STYLE.md`: grid, scale, perspective, light, outlines, shading steps, character proportions, animation rules, and do and don't examples.
+- [x] Write Batch 01 prompts and manifest: a style reference sheet, one character concept (32×48) and a grass, dirt and stone tileset (32×32, including transitions).
 - [ ] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.
 - [ ] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
 - [ ] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
@@ -146,7 +146,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.9 Art Batch 02: brand and website art
 
-- [ ] Write Batch 02 prompts and manifest: logo wordmark, square emblem (favicon and app icon), hero key-art scene, 2 or 3 parallax background layers, a character lineup, section icons, a sheet of 20 progress-map landmarks (one per phase, from a starting campfire to a castle for v1.0), devlog header art, an Open Graph card background (1200×630) and 404 art.
+- [x] Write Batch 02 prompts and manifest: logo wordmark, square emblem (favicon and app icon), hero key-art scene, 2 or 3 parallax background layers, a character lineup, section icons, a sheet of 20 progress-map landmarks (one per phase, from a starting campfire to a castle for v1.0), devlog header art, an Open Graph card background (1200×630) and 404 art.
 - [ ] `HUMAN` Generate Batch 02 and drop it into `art/inbox/batch-02/`.
 - [ ] Run intake on Batch 02 (same palette, larger logical sizes allowed for web art) and iterate until accepted.
 - [ ] Export the favicon set (16, 32, 180, 192 and 512 px) and the client app icon from the emblem.

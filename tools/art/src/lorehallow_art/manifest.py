@@ -16,11 +16,12 @@ Manifest shape::
           cell: [32, 48]               # frame or tile size
           columns: 6
           rows: 4
-        frames:                        # sheet only
+        frames:                        # required for sheets, optional for tilesets
           count: 24                    # frames in reading order; trailing cells may be empty
           rows: [down, up, left, right]          # optional row names
           columns: [idle_0, idle_1, walk_0, walk_1, walk_2, walk_3]  # optional
-          baseline: 45                 # optional: row of the lowest foot pixel in every frame
+          names: [a, b, c]             # optional explicit names, one per frame
+          baseline: 45                 # sheets only: row of the lowest foot pixel in every frame
         pivot: [16, 45]                # optional, in frame (or sprite) coordinates
         downsample: mode               # mode | center
         key_tolerance: 0.12            # optional, OKLab distance
@@ -74,6 +75,7 @@ class FrameSpec:
     count: int
     row_names: tuple[str, ...] = ()
     column_names: tuple[str, ...] = ()
+    names: tuple[str, ...] = ()
     baseline: int | None = None
 
 
@@ -98,6 +100,8 @@ class Asset:
         if not self.grid:
             return [self.id]
         n = self.frames.count if self.frames else self.grid.columns * self.grid.rows
+        if self.frames and self.frames.names:
+            return list(self.frames.names)
         rn = self.frames.row_names if self.frames else ()
         cn = self.frames.column_names if self.frames else ()
         names = []
@@ -185,8 +189,8 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
 
     frames = None
     if "frames" in raw:
-        if kind != "sheet" or grid is None:
-            raise err("only sheets have frames")
+        if grid is None:
+            raise err("only sheets and tilesets have frames")
         f = raw["frames"]
         count = f.get("count")
         if not (isinstance(count, int) and 0 < count <= grid.columns * grid.rows):
@@ -197,12 +201,19 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
             raise err(f"frames.rows names {len(rn)} rows, grid has {grid.rows}")
         if cn and len(cn) != grid.columns:
             raise err(f"frames.columns names {len(cn)} columns, grid has {grid.columns}")
+        names = tuple(f.get("names", ()))
+        if names and (len(names) != count or len(set(names)) != count):
+            raise err(f"frames.names must list {count} unique names")
+        if names and not all(isinstance(n, str) and ID_RE.match(n) for n in names):
+            raise err("frames.names must be snake_case")
         baseline = f.get("baseline")
+        if baseline is not None and kind != "sheet":
+            raise err("only sheets have a baseline")
         if baseline is not None and not (
             isinstance(baseline, int) and 0 <= baseline < grid.cell[1]
         ):
             raise err("frames.baseline must be a row inside the frame")
-        frames = FrameSpec(count, rn, cn, baseline)
+        frames = FrameSpec(count, rn, cn, names, baseline)
     elif kind == "sheet":
         raise err("sheets need frames")
 

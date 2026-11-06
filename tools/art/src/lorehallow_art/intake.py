@@ -87,7 +87,10 @@ def process_image(
         img = img[..., :3]
     h, w = img.shape[:2]
     res.raw_size = (w, h)
-    hint = (w / asset.size[0], h / asset.size[1])
+    # Art pixels are square, and the art fits inside the canvas, so the
+    # limiting dimension gives the expected block size for both axes.
+    scale = min(w / asset.size[0], h / asset.size[1])
+    hint = (scale, scale)
     grid = detect_grid(img[..., :3], hint=hint)
     res.grid = grid
     rgb, alpha = downsample(img, grid, asset.downsample, palette, asset.key_color)

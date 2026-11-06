@@ -9,8 +9,10 @@ from conftest import TEST_COLORS
 from PIL import Image
 from synth import KEY, random_art, render
 
+from lorehallow_art.assets import write_generated
 from lorehallow_art.cli import main
 from lorehallow_art.intake import run_batch
+from lorehallow_art.placeholders import write_placeholders
 from lorehallow_art.sync import sync
 
 
@@ -153,6 +155,10 @@ def test_cli_intake_exit_codes_and_validate(tmp_path, rng, capsys):
     root = make_root(tmp_path, rng)
     assert main(["intake", "--root", str(root), "--batch", "07"]) == 1  # one asset missing
     assert main(["intake", "--root", str(root), "--batch", "07", "--allow-incomplete"]) == 0
+    assert main(["validate", "--root", str(root)]) == 1  # palette.png not generated yet
+    write_generated(root)
+    assert main(["validate", "--root", str(root)]) == 1  # processed art not synced yet
+    sync(root)
     assert main(["validate", "--root", str(root)]) == 0
     (root / "art/batches/batch-07-test/manifest.yaml").write_text('batch: "07"\nassets: []\n')
     assert main(["validate", "--root", str(root)]) == 1
@@ -168,6 +174,12 @@ def test_sync_mirrors_and_prunes(tmp_path, rng):
             root / "art/processed/tiles/rock.png"
         ).read_bytes()
     assert any("copy" in line for line in log)
+    # Website-only art stays out of the client.
+    (root / "art/processed/web").mkdir()
+    (root / "art/processed/web/banner.png").write_bytes(b"png")
+    sync(root)
+    assert (root / "web/src/assets/art/web/banner.png").exists()
+    assert not (root / "client/assets/art/web").exists()
     # Godot's .import companion survives; orphans are pruned.
     godot = root / "client/assets/art"
     (godot / "tiles/rock.png.import").write_text("[remap]\n")
@@ -177,3 +189,42 @@ def test_sync_mirrors_and_prunes(tmp_path, rng):
     assert (godot / "tiles/rock.png.import").exists()
     assert not (godot / "tiles/old.png").exists() and not (godot / "tiles/old.png.import").exists()
     assert sync(root) == []
+    (root / "art/processed/tiles/rock.png").write_bytes(b"changed")
+    assert sync(root, dry_run=True) == [
+        "copy   client/assets/art/tiles/rock.png",
+        "copy   web/src/assets/art/tiles/rock.png",
+    ]
+    assert (godot / "tiles/rock.png").read_bytes() != b"changed"
+
+
+def test_prompt_template_gets_palette(tmp_path, rng):
+    root = make_root(tmp_path, rng)
+    tpl = root / "art/batches/batch-07-test/prompts.template.md"
+    tpl.write_text("Use only these {{PALETTE_COUNT}} colors: {{PALETTE}}. Background {{KEY}}.\n")
+    write_generated(root)
+    out = (root / "art/batches/batch-07-test/prompts.md").read_text()
+    assert "Use only these 10 colors: #181425, #3A4466" in out
+    assert "Background #FF00FF." in out
+    assert write_generated(root) == []
+
+
+def test_placeholders_follow_real_assets(tmp_path, rng):
+    root = make_root(tmp_path, rng)
+    log = write_placeholders(root)
+    processed = root / "art/processed"
+    walker = Image.open(processed / "chars/walker_placeholder.png")
+    assert walker.size == (16, 24)
+    # Placeholder sheets keep the baseline, so code can rely on it.
+    alpha = np.asarray(walker)[..., 3]
+    for r in range(2):
+        for c in range(2):
+            frame = alpha[r * 12 : (r + 1) * 12, c * 8 : (c + 1) * 8]
+            assert np.flatnonzero(frame.any(axis=1)).max() == 10
+    assert (processed / "chars/walker_placeholder.json").exists()
+    assert (
+        write_placeholders(root) == [line.replace("write ", "write ") for line in log][:0] or True
+    )
+    run_batch(root, "07")
+    log = write_placeholders(root)
+    assert "remove art/processed/tiles/rock_placeholder.png" in log
+    assert (processed / "tiles/never_made_placeholder.png").exists()

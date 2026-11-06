@@ -1,0 +1,58 @@
+# Batch 01: style foundation. Schema: tools/art/src/lorehallow_art/manifest.py
+batch: "01"
+title: Style foundation
+palette: art/style/palette.hex
+key_color: "#FF00FF"
+assets:
+  - id: style_reference
+    prompt: 01-01
+    target: style/reference.png
+    kind: ui
+    size: [240, 160]
+    notes: >
+      A small vignette that shows the whole style at once. Once accepted it is
+      copied to art/style/reference.png and attached to every later prompt.
+
+  - id: concept_hero
+    prompt: 01-02
+    target: chars/concept_hero.png
+    kind: sprite
+    size: [32, 48]
+    pivot: [16, 45]
+    notes: One front-facing idle frame that sets the character scale and proportions.
+
+  - id: terrain_base
+    prompt: 01-03
+    target: tiles/terrain_base.png
+    kind: tileset
+    size: [128, 128]
+    grid: {cell: [32, 32], columns: 4, rows: 4}
+    frames:
+      count: 16
+      names: [grass_a, grass_b, grass_c, grass_flowers,
+              grass_tuft, dirt_a, dirt_b, dirt_pebbles,
+              stone_a, stone_b, stone_cracked, stone_moss,
+              cobble_a, cobble_b, flagstone, grass_stones]
+
+  - id: terrain_grass_dirt
+    prompt: 01-04
+    target: tiles/terrain_grass_dirt.png
+    kind: tileset
+    size: [128, 128]
+    grid: {cell: [32, 32], columns: 4, rows: 4}
+    frames: &transition_frames
+      count: 16
+      names: [edge_tl, edge_t, edge_tr, inner_tl,
+              edge_l, center, edge_r, inner_tr,
+              edge_bl, edge_b, edge_br, inner_bl,
+              edge_t_b, center_b, edge_b_b, inner_br]
+    notes: Dirt patch (inner) in grass (outer). Layout in STYLE.md "Transition sets".
+
+  - id: terrain_grass_stone
+    prompt: 01-05
+    target: tiles/terrain_grass_stone.png
+    kind: tileset
+    size: [128, 128]
+    grid: {cell: [32, 32], columns: 4, rows: 4}
+    frames: *transition_frames
+    notes: Old flagstone (inner) in grass (outer). Layout in STYLE.md "Transition sets".
