@@ -78,7 +78,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 0.3 Toolchain and command runner
 
 - [x] `ADR` Pin toolchain versions (Go, Godot 4.x, Node LTS, Python, uv, buf, golangci-lint, gdtoolkit, GUT) to the latest stable releases and fill in the AGENTS.md toolchain table.
-- [ ] Root `Makefile` with at least: `help`, `doctor`, `setup`, `fmt`, `lint`, `test`, `check`, `server`, `client`, `proto`, `sync`, `art-intake`. `make help` lists every target with a one-line description.
+- [x] Root `Makefile` with at least: `help`, `doctor`, `setup`, `fmt`, `lint`, `test`, `check`, `server`, `client`, `proto`, `sync`, `art-intake`. `make help` lists every target with a one-line description.
 - [x] `make doctor` checks every required tool and version and prints how to install anything missing (Homebrew on macOS, apt on Debian/Ubuntu).
 - [x] `make setup` installs project-local dependencies (Go modules, npm packages, uv environments, Godot addons) and is safe to re-run.
 - [ ] `make check` runs every format check, linter and test suite in the repo, and is exactly what CI runs.
@@ -119,19 +119,19 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.7 Art pipeline tooling
 
-- [ ] `tools/art/` Python project managed by uv (Pillow, numpy, PyYAML, pytest, ruff).
-- [ ] Batch manifest schema (`art/batches/<batch>/manifest.yaml`): per asset id, target path, kind (tile, tileset, sprite, sheet, ui, web), logical size, grid, frame layout and count, key color and palette.
-- [ ] Inbox mapping file (`art/inbox/<batch>/map.yaml`) linking each raw file to a manifest asset id.
-- [ ] Grid detection: find the real pixel block size and offset of generated "pixel art" and downsample to the logical size by sampling each block (center or mode).
-- [ ] Background removal: key color and near-key fringe become transparent.
-- [ ] Palette quantization: nearest palette color in a perceptual color space, no dithering, with a report of pixels changed.
-- [ ] Sheet slicing: split into frames and check frame count, frame size and foot-baseline alignment across frames, failing with a clear message when they don't line up.
-- [ ] Output: write to `art/processed/` with project names, plus a sidecar `.json` for sheets (frames, order, pivot, source file, batch).
-- [ ] Intake report (`art/batches/<batch>/report.md`): status per asset (accepted, fixed, regenerate), a 4x preview contact sheet, and corrected prompts for anything to regenerate.
-- [ ] Per-batch fix scripts are supported so small cleanups are reproducible when intake re-runs.
-- [ ] `make sync` mirrors `art/processed/` into `client/assets/art/` and `web/src/assets/art/`.
-- [ ] Tests with synthetic fixtures (upscaled, jittered, off-grid, off-palette and misaligned images with known expected output).
-- [ ] `make art-intake BATCH=<id>` runs the whole pipeline for one batch, and re-running it gives the same result.
+- [x] `tools/art/` Python project managed by uv (Pillow, numpy, PyYAML, pytest, ruff).
+- [x] Batch manifest schema (`art/batches/<batch>/manifest.yaml`): per asset id, target path, kind (tile, tileset, sprite, sheet, ui, web), logical size, grid, frame layout and count, key color and palette.
+- [x] Inbox mapping file (`art/inbox/<batch>/map.yaml`) linking each raw file to a manifest asset id.
+- [x] Grid detection: find the real pixel block size and offset of generated "pixel art" and downsample to the logical size by sampling each block (center or mode).
+- [x] Background removal: key color and near-key fringe become transparent.
+- [x] Palette quantization: nearest palette color in a perceptual color space, no dithering, with a report of pixels changed.
+- [x] Sheet slicing: split into frames and check frame count, frame size and foot-baseline alignment across frames, failing with a clear message when they don't line up.
+- [x] Output: write to `art/processed/` with project names, plus a sidecar `.json` for sheets (frames, order, pivot, source file, batch).
+- [x] Intake report (`art/batches/<batch>/report.md`): status per asset (accepted, fixed, regenerate), a 4x preview contact sheet, and corrected prompts for anything to regenerate.
+- [x] Per-batch fix scripts are supported so small cleanups are reproducible when intake re-runs.
+- [x] `make sync` mirrors `art/processed/` into `client/assets/art/` and `web/src/assets/art/`.
+- [x] Tests with synthetic fixtures (upscaled, jittered, off-grid, off-palette and misaligned images with known expected output).
+- [x] `make art-intake BATCH=<id>` runs the whole pipeline for one batch, and re-running it gives the same result.
 
 ### 0.8 Art Batch 01: style foundation
 

@@ -139,8 +139,9 @@ client-test: ## Run GUT tests headless
 # --- Art ------------------------------------------------------------------------------
 
 .PHONY: art-lint
-art-lint: ## ruff check and format check on tools/art
+art-lint: ## ruff check, format check and art manifest validation
 	cd $(ROOT)/tools/art && uv run --frozen ruff check . && uv run --frozen ruff format --check .
+	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art validate --root $(ROOT)
 
 .PHONY: art-test
 art-test: ## pytest for tools/art

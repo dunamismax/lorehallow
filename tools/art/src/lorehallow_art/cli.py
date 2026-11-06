@@ -1,16 +1,91 @@
-"""Command-line entry point: `lorehallow-art intake|sync`."""
+"""Command-line entry point.
+
+lorehallow-art intake --root . --batch 01
+lorehallow-art sync --root .
+lorehallow-art validate --root .
+"""
 
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
+
+from .intake import run_batch
+from .manifest import ManifestError, load_manifest, load_map
+from .palette import Palette
+from .sync import sync
+
+
+def _intake(args: argparse.Namespace) -> int:
+    result = run_batch(Path(args.root), args.batch, write=not args.dry_run)
+    for r in result.results:
+        extra = f"  ({'; '.join(r.problems)})" if r.problems else ""
+        print(f"{r.status:10s} {r.asset.id}{extra}")
+    if result.unmapped:
+        print("unmapped inbox files: " + ", ".join(result.unmapped))
+    print(f"report: {result.batch_dir / 'report.md'}")
+    return 0 if result.ok or args.allow_incomplete else 1
+
+
+def _sync(args: argparse.Namespace) -> int:
+    for line in sync(Path(args.root)):
+        print(line)
+    print("sync: done")
+    return 0
+
+
+def _validate(args: argparse.Namespace) -> int:
+    """Check every batch manifest, inbox map and the palette parse cleanly."""
+    root = Path(args.root)
+    errors = 0
+    palette = root / "art" / "style" / "palette.hex"
+    if palette.exists():
+        try:
+            Palette.load(palette)
+        except ValueError as e:
+            print(f"{palette}: {e}")
+            errors += 1
+    for path in sorted((root / "art" / "batches").glob("batch-*/manifest.yaml")):
+        try:
+            m = load_manifest(path)
+            expected = f"batch-{m.batch}-"
+            if not path.parent.name.startswith(expected):
+                raise ManifestError(f"{path}: folder name must start with {expected}")
+            load_map(root / "art" / "inbox" / f"batch-{m.batch}" / "map.yaml", m)
+            for a in m.assets:
+                if not (root / a.palette).exists():
+                    raise ManifestError(f"{path}: asset {a.id} uses missing palette {a.palette}")
+        except (ManifestError, ValueError) as e:
+            print(e)
+            errors += 1
+    print("validate: ok" if not errors else f"validate: {errors} problem(s)")
+    return 1 if errors else 0
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="lorehallow-art")
-    parser.add_subparsers(dest="command", required=True)
-    parser.parse_args(argv)
-    return 0
+    parser = argparse.ArgumentParser(prog="lorehallow-art", description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("intake", help="process one batch from art/inbox into art/processed")
+    p.add_argument("--root", default=".", help="repository root")
+    p.add_argument("--batch", required=True, help="batch number, e.g. 01")
+    p.add_argument("--dry-run", action="store_true", help="process and report, write nothing")
+    p.add_argument(
+        "--allow-incomplete", action="store_true", help="exit 0 even if assets need regeneration"
+    )
+    p.set_defaults(func=_intake)
+
+    p = sub.add_parser("sync", help="mirror art/processed into the client and website")
+    p.add_argument("--root", default=".")
+    p.set_defaults(func=_sync)
+
+    p = sub.add_parser("validate", help="check manifests, maps and the palette")
+    p.add_argument("--root", default=".")
+    p.set_defaults(func=_validate)
+
+    args = parser.parse_args(argv)
+    return int(args.func(args))
 
 
 if __name__ == "__main__":
