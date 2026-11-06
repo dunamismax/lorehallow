@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 from .assets import palette_problems, stale_generated, write_generated
+from .favicons import export as export_favicons
 from .intake import run_batch
 from .manifest import ManifestError, load_manifest, load_map
 from .palette import Palette
@@ -88,6 +89,13 @@ def _placeholders(args: argparse.Namespace) -> int:
     return 0
 
 
+def _favicons(args: argparse.Namespace) -> int:
+    for line in export_favicons(Path(args.root)):
+        print(line)
+    print("favicons: done")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="lorehallow-art", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -116,6 +124,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("placeholders", help="write placeholder art for assets not processed yet")
     p.add_argument("--root", default=".")
     p.set_defaults(func=_placeholders)
+
+    p = sub.add_parser("favicons", help="export the favicon set and app icon from the emblem")
+    p.add_argument("--root", default=".")
+    p.set_defaults(func=_favicons)
 
     args = parser.parse_args(argv)
     return int(args.func(args))

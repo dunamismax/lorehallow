@@ -11,7 +11,7 @@ config/description="A small pixel-art fantasy MMO built around a shared world."
 config/version="dev"
 run/main_scene="res://ui/title_screen.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon_placeholder.svg"
+config/icon="res://assets/art/icons/app_icon_placeholder.png"
 
 [autoload]
 

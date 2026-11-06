@@ -160,6 +160,10 @@ art-generate: ## Rebuild palette.png, palette.gpl and every batch prompts.md fro
 art-placeholders: ## Write placeholder art for every manifest asset not processed yet
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art placeholders --root $(ROOT)
 
+.PHONY: art-favicons
+art-favicons: ## Export the favicon set and client app icon from the emblem
+	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art favicons --root $(ROOT)
+
 .PHONY: sync
 sync: ## Mirror art/processed into client/assets/art and web/src/assets/art
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art sync --root $(ROOT)

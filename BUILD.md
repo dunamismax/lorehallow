@@ -81,7 +81,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Root `Makefile` with at least: `help`, `doctor`, `setup`, `fmt`, `lint`, `test`, `check`, `server`, `client`, `proto`, `sync`, `art-intake`. `make help` lists every target with a one-line description.
 - [x] `make doctor` checks every required tool and version and prints how to install anything missing (Homebrew on macOS, apt on Debian/Ubuntu).
 - [x] `make setup` installs project-local dependencies (Go modules, npm packages, uv environments, Godot addons) and is safe to re-run.
-- [ ] `make check` runs every format check, linter and test suite in the repo, and is exactly what CI runs.
+- [x] `make check` runs every format check, linter and test suite in the repo, and is exactly what CI runs.
 
 ### 0.4 Go server skeleton
 
@@ -154,15 +154,15 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.10 Continuous integration
 
-- [ ] GitHub Actions workflow runs `make check` on every push to `main` (Linux), caching Go, npm and uv.
-- [ ] Godot headless tests run in CI with the pinned Godot version.
-- [ ] CI status badge in README.md.
-- [ ] Document in AGENTS.md that CI runs on GitHub and Codeberg is a mirror.
+- [x] GitHub Actions workflow runs `make check` on every push to `main` (Linux), caching Go, npm and uv.
+- [x] Godot headless tests run in CI with the pinned Godot version.
+- [x] CI status badge in README.md.
+- [x] Document in AGENTS.md that CI runs on GitHub and Codeberg is a mirror.
 
 ### 0.11 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-00-foundations.md`: repository tour, the command runner, how protobuf codegen works on both sides, and how the art pipeline turns generated images into true pixel art.
-- [ ] Devlog draft for Phase 0 in `docs/devlog-drafts/`.
+- [x] `docs/walkthroughs/phase-00-foundations.md`: repository tour, the command runner, how protobuf codegen works on both sides, and how the art pipeline turns generated images into true pixel art.
+- [x] Devlog draft for Phase 0 in `docs/devlog-drafts/`.
 
 ### Acceptance criteria
 
