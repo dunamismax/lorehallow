@@ -18,7 +18,7 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 **Phase 0: Foundations. Pre-alpha, nothing to play yet.**
 
-The repository is being scaffolded. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline and the art pipeline, all behind one `make check`. The first art batches are being generated. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 

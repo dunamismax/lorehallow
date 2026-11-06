@@ -166,12 +166,12 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### Acceptance criteria
 
-- [ ] On a fresh clone, `make doctor && make setup && make check` passes on macOS, and `make check` passes in CI on Linux.
-- [ ] `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
-- [ ] Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
+- [x] On a fresh clone, `make doctor && make setup && make check` passes on macOS, and `make check` passes in CI on Linux.
+- [x] `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
+- [x] Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
 - [ ] Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
 - [ ] Batch 02 assets are processed and ready in `art/processed/web/`.
-- [ ] The Phase 0 walkthrough exists and every `ADR` item in this phase has its ADR.
+- [x] The Phase 0 walkthrough exists and every `ADR` item in this phase has its ADR.
 
 ---
 
