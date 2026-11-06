@@ -1,0 +1,7 @@
+{
+  "pong": {
+    "nonce": 1,
+    "ping_sent_at_ms": "-1",
+    "received_at_ms": "-9223372036854775808"
+  }
+}

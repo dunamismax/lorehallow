@@ -64,7 +64,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Write the foundational docs: README.md, AGENTS.md and BUILD.md.
 - [ ] `HUMAN` Choose licenses: one for code (for example MIT or AGPL-3.0) and one for art and written content (for example CC BY-NC 4.0, or all rights reserved).
 - [ ] `HUMAN` Confirm a ChatGPT plan with image generation is available for the art batches.
-- [ ] Verify `git push origin main` reaches both GitHub and Codeberg and that both repositories are public.
+- [x] Verify `git push origin main` reaches both GitHub and Codeberg and that both repositories are public.
 
 ### 0.2 Repository skeleton
 
@@ -77,45 +77,45 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.3 Toolchain and command runner
 
-- [ ] `ADR` Pin toolchain versions (Go, Godot 4.x, Node LTS, Python, uv, buf, golangci-lint, gdtoolkit, GUT) to the latest stable releases and fill in the AGENTS.md toolchain table.
+- [x] `ADR` Pin toolchain versions (Go, Godot 4.x, Node LTS, Python, uv, buf, golangci-lint, gdtoolkit, GUT) to the latest stable releases and fill in the AGENTS.md toolchain table.
 - [ ] Root `Makefile` with at least: `help`, `doctor`, `setup`, `fmt`, `lint`, `test`, `check`, `server`, `client`, `proto`, `sync`, `art-intake`. `make help` lists every target with a one-line description.
-- [ ] `make doctor` checks every required tool and version and prints how to install anything missing (Homebrew on macOS, apt on Debian/Ubuntu).
-- [ ] `make setup` installs project-local dependencies (Go modules, npm packages, uv environments, Godot addons) and is safe to re-run.
+- [x] `make doctor` checks every required tool and version and prints how to install anything missing (Homebrew on macOS, apt on Debian/Ubuntu).
+- [x] `make setup` installs project-local dependencies (Go modules, npm packages, uv environments, Godot addons) and is safe to re-run.
 - [ ] `make check` runs every format check, linter and test suite in the repo, and is exactly what CI runs.
 
 ### 0.4 Go server skeleton
 
-- [ ] Create the Go module in `server/` (`github.com/dunamismax/lorehallow/server`) with `cmd/lorehallow-server/` and `internal/`.
-- [ ] Configuration from flags and `LOREHALLOW_*` environment variables, with local-dev defaults, documented in `server/README.md` and `.env.example`.
-- [ ] Structured logging with `log/slog` (text locally, JSON in production).
-- [ ] HTTP listener with `GET /healthz` and `GET /version` (build version, git commit, protocol version).
-- [ ] Graceful shutdown on SIGINT and SIGTERM with a timeout.
-- [ ] Build version and commit injected with `-ldflags`.
-- [ ] `gofmt`, `go vet`, `golangci-lint`, `go test -race ./...` and `govulncheck` wired into `make lint` and `make test`.
-- [ ] First unit tests (configuration parsing, health handler).
-- [ ] `make server` builds and runs the server on a documented local port.
+- [x] Create the Go module in `server/` (`github.com/dunamismax/lorehallow/server`) with `cmd/lorehallow-server/` and `internal/`.
+- [x] Configuration from flags and `LOREHALLOW_*` environment variables, with local-dev defaults, documented in `server/README.md` and `.env.example`.
+- [x] Structured logging with `log/slog` (text locally, JSON in production).
+- [x] HTTP listener with `GET /healthz` and `GET /version` (build version, git commit, protocol version).
+- [x] Graceful shutdown on SIGINT and SIGTERM with a timeout.
+- [x] Build version and commit injected with `-ldflags`.
+- [x] `gofmt`, `go vet`, `golangci-lint`, `go test -race ./...` and `govulncheck` wired into `make lint` and `make test`.
+- [x] First unit tests (configuration parsing, health handler).
+- [x] `make server` builds and runs the server on a documented local port.
 
 ### 0.5 Protobuf pipeline
 
-- [ ] `buf.yaml` and `buf.gen.yaml` in `proto/`, package `lorehallow.v1`, buf lint enabled.
-- [ ] First schema in `proto/lorehallow/v1/`: an `Envelope` with a `oneof` payload, `Ping` and `Pong`, and the `PROTOCOL_VERSION` convention documented in `proto/README.md`.
-- [ ] Go code generation into `server/internal/pb/` (committed, marked generated).
-- [ ] `ADR` GDScript code generation: try godobuf on the pinned Godot 4 version first; if it can't pass the round-trip tests below, write `tools/protoc-gen-gdscript` (a Go protoc plugin) for the proto3 subset Lorehallow uses.
-- [ ] GDScript code generation into `client/net/pb/` (committed, marked generated).
-- [ ] Golden vectors: a Go program writes encoded messages and JSON descriptions to `proto/testdata/`; Go and GDScript tests decode and re-encode them and compare bytes.
-- [ ] `make proto` regenerates everything; `make check` fails when generated code is stale or `buf breaking` reports an unplanned breaking change against `main`.
+- [x] `buf.yaml` and `buf.gen.yaml` in `proto/`, package `lorehallow.v1`, buf lint enabled.
+- [x] First schema in `proto/lorehallow/v1/`: an `Envelope` with a `oneof` payload, `Ping` and `Pong`, and the `PROTOCOL_VERSION` convention documented in `proto/README.md`.
+- [x] Go code generation into `server/internal/pb/` (committed, marked generated).
+- [x] `ADR` GDScript code generation: try godobuf on the pinned Godot 4 version first; if it can't pass the round-trip tests below, write `tools/protoc-gen-gdscript` (a Go protoc plugin) for the proto3 subset Lorehallow uses.
+- [x] GDScript code generation into `client/net/pb/` (committed, marked generated).
+- [x] Golden vectors: a Go program writes encoded messages and JSON descriptions to `proto/testdata/`; Go and GDScript tests decode and re-encode them and compare bytes.
+- [x] `make proto` regenerates everything; `make check` fails when generated code is stale or `buf breaking` reports an unplanned breaking change against `main`.
 
 ### 0.6 Godot client skeleton
 
-- [ ] Create the Godot 4 project in `client/` with the project name, a placeholder icon and the folder layout from AGENTS.md.
-- [ ] Rendering settings: base viewport 640×360, stretch mode `viewport`, integer scaling, default texture filter Nearest, no mipmaps, 2D pixel snapping.
-- [ ] Pixel-art import preset (filter off, mipmaps off, lossless) as the project default.
-- [ ] Main scene with a placeholder title screen showing the build version.
-- [ ] Autoload skeletons: `Config`, `Log` and `Net` (empty for now).
-- [ ] GUT installed in `addons/` with one passing test; `make test` runs GUT headless.
-- [ ] gdtoolkit through uv; `make fmt` and `make lint` cover `client/`, excluding generated code and addons.
-- [ ] Static typing enforced: the project warns on untyped declarations.
-- [ ] `make client` launches the client (Godot found through a `GODOT` variable with sensible macOS and Linux defaults).
+- [x] Create the Godot 4 project in `client/` with the project name, a placeholder icon and the folder layout from AGENTS.md.
+- [x] Rendering settings: base viewport 640×360, stretch mode `viewport`, integer scaling, default texture filter Nearest, no mipmaps, 2D pixel snapping.
+- [x] Pixel-art import preset (filter off, mipmaps off, lossless) as the project default.
+- [x] Main scene with a placeholder title screen showing the build version.
+- [x] Autoload skeletons: `Config`, `Log` and `Net` (empty for now).
+- [x] GUT installed in `addons/` with one passing test; `make test` runs GUT headless.
+- [x] gdtoolkit through uv; `make fmt` and `make lint` cover `client/`, excluding generated code and addons.
+- [x] Static typing enforced: the project warns on untyped declarations.
+- [x] `make client` launches the client (Godot found through a `GODOT` variable with sensible macOS and Linux defaults).
 
 ### 0.7 Art pipeline tooling
 

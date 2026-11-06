@@ -423,19 +423,22 @@ Runbooks live in `docs/ops/`. Every new operational procedure gets written down 
 
 ## 13. Toolchain versions
 
-Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time. `make doctor` checks these. Update this table in the same commit as any version bump.
+Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time ([ADR 0002](docs/decisions/0002-toolchain-versions.md)). The machine-readable source is [`toolchain.env`](toolchain.env); `make doctor` checks against it. Update `toolchain.env` and this table in the same commit as any version bump.
 
 | Tool | Version | Notes |
 |---|---|---|
-| Go | _pin in 0.3_ | |
-| Godot | _pin in 0.3_ | Standard build, plus matching export templates |
-| Node.js | _pin in 0.3_ | Current LTS |
-| Python | _pin in 0.3_ | Managed by uv |
-| uv | _pin in 0.3_ | |
-| buf | _pin in 0.3_ | |
-| golangci-lint | _pin in 0.3_ | |
-| gdtoolkit | _pin in 0.3_ | gdformat and gdlint, via uv |
-| GUT | _pin in 0.3_ | Godot addon |
+| Go | 1.27.3 | |
+| Godot | 4.7.2-stable | Standard build, plus matching export templates |
+| Node.js | 26.13.0 | Current LTS ("Lithium"); used from Phase 1 |
+| Python | 3.14.9 | Managed by uv |
+| uv | 0.13.7 | |
+| buf | 1.75.0 | |
+| golangci-lint | 2.15.0 | |
+| gdtoolkit | 4.5.0 | gdformat and gdlint, via uv |
+| GUT | 9.7.1 | Godot addon, installed by `make setup` |
+| godobuf | 0.7.0 | Godot addon for GDScript protobuf codegen, installed by `make setup` |
+| protoc-gen-go | 1.36.12 | `tool` directive in `server/go.mod` |
+| govulncheck | 1.9.0 | `tool` directive in `server/go.mod` |
 | Caddy | _pin in 1.1_ | On the host |
 | PostgreSQL | _pin in 4.1_ | On the host and in CI |
 
@@ -462,7 +465,12 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 13 | GNU Make as the single command runner | Default | Already installed on macOS and Linux; one entry point for humans, agents and CI | BUILD.md 0.3 |
 | 14 | Art tooling in Python managed by uv (Pillow, numpy) | Default | Best image-processing ecosystem; uv keeps it reproducible | BUILD.md 0.7 |
 | 15 | GUT for Godot tests; gdtoolkit for GDScript format and lint | Default | Mature, headless-friendly | BUILD.md 0.6 |
-| 16 | GDScript protobuf via godobuf, or a custom Go protoc plugin if it fails round-trip tests | Open | No official GDScript protobuf support | BUILD.md 0.5 |
+| 16 | GDScript protobuf via godobuf 0.7.0; custom protoc plugin only if a golden test fails | Decided | Passed every golden round-trip vector on Godot 4.7 | [ADR 0003](docs/decisions/0003-gdscript-protobuf.md) |
 | 17 | Game traffic on `play.lorehallow.com`, HTTP APIs under `lorehallow.com/api/` | Default | Separates game traffic from the website; easier to move later | This file |
 | 18 | Game versions `v0.<phase>.<patch>` until 1.0 | Decided | Version numbers map to BUILD.md phases | This file |
 | 19 | `main`-only git, commit and push after every verified step, no AI attribution | Decided | Owner's rules | Owner |
+| 20 | Stack decisions recorded in one ADR | Decided | One place for later ADRs to reference | [ADR 0001](docs/decisions/0001-stack.md) |
+| 21 | Toolchain pinned in `toolchain.env`; doctor accepts newer patch releases | Decided | One source for Make, doctor and CI | [ADR 0002](docs/decisions/0002-toolchain-versions.md) |
+| 22 | `PROTOCOL_VERSION` lives in `proto/PROTOCOL_VERSION`; `buf breaking` failures pass only with a bump | Decided | One integer, generated into both languages; "planned" breaks are explicit | [proto/README.md](proto/README.md) |
+| 23 | Client uses the Compatibility renderer; untyped GDScript is an error, not a warning | Decided | Widest hardware support for 2D; headless runs don't print warnings, so only an error is enforceable in CI | [client/README.md](client/README.md) |
+| 24 | Local dev server listens on 127.0.0.1:7420 | Default | Unprivileged, unlikely to clash | [server/README.md](server/README.md) |

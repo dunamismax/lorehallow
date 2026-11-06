@@ -1,0 +1,35 @@
+# 0003: GDScript protobuf code generation with godobuf
+
+- **Status:** Accepted
+- **Date:** 2026-11-06
+- **BUILD.md:** 0.5
+
+## Context
+
+The protocol is protobuf (ADR 0001), and Godot has no official protobuf support. BUILD.md 0.5 says to try godobuf on the pinned Godot first, and to write our own Go protoc plugin only if godobuf can't pass the golden round-trip tests.
+
+## Decision
+
+Use **godobuf 0.7.0**, installed by `make setup` into `client/addons/godobuf/` and run headless by `make proto`:
+
+```bash
+godot --headless --path client -s addons/godobuf/godobuf_cmdln.gd --input=<file.proto> --output=<out.gd>
+```
+
+`tools/scripts/gen-proto.sh` writes one `client/net/pb/<file>_pb.gd` per `.proto` file, with a "Code generated ... DO NOT EDIT" header.
+
+### What was tested
+
+On Godot 4.7.2 (godobuf targets 4.6), the generated code passed every golden vector byte for byte: the empty envelope, a oneof holding an empty message (`0a00`), zero and default fields, `uint32` max, `int64` max and min, and negative `int64` values (10-byte varints). Decoded values also matched the protojson description of each vector. These tests run in `make check` (`client/tests/test_proto_golden.gd`), so any regression with a new message type shows up immediately.
+
+## Alternatives considered
+
+- **Write `tools/protoc-gen-gdscript`:** fully typed output and a nice lesson in how protoc plugins work, but a few days of work with no current need. It remains the fallback.
+- **JSON for the client only:** gives up the shared schema, the main reason for protobuf.
+
+## Consequences
+
+- Generated code is untyped GDScript, so `client/net/pb/` is excluded from GDScript warnings (`debug/gdscript/warnings/directory_rules`), gdformat and gdlint. Game code should wrap it behind typed functions in `client/net/` rather than spreading the generated API around.
+- Generation needs Godot, which every agent and CI already has.
+- godobuf compiles one file at a time. When the schema splits into several files with imports, re-check that output is correct. If godobuf fails a golden test on a future message (maps, packed repeated fields, floats), write the protoc plugin and supersede this ADR.
+- godobuf is BSD-3-Clause licensed. It is downloaded, not vendored; its license stays with it in `client/addons/godobuf/`.

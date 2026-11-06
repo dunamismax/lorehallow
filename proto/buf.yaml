@@ -1,0 +1,12 @@
+# buf configuration for the Lorehallow protocol. See proto/README.md.
+version: v2
+modules:
+  - path: .
+    excludes:
+      - testdata
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

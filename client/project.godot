@@ -1,0 +1,71 @@
+; Engine configuration file.
+; Edit through the Godot editor where possible; keep it in sync with
+; AGENTS.md section 7 (pixel rules) and client/README.md.
+
+config_version=5
+
+[application]
+
+config/name="Lorehallow"
+config/description="A small pixel-art fantasy MMO built around a shared world."
+config/version="dev"
+run/main_scene="res://ui/title_screen.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://icon_placeholder.svg"
+
+[autoload]
+
+Log="*res://autoload/log.gd"
+Config="*res://autoload/config.gd"
+Net="*res://autoload/net.gd"
+
+[debug]
+
+gdscript/warnings/directory_rules={
+"res://addons": 0,
+"res://net/pb": 0
+}
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/unsafe_method_access=1
+gdscript/warnings/unsafe_cast=1
+gdscript/warnings/unsafe_call_argument=1
+
+[display]
+
+window/size/viewport_width=640
+window/size/viewport_height=360
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="viewport"
+window/stretch/scale_mode="integer"
+
+[gui]
+
+theme/default_font_antialiasing=0
+theme/default_font_hinting=0
+theme/default_font_subpixel_positioning=0
+
+[importer_defaults]
+
+texture={
+"compress/mode": 0,
+"detect_3d/compress_to": 0,
+"mipmaps/generate": false,
+"process/fix_alpha_border": true,
+"process/size_limit": 0
+}
+
+[lorehallow]
+
+build/commit="unknown"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true
+textures/default_filters/use_nearest_mipmap_filter=true
+textures/vram_compression/import_etc2_astc=false

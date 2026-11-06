@@ -1,0 +1,37 @@
+// The Lorehallow wire protocol. Every binary WebSocket message carries
+// exactly one Envelope. Field numbers are never reused or renumbered;
+// removed fields are marked reserved. See proto/README.md.
+syntax = "proto3";
+
+package lorehallow.v1;
+
+option go_package = "github.com/dunamismax/lorehallow/server/internal/pb";
+
+// Envelope wraps every message sent in either direction.
+message Envelope {
+  // payload is the one message this envelope carries.
+  oneof payload {
+    Ping ping = 1;
+    Pong pong = 2;
+  }
+}
+
+// Ping asks the other side to answer with a Pong carrying the same nonce.
+// Used for round-trip time measurement and heartbeats.
+message Ping {
+  // nonce matches a Pong to its Ping.
+  uint32 nonce = 1;
+  // sent_at_ms is the sender's clock in milliseconds when the Ping was sent.
+  int64 sent_at_ms = 2;
+}
+
+// Pong answers a Ping.
+message Pong {
+  // nonce is copied from the Ping.
+  uint32 nonce = 1;
+  // ping_sent_at_ms is copied from the Ping, so the pinger can compute RTT
+  // without remembering what it sent.
+  int64 ping_sent_at_ms = 2;
+  // received_at_ms is the responder's clock in milliseconds when the Ping arrived.
+  int64 received_at_ms = 3;
+}

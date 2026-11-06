@@ -48,3 +48,9 @@ __pycache__/
 # Build and scratch output
 /build/
 /tmp/
+
+# Godot addons installed by `make setup` (pinned in toolchain.env)
+/client/addons/gut/
+/client/addons/godobuf/
+# Build info written by `make client` / exports
+/client/override.cfg
