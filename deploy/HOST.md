@@ -10,7 +10,7 @@ Facts about the server behind lorehallow.com (BUILD.md 1.1). Agents update this 
 | CPU | AMD Ryzen 7 5800H, 6 vCPUs given to the VM, x86_64 (`LOREHALLOW_DEPLOY_ARCH=amd64`) |
 | RAM, disk | 7.2 GiB RAM; 124 GB root disk, 73 GB free (2026-11-07) |
 | Network | LAN 192.168.50.2 behind the home router, which forwards 80 and 443 to it; public IP 71.215.196.157 (home connection, may change) |
-| DNS | Cloudflare. `lorehallow.com` and `www.lorehallow.com`: A records to the home IP, DNS only (not proxied). `play.lorehallow.com`: **missing, to add** |
+| DNS | Cloudflare. `lorehallow.com`, `www.lorehallow.com` and `play.lorehallow.com`: A records to the home IP, DNS only (not proxied). No AAAA records: the host has no public IPv6 (its only global address is Tailscale's). If the home IP changes, all three A records must follow. |
 | Email | Catch-all forwarding on Cloudflare: any address `@lorehallow.com` reaches the owner's personal inbox. Use a role address (for example `hello@lorehallow.com`, `security@lorehallow.com`) wherever the project needs a contact; never publish the personal address. |
 | Shared with | Other self-hosted sites (dunamismax.com, graceandfootnotes.com, xrayservice.net and more) and a RustDesk relay. Lorehallow must never disturb them. |
 | Web server | Caddy 2.11.4, a custom build at `/usr/local/lib/caddy/caddy` (with caddy-ratelimit), admin API on a Unix socket. The main `/etc/caddy/Caddyfile` imports `/etc/caddy/sites/*.caddy`; Lorehallow's file is `/etc/caddy/sites/lorehallow.caddy`. Automatic HTTPS (Let's Encrypt). |
@@ -41,3 +41,5 @@ Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app
 | 2026-11-07 | Installed with app.sh: user `lorehallow-server`, `/srv/lorehallow`, `/etc/lorehallow`, the systemd unit, `/etc/caddy/sites/lorehallow.caddy`, placeholder website. lorehallow.com serving over HTTPS. | agent |
 | 2026-11-07 | Owner set up catch-all email forwarding for lorehallow.com (Cloudflare). | owner |
 | 2026-11-07 | First validation ran `caddy validate` as root, which created `/var/log/caddy/lorehallow-play-access.log` owned by root, so `systemctl reload caddy` failed (the running config and every other site stayed up). Fixed the ownership and reloaded; app.sh now validates as the caddy user with the service's binary. | agent |
+| 2026-11-07 | Owner added the `play.lorehallow.com` A record. Caddy got its certificate on the first request; bots joined over `wss://play.lorehallow.com/ws`. | owner, agent |
+| 2026-11-07 | Deployed server 10717ee with `make deploy-server`, then `make rehearse-rollback-server`: a release with no map failed its health check and was rolled back automatically (game down about 10 s). | agent |

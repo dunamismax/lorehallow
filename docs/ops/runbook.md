@@ -73,6 +73,14 @@ It needs `LOREHALLOW_DEPLOY_HOST=root@ubuntu-vm` and `LOREHALLOW_DEPLOY_ARCH=amd
 make rollback-server   # switch to the previous release and restart
 ```
 
+To check that a failed deploy really rolls itself back, while nobody is playing:
+
+```bash
+make rehearse-rollback-server   # deploy a release with no map; passes only if it's rolled back automatically
+```
+
+It takes the game down for 10 to 20 seconds and removes the bad release afterwards. First run: 2026-11-07, passed.
+
 Or by hand *(host)*: `ls /srv/lorehallow/server/releases`, then `ln -sfn releases/<previous> /srv/lorehallow/server/current.new && mv -T /srv/lorehallow/server/current.new /srv/lorehallow/server/current && sudo systemctl restart lorehallow-server`.
 
 ## When it's down
