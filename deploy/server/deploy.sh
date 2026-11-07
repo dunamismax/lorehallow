@@ -60,7 +60,10 @@ deploy)
   previous="$(remote "readlink $BASE/current 2>/dev/null | xargs -r basename" || true)"
   echo "deploy: uploading release $stamp (previous: ${previous:-none})"
   remote "mkdir -p $BASE/releases/$stamp"
-  COPYFILE_DISABLE=1 tar --no-xattrs -C "$out" -czf - . | remote "tar -xzf - -C $BASE/releases/$stamp"
+  COPYFILE_DISABLE=1 tar --no-xattrs -C "$out" -czf - . | remote "tar -xzf - --no-same-owner -C $BASE/releases/$stamp"
+  # The staging directory is private (0700) and tar keeps that mode; the
+  # service user must be able to enter and read the release.
+  remote "chown -R root:root $BASE/releases/$stamp && chmod -R u=rwX,go=rX $BASE/releases/$stamp"
   switch_to "$stamp"
   if check_health; then
     echo "deploy: $version is live"
