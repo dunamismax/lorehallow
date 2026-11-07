@@ -88,6 +88,8 @@ def _validate(args: argparse.Namespace) -> int:
     stale = sync(root, dry_run=True)
     if stale:
         print(f"synced art is stale ({len(stale)} changes); run make sync")
+        for line in stale:
+            print(f"  {line}")
         errors += 1
     for path in sorted((root / "art" / "batches").glob("batch-*/manifest.yaml")):
         try:

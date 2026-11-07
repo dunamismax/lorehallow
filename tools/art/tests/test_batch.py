@@ -244,3 +244,23 @@ def test_sync_writes_the_reference_sheet(tmp_path, rng):
     assert big.shape == (24, 36, 4)
     assert np.array_equal(big[::6, ::6], small)
     assert sync(root, dry_run=True) == []
+
+
+def test_sync_reference_compares_pixels_not_bytes(tmp_path, rng):
+    # Regression: CI on Linux re-encoded the reference with a different
+    # zlib and reported it stale although every pixel matched.
+    root = make_root(tmp_path, rng)
+    small = np.zeros((4, 6, 4), dtype=np.uint8)
+    small[1, 2] = (*TEST_COLORS[1], 255)
+    (root / "art/processed/style").mkdir(parents=True)
+    Image.fromarray(small, "RGBA").save(root / "art/processed/style/reference.png")
+    sync(root)
+    target = root / "art/style/reference.png"
+    with Image.open(target) as im:
+        im.load()
+        im.save(target, compress_level=0)  # same pixels, different bytes
+    assert sync(root, dry_run=True) == []
+    changed = np.asarray(Image.open(target).convert("RGBA")).copy()
+    changed[0, 0] = (*TEST_COLORS[1], 255)
+    Image.fromarray(changed, "RGBA").save(target)
+    assert sync(root, dry_run=True) != []

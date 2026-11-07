@@ -38,13 +38,21 @@ def reference_bytes(src: Path) -> bytes:
     return buf.getvalue()
 
 
+def _same_pixels(a: bytes, b: bytes) -> bool:
+    with Image.open(io.BytesIO(a)) as ia, Image.open(io.BytesIO(b)) as ib:
+        ra, rb = ia.convert("RGBA"), ib.convert("RGBA")
+        return ra.size == rb.size and ra.tobytes() == rb.tobytes()
+
+
 def sync_reference(root: Path, dry_run: bool = False) -> list[str]:
     src = root / "art" / "processed" / REFERENCE_SOURCE
     target = root / REFERENCE_TARGET
     if not src.exists():
         return []
     data = reference_bytes(src)
-    if target.exists() and target.read_bytes() == data:
+    # Compare pixels, not bytes: PNG encoders (zlib builds) differ between
+    # macOS and Linux, so the same image can encode to different bytes.
+    if target.exists() and _same_pixels(target.read_bytes(), data):
         return []
     if not dry_run:
         target.write_bytes(data)
