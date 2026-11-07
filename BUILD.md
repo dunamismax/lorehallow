@@ -327,11 +327,11 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 2.2 Shared map format
 
-- [ ] `ADR` Map source of truth: Tiled JSON (`.tmj`) in `content/maps/` (recommended), read by the server for collision and spawn points and imported by the client for rendering.
-- [ ] Server map loader for tile layers, the collision layer and spawn points, tested against a small fixture map.
+- [x] `ADR` Map source of truth: Tiled JSON (`.tmj`) in `content/maps/` (recommended), read by the server for collision and spawn points and imported by the client for rendering.
+- [x] Server map loader for tile layers, the collision layer and spawn points, tested against a small fixture map.
 - [ ] Client map import that builds TileMapLayers from the processed tilesets.
-- [ ] Map validator in `make check`: tilesets exist, collision layer present, at least one spawn point.
-- [ ] `make sync` also mirrors `content/` into `client/assets/content/`.
+- [x] Map validator in `make check`: tilesets exist, collision layer present, at least one spawn point.
+- [x] `make sync` also mirrors `content/` into `client/assets/content/`.
 
 ### 2.3 Connection lifecycle and backpressure
 

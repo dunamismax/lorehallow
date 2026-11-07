@@ -1,5 +1,6 @@
-"""`make sync`: mirror art/processed/ into the client and the website, and
-write the prompt reference sheet art/style/reference.png."""
+"""`make sync`: mirror art/processed/ into the client and the website,
+mirror content/ into the client, and write the prompt reference sheet
+art/style/reference.png."""
 
 from __future__ import annotations
 
@@ -59,17 +60,33 @@ def sync_reference(root: Path, dry_run: bool = False) -> list[str]:
     return [f"write  {REFERENCE_TARGET} ({REFERENCE_SCALE}x {REFERENCE_SOURCE})"]
 
 
+# Game content (maps, tilesets, later items and quests) mirrored into the
+# client, which imports maps from it (ADR 0006).
+CONTENT_SOURCE = "content"
+CONTENT_DESTINATION = "client/assets/content"
+
+
 def sync(root: Path, dry_run: bool = False) -> list[str]:
-    """Mirror processed art into each destination and write the reference
-    sheet. Returns a change log.
+    """Mirror processed art into each destination, mirror content into the
+    client and write the reference sheet. Returns a change log.
 
     With dry_run, nothing is written; a non-empty log means the synced
     copies are stale.
     """
-    src = root / "art" / "processed"
-    files = sorted(p.relative_to(src) for p in src.rglob("*") if p.is_file() and p.name not in KEEP)
     log: list[str] = sync_reference(root, dry_run)
-    for dest_rel, excluded in DESTINATIONS.items():
+    log += _mirror(root, root / "art" / "processed", DESTINATIONS, dry_run)
+    content = root / CONTENT_SOURCE
+    if content.exists():
+        log += _mirror(root, content, {CONTENT_DESTINATION: ()}, dry_run)
+    return log
+
+
+def _mirror(
+    root: Path, src: Path, destinations: dict[str, tuple[str, ...]], dry_run: bool
+) -> list[str]:
+    files = sorted(p.relative_to(src) for p in src.rglob("*") if p.is_file() and p.name not in KEEP)
+    log: list[str] = []
+    for dest_rel, excluded in destinations.items():
         dest = root / dest_rel
         if not dry_run:
             dest.mkdir(parents=True, exist_ok=True)

@@ -66,7 +66,7 @@ fmt: ## Format all code in place
 	buf format -w $(ROOT)/proto
 
 .PHONY: lint
-lint: server-lint proto-lint client-lint art-lint web-lint buildmd-lint ## Run every formatter check and linter
+lint: server-lint proto-lint client-lint art-lint web-lint buildmd-lint content-lint ## Run every formatter check and linter
 
 .PHONY: test
 test: server-test client-test art-test web-test ## Run every test suite
@@ -96,6 +96,10 @@ server-lint: ## gofmt check, go vet, golangci-lint and govulncheck
 .PHONY: server-test
 server-test: ## go test -race ./... (includes fuzz seed corpora and allocation tests)
 	cd $(ROOT)/server && go test -race -count=1 ./...
+
+.PHONY: content-lint
+content-lint: ## Validate game content (maps and tilesets) in content/
+	cd $(ROOT)/server && go run ./cmd/lorehallow-content validate -root $(ROOT)
 
 .PHONY: fuzz
 fuzz: ## Run every Go fuzz target for FUZZTIME each (default 10s)
@@ -185,7 +189,7 @@ art-favicons: ## Export the favicon set and client app icon from the emblem
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art favicons --root $(ROOT)
 
 .PHONY: sync
-sync: ## Mirror art/processed into client/assets/art and web/src/assets/art
+sync: ## Mirror art/processed into client/ and web/, and content/ into client/assets/content
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art sync --root $(ROOT)
 
 # --- Website and BUILD.md ----------------------------------------------------------

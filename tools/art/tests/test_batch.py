@@ -264,3 +264,17 @@ def test_sync_reference_compares_pixels_not_bytes(tmp_path, rng):
     changed[0, 0] = (*TEST_COLORS[1], 255)
     Image.fromarray(changed, "RGBA").save(target)
     assert sync(root, dry_run=True) != []
+
+
+def test_sync_mirrors_content_into_the_client(tmp_path, rng):
+    root = make_root(tmp_path, rng)
+    (root / "content/maps").mkdir(parents=True)
+    (root / "content/maps/a.tmj").write_text("{}")
+    (root / "content/README.md").write_text("not synced")
+    log = sync(root)
+    assert "copy   client/assets/content/maps/a.tmj" in log
+    assert (root / "client/assets/content/maps/a.tmj").read_text() == "{}"
+    assert not (root / "client/assets/content/README.md").exists()
+    assert sync(root, dry_run=True) == []
+    (root / "content/maps/a.tmj").unlink()
+    assert "remove client/assets/content/maps/a.tmj" in sync(root, dry_run=True)

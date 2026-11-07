@@ -1,0 +1,15 @@
+{
+ "type": "tileset",
+ "version": "1.10",
+ "tiledversion": "1.11.2",
+ "name": "terrain_grass_dirt",
+ "tilewidth": 32,
+ "tileheight": 32,
+ "tilecount": 16,
+ "columns": 4,
+ "image": "../../art/processed/tiles/terrain_grass_dirt.png",
+ "imagewidth": 128,
+ "imageheight": 128,
+ "margin": 0,
+ "spacing": 0
+}
