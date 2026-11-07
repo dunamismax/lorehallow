@@ -1,6 +1,6 @@
 # Batch 02: brand and website art
 
-The website's large painted images. Same palette and rules as the game, at larger sizes. The logo, emblems, section icons, progress landmarks and character lineup are hand-drawn (`art/src/`, ADR 0004), so they have no prompts; only the painted scenes below are generated.
+The website's large painted images. Same palette and rules as the game, at larger sizes. The logo, emblems, section icons, progress landmarks, character lineup and 404 art are hand-drawn (`art/src/`, ADR 0004), so they have no prompts; only the painted scenes below are generated. The adventurers in the hero scene and the social card are painted out and replaced with the hand-drawn characters by `art/src/web/hero_scene.py` and `og_card.py`, so a regenerated painting only needs its figures in roughly the same places.
 
 **How to run this batch (owner):**
 
@@ -150,26 +150,4 @@ Match the style of the attached reference image exactly: the same palette, pixel
 No text, letters or numbers unless asked for below. No signature, no watermark, no border or frame.
 
 Background: flat solid {{KEY}} everywhere that is not art. Never use {{KEY}} inside the art.
-```
-
-## 02-13 not_found: 404 page art
-
-- Target: art/processed/web/not_found.png
-- Logical size: 160×120 art pixels, centered on a landscape 3:2 canvas
-- Attach: art/style/reference.png
-
-```text
-Create pixel art for a cozy fantasy online game called Lorehallow. Attached is the style reference; match it.
-
-Canvas: landscape 3:2. The art is exactly 160 art pixels wide and 120 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. Center the art; anything outside it is background.
-
-A lost adventurer (same scale and style as the reference character: about 30 art pixels tall, one quarter of the image height) standing in a misty forest clearing, scratching their head and holding a map upside down, beside a broken wooden signpost whose arrows point in different directions. A curious little fox peeks from behind a mossy rock. Top-down 3/4 view, gentle humor, warm storybook mood. The art fills the whole 160×120 area.
-
-True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
-
-Palette: use only these {{PALETTE_COUNT}} colors and no others: {{PALETTE}}.
-
-Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
-
-No text, letters or numbers unless asked for below. No signature, no watermark, no border or frame.
 ```

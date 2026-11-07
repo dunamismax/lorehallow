@@ -29,15 +29,24 @@ assets:
     size: [16, 16]
     notes: Hand-reduced emblem for the 16 px favicon (pixel art can't be halved cleanly).
 
-  - id: hero_scene
+  - id: hero_scene_painted
     prompt: 02-04
+    target: web/hero_scene_painted.png
+    kind: web
+    size: [240, 160]
+    notes: >
+      The generated painting under hero_scene (large painted scene, so it is
+      generated). Its adventurers are the old generated designs; hero_scene
+      paints them out and puts the hand-drawn adventurers in their place.
+
+  - id: hero_scene
+    source: web/hero_scene.py
     target: web/hero_scene.png
     kind: web
     size: [240, 160]
     notes: >
-      Landing-page key art, the composite of the three parallax layers.
-      Generated (large painted scene). Its small figures and cottages are the
-      old generated designs; regenerate against the hand-drawn reference.
+      Landing-page key art: the painted village (hero_scene_painted) with its
+      figures replaced by the hand-drawn adventurers from character_lineup.
 
   - id: parallax_far
     prompt: 02-05
@@ -84,15 +93,16 @@ assets:
     target: web/progress_landmarks.png
     source: web/progress_landmarks.py
     kind: tileset
-    size: [160, 128]
-    grid: {cell: [32, 32], columns: 5, rows: 4}
+    size: [160, 160]
+    grid: {cell: [32, 32], columns: 5, rows: 5}
     frames:
-      count: 20
+      count: 21
       names: [phase_00_campfire, phase_01_signpost, phase_02_crossroads, phase_03_market_stall,
               phase_04_inn, phase_05_bell_tower, phase_06_training_dummies, phase_07_watchtower,
               phase_08_treasure_chest, phase_09_quest_board, phase_10_banner_camp, phase_11_bridge,
               phase_12_lighthouse, phase_13_guild_hall, phase_14_bard_stage, phase_15_harbor,
-              phase_16_city_gate, phase_17_mountain_pass, phase_18_great_tree, phase_19_castle]
+              phase_16_city_gate, phase_17_mountain_pass, phase_18_great_tree, phase_19_castle,
+              phase_20_far_road]
     notes: One landmark per BUILD.md phase, drawn along the /progress quest map.
 
   - id: devlog_header
@@ -101,22 +111,31 @@ assets:
     kind: web
     size: [240, 80]
 
-  - id: og_card
+  - id: og_card_painted
     prompt: 02-12
+    target: web/og_card_painted.png
+    kind: web
+    size: [240, 126]
+    notes: >
+      The generated painting under og_card. Its traveler is the old generated
+      hero; og_card replaces it with the hand-drawn one.
+
+  - id: og_card
+    source: web/og_card.py
     target: web/og_card.png
     kind: web
     size: [240, 126]
     notes: >
-      Shown at exactly 5x as the 1200×630 Open Graph card background.
-      Generated (large painted scene). Its traveler is the old generated hero;
-      regenerate against the hand-drawn reference.
+      Shown at exactly 5x as the 1200×630 Open Graph card background: the
+      painted hills (og_card_painted) with the hand-drawn hero and lantern
+      on the path.
 
   - id: not_found
-    prompt: 02-13
+    source: web/not_found.py
     target: web/not_found.png
     kind: web
     size: [160, 120]
     notes: >
-      Art for the 404 page. Generated, but it is a close-up of the old hero
-      design and clashes with the hand-drawn one; small enough to hand-draw
-      (BUILD.md 1.7).
+      Art for the 404 page: the hand-drawn hero lost at a broken signpost
+      where the path runs out in the woods. Hand-drawn from the game's own
+      tiles and props (it replaced a generated image of the old hero).

@@ -7,7 +7,7 @@ Read [AGENTS.md](AGENTS.md) before changing this file.
 ## How this file works
 
 - **Phases run in order.** The current phase is the lowest-numbered phase with an unchecked box. Within a phase, sections run roughly top to bottom, but independent items can be done in any order or in parallel.
-- **Phase 1 runs in parallel** with the server phases. Most of it waits on the owner's host setup, and backend work never waits for the website. The current server phase is the lowest-numbered phase from 2 on with an unchecked box.
+- **Website first.** Phase 1 is finished, live and polished before any more work on the server phases (the owner's call, AGENTS.md decision 38). Until then, server work is limited to keeping `make check` green and the live server healthy.
 - **Performance criteria are measured, never estimated.** They point at targets in [docs/design/scaling.md](docs/design/scaling.md), name the hardware (`dev-m5` until the production host exists, then `prod`) and are checked only with a result in `docs/perf/`.
 - **Check a box only when it's really done:** committed, `make check` green, and doing what the line says. Partial work stays unchecked.
 - **Every phase ends with acceptance criteria.** A phase is done when every box in it is checked, acceptance criteria included.
@@ -240,8 +240,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] BUILD.md parser in `web/src/lib/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
 - [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
 - [ ] Overall progress XP bar and per-phase progress bars, computed from the boxes.
-- [ ] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here" (the current server phase, with Phase 1 shown alongside), future ones dimmed.
-- [ ] Hand-draw a 21st landmark for Phase 20 (a far road beyond the castle) to join the 20 from Batch 02.
+- [ ] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
+- [x] Hand-draw a 21st landmark for Phase 20 (a far road beyond the castle) to join the 20 from Batch 02.
 - [ ] Phase pages (`/progress/phase-N`) with goal, lesson, sections, checklists and `HUMAN` and `ADR` badges.
 - [ ] Achievement feed: at build time, walk the `git log` of BUILD.md to find when each box was checked, and show the most recent as "quest complete" entries with dates and commit links.
 - [ ] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
@@ -268,7 +268,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] /world: the setting and mood (mossy forests, lantern-lit towns, old stone ruins) with an art gallery, marked as early and subject to change.
 - [ ] /about: the project's goals (a small world worth being in, an excellent Go MMO server as the showcase, and learning by building it), building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
 - [ ] /faq: is it free, when can I play, which platforms, how many players (the goal of hundreds to thousands, stated as a target, with only measured numbers given as facts), how to follow along.
-- [ ] Custom 404 page with hand-drawn 404 art (redraw `not_found` by hand: the generated one shows the old hero design).
+- [ ] Custom 404 page with the hand-drawn 404 art (`web/not_found.png`: the hero lost at a broken signpost).
 - [ ] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [ ] No third-party trackers, scripts or fonts on any page.
 

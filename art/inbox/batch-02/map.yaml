@@ -1,8 +1,7 @@
 files:
-  02-04-hero_scene-a1.png: {asset: hero_scene, grid: fixed}
+  02-04-hero_scene-a1.png: {asset: hero_scene_painted, grid: fixed}
   02-05-parallax_far-a1.png: {asset: parallax_far, grid: fixed}
   02-06-parallax_mid-a2.png: {asset: parallax_mid, grid: fixed}
   02-07-parallax_near-a1.png: {asset: parallax_near, grid: fixed}
   02-11-devlog_header-a1.png: {asset: devlog_header, crop: [314, 111, 1500, 500], grid: fixed}
-  02-12-og_card-a1.png: {asset: og_card, crop: [48, 134, 1440, 756], grid: fixed}
-  02-13-not_found-a1.png: {asset: not_found, crop: [86, 0, 1364, 1023], grid: fixed}
+  02-12-og_card-a1.png: {asset: og_card_painted, crop: [48, 134, 1440, 756], grid: fixed}

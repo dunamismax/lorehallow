@@ -1,0 +1,18 @@
+# A question mark that floats over a puzzled character (a part).
+size: [7, 10]
+legend:
+  ".": transparent
+  K: ink
+  w: parchment white
+frames:
+  - |
+    .KKKKK.
+    KwwwwwK
+    KwKKKwK
+    KKK.KwK
+    ..KKwwK
+    ..KwwKK
+    ..KwKK.
+    ..KKK..
+    ..KwK..
+    ..KKK..

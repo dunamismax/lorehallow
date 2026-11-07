@@ -3,14 +3,14 @@
   "kind": "tileset",
   "size": [
     160,
-    128
+    160
   ],
   "frame_size": [
     32,
     32
   ],
   "columns": 5,
-  "rows": 4,
+  "rows": 5,
   "frames": [
     {
       "index": 0,
@@ -169,6 +169,14 @@
       "name": "phase_19_castle",
       "x": 128,
       "y": 96,
+      "w": 32,
+      "h": 32
+    },
+    {
+      "index": 20,
+      "name": "phase_20_far_road",
+      "x": 0,
+      "y": 128,
       "w": 32,
       "h": 32
     }

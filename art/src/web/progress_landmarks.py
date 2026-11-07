@@ -1,5 +1,5 @@
-"""The 20 progress-map landmarks, 32×32 each, one per BUILD.md phase, from
-a campfire to a castle (manifest order). Most stand on the same small
+"""The 21 progress-map landmarks, 32×32 each, one per BUILD.md phase, from
+a campfire to a castle and the far road beyond it (manifest order). Most stand on the same small
 grass mound so the map reads as one journey. Ink outline, light from the
 top-left, flat shading steps.
 
@@ -444,12 +444,36 @@ def castle(k):
     return k.finish(c)
 
 
+def far_road(k):
+    """Phase 20, Many Machines: the road runs on past the castle toward
+    three beacon towers on the far hills, each lit, each its own place."""
+    c = k.new()
+    for cx, cy, rx, ry in ((7, 21, 7, 4), (24, 20, 8, 5), (15, 21, 5, 3)):
+        k.clump(c, cx, cy, rx, ry, ["dusk blue", "river", "sky"], (0.3, 0.65))
+    for x, top, h in ((6, 12, 7), (24, 9, 9), (15, 15, 5)):
+        box(c, x - 1, top, 3, h, ("pale stone", "stone", "slate"))
+        c.rect(x - 1, top - 1, 3, 1, "banner red")
+        c.px(x, top - 2, "berry")
+        c.px(x, top + 2, "lantern gold")
+        c.px(x, top - 4, "glow")
+    k.mound(c, 30, 23)
+    for y in range(20, 30):
+        half = (y - 18) // 3
+        cx = 15 + round(3 * ((y - 20) / 9) ** 2)
+        for x in range(cx - half, cx + half + 1):
+            if c.opaque(x, y):
+                c.px(x, y, "sand" if x == cx - half and y > 23 else "dry path")
+    box(c, 23, 22, 3, 5, ("pale stone", "stone", "slate"))
+    c.px(24, 23, "moss")
+    return k.finish(c)
+
 LANDMARKS = [
     campfire, signpost, crossroads, market_stall,
     inn, bell_tower, training_dummies, watchtower,
     treasure_chest, quest_board, banner_camp, bridge,
     lighthouse, guild_hall, bard_stage, harbor,
     city_gate, mountain_pass, great_tree, castle,
+    far_road,
 ]  # fmt: skip
 
 
