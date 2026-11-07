@@ -26,13 +26,14 @@ As a load-test target this machine is `prod` in [docs/design/scaling.md](../docs
 |---|---|
 | Game server | systemd `lorehallow-server` (user `lorehallow-server`), `127.0.0.1:7420`, admin `127.0.0.1:7421` |
 | Server releases | `/srv/lorehallow/server/releases/<timestamp>/`, `current` symlink |
-| Website | `/srv/lorehallow/web/current` (a placeholder page until BUILD.md 1.9) |
+| Website | `/srv/lorehallow/web/releases/<timestamp>/`, `current` symlink (Caddy's site root), owned by `lorehallow-deploy`; the last five releases are kept. `releases/placeholder` is the old holding page. |
+| Website deploy user | `lorehallow-deploy` (system user, home `/var/lib/lorehallow-deploy`, no password): owns `/srv/lorehallow/web`, so deploys need no root. CI will log in as it over Tailscale SSH once the owner allows it (docs/ops/runbook.md). |
 | Settings | `/etc/lorehallow/server.env` (0640 root:lorehallow-server, empty: the unit's defaults apply) |
 | Logs | `journalctl -u lorehallow-server`; Caddy access logs `/var/log/caddy/lorehallow*-access.log` |
 
 Agents deploy as `root@ubuntu-vm` over Tailscale SSH (`deploy/host.env`, gitignored). A dedicated `deploy` user would need its own Tailscale SSH rule; that, and CI deploys (which need a Tailscale auth key), are later steps.
 
-Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app.sh). Deploy the server: `make deploy-server`.
+Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app.sh). Deploy the server: `make deploy-server`. Deploy the website: `make deploy-web` (roll back with `make rollback-web`).
 
 ## Change log
 
@@ -43,3 +44,4 @@ Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app
 | 2026-11-07 | First validation ran `caddy validate` as root, which created `/var/log/caddy/lorehallow-play-access.log` owned by root, so `systemctl reload caddy` failed (the running config and every other site stayed up). Fixed the ownership and reloaded; app.sh now validates as the caddy user with the service's binary. | agent |
 | 2026-11-07 | Owner added the `play.lorehallow.com` A record. Caddy got its certificate on the first request; bots joined over `wss://play.lorehallow.com/ws`. | owner, agent |
 | 2026-11-07 | Deployed server 10717ee with `make deploy-server`, then `make rehearse-rollback-server`: a release with no map failed its health check and was rolled back automatically (game down about 10 s). | agent |
+| 2026-11-07 | `make install-host`: added the `lorehallow-deploy` user and gave it `/srv/lorehallow/web`; installed the site file with the no-scripts CSP, immutable caching for `/assets/*` and revalidation for everything else; reloaded Caddy (validated first). dunamismax.com, graceandfootnotes.com, xrayservice.net, lorehallow.com and play.lorehallow.com all answered 200 afterwards. | agent |

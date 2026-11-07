@@ -119,6 +119,18 @@ rollback-server: ## Switch the host back to the previous server release
 rehearse-rollback-server: ## Deploy a release that can't start and check the automatic rollback (game down ~20 s)
 	@$(ROOT)/deploy/server/deploy.sh rehearse-rollback
 
+.PHONY: deploy-web
+deploy-web: ## Build lorehallow.com, upload a new release, switch, check it live, roll back on failure
+	@$(ROOT)/deploy/web/deploy.sh deploy
+
+.PHONY: rollback-web
+rollback-web: ## Switch lorehallow.com back to the previous release
+	@$(ROOT)/deploy/web/deploy.sh rollback
+
+.PHONY: rehearse-rollback-web
+rehearse-rollback-web: ## Deploy a broken site release and check it rolls back on its own
+	@$(ROOT)/deploy/web/deploy.sh rehearse-rollback
+
 .PHONY: content-lint
 content-lint: ## Validate game content (maps and tilesets) in content/
 	cd $(ROOT)/server && go run ./cmd/lorehallow-content validate -root $(ROOT)

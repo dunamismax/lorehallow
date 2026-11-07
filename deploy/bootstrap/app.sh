@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Installs Lorehallow's own pieces on a host that is already set up
 # (BUILD.md 1.1, 2.9): users, directories, the systemd unit, the Caddy site
-# file and a placeholder website. Idempotent. It runs on your machine and
+# file, the website deploy user and a placeholder website. Idempotent. It runs on your machine and
 # does everything over SSH:
 #
 #   deploy/bootstrap/app.sh --dry-run    # show what it would do
@@ -43,10 +43,16 @@ run() { if [[ "$DRY" == 1 ]]; then printf '    would run: %s\n' "$*"; else print
 say "service user"
 id lorehallow-server >/dev/null 2>&1 || run useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin lorehallow-server
 
+say "website deploy user (owns the site's releases; CI deploys as it over Tailscale SSH)"
+id lorehallow-deploy >/dev/null 2>&1 || run useradd --system --create-home --home-dir /var/lib/lorehallow-deploy --shell /bin/bash lorehallow-deploy
+
 say "directories"
 run install -d -m 0755 /srv/lorehallow /srv/lorehallow/server /srv/lorehallow/server/releases /srv/lorehallow/web /srv/lorehallow/web/releases
 run install -d -m 0750 -o root -g lorehallow-server /etc/lorehallow
 [[ -f /etc/lorehallow/server.env ]] || run install -m 0640 -o root -g lorehallow-server /dev/null /etc/lorehallow/server.env
+if [[ "$(stat -c %U /srv/lorehallow/web/releases 2>/dev/null)" != lorehallow-deploy ]]; then
+  run chown -R lorehallow-deploy:lorehallow-deploy /srv/lorehallow/web
+fi
 
 say "systemd unit"
 if ! cmp -s "$S/lorehallow-server.service" /etc/systemd/system/lorehallow-server.service 2>/dev/null; then
