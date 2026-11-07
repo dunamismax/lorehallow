@@ -22,8 +22,8 @@ assets:
     notes: One front-facing idle frame that sets the character scale and proportions.
 
   - id: terrain_base
-    prompt: 01-03
     target: tiles/terrain_base.png
+    source: tiles/terrain_base.py
     kind: tileset
     size: [128, 128]
     grid: {cell: [32, 32], columns: 4, rows: 4}
@@ -35,8 +35,8 @@ assets:
               cobble_a, cobble_b, flagstone, grass_stones]
 
   - id: terrain_grass_dirt
-    prompt: 01-04
     target: tiles/terrain_grass_dirt.png
+    source: tiles/terrain_grass_dirt.py
     kind: tileset
     size: [128, 128]
     grid: {cell: [32, 32], columns: 4, rows: 4}
@@ -50,8 +50,8 @@ assets:
     notes: Dirt patch (inner) in grass (outer). Layout in STYLE.md "Transition sets".
 
   - id: terrain_grass_stone
-    prompt: 01-05
     target: tiles/terrain_grass_stone.png
+    source: tiles/terrain_grass_stone.py
     kind: tileset
     size: [128, 128]
     grid: {cell: [32, 32], columns: 4, rows: 4}

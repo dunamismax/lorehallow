@@ -255,6 +255,7 @@ def draw(ctx):
 SCENE = """\
 def draw(ctx):
     c = ctx.canvas()
+    ctx.module("helper.py").dot(c)
     c.stamp(ctx.frame("patch", "plain"), 0, 0)
     c.stamp(ctx.art("gem"), 3, 3)
     c.stamp(ctx.art("painted"), 0, 4)
@@ -276,6 +277,7 @@ def make_root(tmp_path: Path) -> Path:
         "chars/walker_body.pxl.yaml": WALKER_BODY,
         "tiles/patch.py": PATCH,
         "ui/scene.py": SCENE,
+        "ui/helper.py": "def dot(c):\n    c.px(7, 0, 'leaf')\n",
     }.items():
         (src / rel).parent.mkdir(parents=True, exist_ok=True)
         (src / rel).write_text(text)
@@ -306,6 +308,7 @@ def test_run_draw_renders_writes_and_reports(tmp_path):
     scene = np.asarray(Image.open(root / "art/processed/ui/scene.png").convert("RGBA"))
     assert tuple(scene[5, 5]) == (*GOLD, 255)  # the gem, stamped at (3, 3)
     assert tuple(scene[7, 0]) == (*EARTH, 255)  # generated art from art/processed
+    assert tuple(scene[0, 7]) == (*LEAF, 255)  # drawn by the helper module
     bdir = root / "art/batches/batch-05-draw"
     report = (bdir / "report.md").read_text()
     assert "| `walker` | sheet | 10×6 | `art/src/chars/walker.py` | drawn |" in report

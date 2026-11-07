@@ -48,6 +48,7 @@ def draw(ctx):
 | `ctx.canvas(w, h, wrap=False)` | A new transparent canvas (default: the asset size). |
 | `ctx.rng(seed)` | `random.Random` seeded from the asset id and `seed`. |
 | `ctx.pxl("part.pxl.yaml")` | The frames of a pixel grid next to the script, as canvases. |
+| `ctx.module("helper.py")` | A Python module next to the script, for code several scripts share. |
 | `ctx.art(id)`, `ctx.frame(id, name)` | A finished asset (rendered from its own source, or the processed file for generated art), or one named frame of it. For composites. |
 | `ctx.palette["leaf"]`, `ctx.cell`, `ctx.size` | RGB by name, frame size, asset size. |
 | `c.px`, `c.points`, `c.line`, `c.polyline`, `c.rect`, `c.ellipse`, `c.fill` | Primitives; colors by name, `None` is transparent. `fill=False` draws a 1 px rim. |

@@ -12,10 +12,12 @@ drawn that way are seamless by construction.
 
 from __future__ import annotations
 
+import importlib.util
 import itertools
 import random
 from collections.abc import Callable, Iterable, Sequence
 from pathlib import Path
+from types import ModuleType
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -253,6 +255,7 @@ class Ctx:
     - `ctx.rng(seed)`: a seeded random.Random, the only randomness allowed
     - `ctx.pxl("hero_head.pxl.yaml")`: frames of a pixel grid as canvases
       (path relative to the script's folder)
+    - `ctx.module("ground.py")`: a helper module next to the script
     - `ctx.asset("terrain_base")`, `ctx.frame("terrain_base", "grass_a")`:
       finished assets, for composites
     """
@@ -282,6 +285,18 @@ class Ctx:
         if not path.exists():
             raise SourceError(f"{self.src}: part {name!r} not found at {path}")
         return [Canvas.from_array(self.palette, f) for f in load_pxl(path, self.palette).frames]
+
+    def module(self, name: str) -> ModuleType:
+        """A helper module next to the script (shared code for several
+        draw scripts), loaded fresh for every render."""
+        path = (self.src.parent / name).resolve()
+        if not path.exists():
+            raise SourceError(f"{self.src}: helper {name!r} not found at {path}")
+        spec = importlib.util.spec_from_file_location(f"lorehallow_helper_{path.stem}", path)
+        assert spec and spec.loader
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
 
     def asset_canvas(self, asset_id: str) -> Canvas:
         arr, _ = self._finished(asset_id)

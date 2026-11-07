@@ -143,6 +143,6 @@
   ],
   "pivot": null,
   "baseline": null,
-  "source": "01-04-terrain_grass_dirt-a6.png",
+  "source": "art/src/tiles/terrain_grass_dirt.py",
   "batch": "01"
 }

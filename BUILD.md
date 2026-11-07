@@ -172,8 +172,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] `art/src/` sources and `make art-draw BATCH=<id>`: `.pxl.yaml` pixel grids (legend by palette name, one grid per frame) and `.py` draw scripts, rendered deterministically into `art/processed/` via a `source:` manifest field, with intake's checks (size, palette, frames, baseline, pivot) and a 4x and 8x contact sheet per batch.
 - [x] Drawing helpers in `tools/art` for draw scripts: palette by name, seeded random, pixel, line, rect and ellipse, 1 px outline, mirror, wrap-around drawing for seamless tiles, stamping `.pxl` parts, and compositing finished assets.
 - [x] `make check` fails when a processed file no longer matches its hand-drawn source, and when a source uses an unknown color name or the wrong size.
-- [ ] Redraw the base terrain tileset (16 tiles): every tile seamless with itself and its variants, low contrast, checked repeated 3×3.
-- [ ] Redraw the grass-to-dirt and grass-to-flagstone transition sets so every edge and center tile self-tiles and the 3×3 patch closes.
+- [x] Redraw the base terrain tileset (16 tiles): every tile seamless with itself and its variants, low contrast, checked repeated 3×3.
+- [x] Redraw the grass-to-dirt and grass-to-flagstone transition sets so every edge and center tile self-tiles and the 3×3 patch closes.
 - [ ] Redraw the concept hero (32×48, feet on row 45, 28 to 32 px tall to the top of the head).
 - [ ] Draw the props the reference scene needs (a tree, a mossy rock, a lantern post, a cottage corner) and rebuild the style reference vignette (240×160) as a composite of the hand-drawn tiles, hero and props; `art/style/reference.png` follows.
 - [ ] Redraw the logo wordmark (192×64), the 32 and 16 px emblems, the 16 section icons and the 20 progress landmarks, then re-export the favicons and app icon.
