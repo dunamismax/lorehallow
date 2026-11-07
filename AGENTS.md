@@ -369,7 +369,7 @@ Paste each prompt into ChatGPT in order (attaching the reference sheet when told
 
 ### Naming and import
 
-- Processed paths: `art/processed/<category>/<name>.png`, categories `tiles`, `chars`, `mobs`, `npcs`, `items`, `ui`, `vfx`, `icons`, `web`. Names are `snake_case` (`tiles/terrain_grass.png`, `chars/player_base.png`). Sheets get a sidecar `.json` with frame size, frame order, pivot and source.
+- Processed paths: `art/processed/<category>/<name>.png`, categories `tiles`, `chars`, `mobs`, `npcs`, `props` (trees, rocks, posts, buildings), `items`, `ui`, `vfx`, `icons`, `web`. Names are `snake_case` (`tiles/terrain_grass.png`, `chars/player_base.png`). Sheets get a sidecar `.json` with frame size, frame order, pivot and source.
 - Godot imports use the pixel-art preset: filter off, mipmaps off, lossless compression.
 
 ### Placeholders

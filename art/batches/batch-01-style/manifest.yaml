@@ -1,21 +1,24 @@
 # Batch 01: style foundation. Schema: tools/art/src/lorehallow_art/manifest.py
+# Every asset is hand-drawn (ADR 0004): sources in art/src/, rendered by
+# `make art-draw BATCH=01`. The generated originals stay in art/inbox/batch-01.
 batch: "01"
 title: Style foundation
 palette: art/style/palette.hex
 key_color: "#FF00FF"
 assets:
   - id: style_reference
-    prompt: 01-01
     target: style/reference.png
     kind: ui
     size: [240, 160]
+    source: style/reference.py
     notes: >
-      A small vignette that shows the whole style at once. Once accepted it is
-      copied to art/style/reference.png and attached to every later prompt.
+      A small vignette that shows the whole style at once, composited from the
+      hand-drawn tiles, hero and props. `make sync` writes it at 6x to
+      art/style/reference.png, the sheet every new asset is checked against.
 
   - id: concept_hero
-    prompt: 01-02
     target: chars/concept_hero.png
+    source: chars/concept_hero.pxl.yaml
     kind: sprite
     size: [32, 48]
     pivot: [16, 45]
@@ -46,7 +49,6 @@ assets:
               edge_l, center, edge_r, inner_tr,
               edge_bl, edge_b, edge_br, inner_bl,
               edge_t_b, center_b, edge_b_b, inner_br]
-    guide: {outer: "#7a8e3c", inner: "#965a3a"}
     notes: Dirt patch (inner) in grass (outer). Layout in STYLE.md "Transition sets".
 
   - id: terrain_grass_stone
@@ -56,5 +58,36 @@ assets:
     size: [128, 128]
     grid: {cell: [32, 32], columns: 4, rows: 4}
     frames: *transition_frames
-    guide: {outer: "#7a8e3c", inner: "#a8979a"}
     notes: Old flagstone (inner) in grass (outer). Layout in STYLE.md "Transition sets".
+
+  # Props for the style reference vignette, hand-drawn (BUILD.md 0.12).
+  # Centered props have a pivot: bottom center, on their lowest row.
+  - id: prop_tree
+    target: props/tree_oak.png
+    kind: sprite
+    size: [64, 96]
+    pivot: [32, 93]
+    source: props/tree_oak.py
+    notes: A broad oak, two tiles wide and three tall.
+
+  - id: prop_mossy_rock
+    target: props/mossy_rock.png
+    kind: sprite
+    size: [32, 32]
+    pivot: [16, 28]
+    source: props/mossy_rock.py
+
+  - id: prop_lantern_post
+    target: props/lantern_post.png
+    kind: sprite
+    size: [32, 64]
+    source: props/lantern_post.py
+    notes: Stands on its post base (column 8, row 61); the lantern hangs to the right.
+
+  - id: prop_cottage_corner
+    target: props/cottage_corner.png
+    kind: sprite
+    size: [80, 96]
+    source: props/cottage_corner.py
+    notes: The left end of a timber-framed cottage with its door, for scenes framed by a cottage.
+

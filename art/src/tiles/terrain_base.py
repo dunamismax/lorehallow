@@ -137,10 +137,10 @@ def dirt_features(rng):
     out = []
     for x, y in jitter_grid(rng, 3, 6, (2, 2)):
         pts = grow(rng, x, y, rng.randrange(4, 9))
-        out.append((pts, lambda t, p=pts: patch(t, p, "dry path", "bark")))
+        out.append((pts, lambda t, p=pts: patch(t, p, "sand", "earth")))
     for x, y in jitter_grid(rng, 3, 7, (7, 8)):
         pts = grow(rng, x, y, rng.randrange(1, 3))
-        out.append((pts, lambda t, p=pts: patch(t, p, "bark")))
+        out.append((pts, lambda t, p=pts: patch(t, p, "earth")))
     return out
 
 
@@ -310,7 +310,7 @@ def moss_patch(t, rng, x, y, n):
 def draw(ctx):
     v = ctx.rng("variants")
     grass = Texture(ctx, "moss", grass_features)
-    dirt = Texture(ctx, "earth", dirt_features)
+    dirt = Texture(ctx, "dry path", dirt_features)
     stone = Texture(ctx, "stone", stone_features)
 
     def flowers(t):
@@ -323,9 +323,9 @@ def draw(ctx):
         stamp_rows(t, 10, 13, TALL_TUFT)
 
     def pebbles(t):
-        pebble(t, 9, 9, 3, "bark")
-        pebble(t, 20, 16, 2, "bark")
-        pebble(t, 12, 21, 3, "bark")
+        pebble(t, 9, 9, 3, "earth")
+        pebble(t, 20, 16, 2, "earth")
+        pebble(t, 12, 21, 3, "earth")
 
     def stones_in_grass(t):
         pebble(t, 9, 10, 4)

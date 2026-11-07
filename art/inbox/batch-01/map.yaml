@@ -1,7 +1,3 @@
-files:
-  # Correct character scale. A painted scene has no single detectable block
-  # size, so it is sampled on the 240×160 layout the prompt asked for.
-  01-01-style_reference-a4.png: {asset: style_reference, grid: fixed}
-  # Square grid (~20 px) and anchored on the pivot: feet on row 45, 42 px tall
-  # including the hair, the tall end of STYLE.md's proportions.
-  01-02-concept_hero-a4.png: concept_hero
+# Every Batch 01 asset is hand-drawn now (art/src/); the generated originals
+# stay in this folder as history.
+files: {}

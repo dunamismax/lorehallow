@@ -58,7 +58,9 @@ KINDS = ("tile", "tileset", "sprite", "sheet", "ui", "web")
 GRID_KINDS = ("tileset", "sheet")
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 SOURCE_RE = re.compile(r"^[a-z]+/[a-z0-9_]+\.(pxl\.yaml|py)$")
-TARGET_RE = re.compile(r"^(tiles|chars|mobs|npcs|items|ui|vfx|icons|web|style)/[a-z0-9_]+\.png$")
+TARGET_RE = re.compile(
+    r"^(tiles|chars|mobs|npcs|props|items|ui|vfx|icons|web|style)/[a-z0-9_]+\.png$"
+)
 DEFAULT_KEY = "#FF00FF"
 DEFAULT_PALETTE = "art/style/palette.hex"
 DEFAULT_TOLERANCE = 0.12

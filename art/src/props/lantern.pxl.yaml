@@ -1,0 +1,25 @@
+# A lit hanging lantern (a part, stamped by lantern_post.py and others).
+size: [9, 13]
+legend:
+  ".": transparent
+  K: ink
+  r: ember
+  a: amber
+  g: lantern gold
+  G: glow
+  w: parchment white
+frames:
+  - |
+    ...KKK...
+    ..KraaK..
+    .KraaggK.
+    KKKKKKKKK
+    .KgGGGaK.
+    .KgGwGaK.
+    .KGGwGaK.
+    .KgGGgaK.
+    .KagggaK.
+    KKKKKKKKK
+    .KrraarK.
+    ..KKKKK..
+    ....K....
