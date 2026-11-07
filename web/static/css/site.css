@@ -187,15 +187,15 @@ h3 .badge { margin-left: 4px; }
 .hero-far { background-image: url("{{art "web/parallax_far.png#mirror"}}"); }
 .hero-mid { background-image: url("{{art "web/parallax_mid.png#mirror"}}"); }
 .hero-near { background-image: url("{{art "web/parallax_near.png#mirror"}}"); }
-.hero-content { position: relative; }
+.hero-content { position: relative; --halo: 2px 2px 0 var(--c-ink); }
 .wordmark { margin: 0 0 12px; line-height: 0; }
 .wordmark img { filter: drop-shadow(0 4px 0 var(--c-ink)); }
 .pitch {
 	font-family: var(--pixel); font-size: 20px; line-height: 30px; color: var(--text);
-	max-width: 30em; margin: 0 auto 12px; text-shadow: 2px 2px 0 var(--c-ink);
+	max-width: 30em; margin: 0 auto 12px; text-shadow: var(--halo);
 }
 @media (min-width: 768px) { .pitch { font-size: 30px; line-height: 40px; max-width: 24em; } }
-.hero-status { max-width: 34em; margin: 0 auto 24px; color: var(--text); font-size: 17px; text-shadow: 2px 2px 0 var(--c-ink); }
+.hero-status { max-width: 34em; margin: 0 auto 24px; color: var(--text); font-size: 17px; text-shadow: var(--halo); }
 .cta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
 
 /* Lantern glass on the post in the near layer (art pixels 201-206, 96-102,

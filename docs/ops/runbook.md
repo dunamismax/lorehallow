@@ -1,6 +1,6 @@
 # Runbook: the game server
 
-How to run, watch, deploy and roll back `lorehallow-server` on the host. Facts about the host itself are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy config is [deploy/caddy/Caddyfile](../../deploy/caddy/Caddyfile); the unit is [deploy/server/lorehallow-server.service](../../deploy/server/lorehallow-server.service).
+How to run, watch, deploy and roll back `lorehallow-server` on the host. The website has its own runbook: [website.md](website.md). Facts about the host itself are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy config is [deploy/caddy/Caddyfile](../../deploy/caddy/Caddyfile); the unit is [deploy/server/lorehallow-server.service](../../deploy/server/lorehallow-server.service).
 
 Commands marked *(host)* run on the host: `ssh root@ubuntu-vm` (Tailscale SSH; the owner approves new sessions). Update this file whenever a procedure changes.
 

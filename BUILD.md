@@ -290,6 +290,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] `HUMAN` Add the CI deploy key and host details as GitHub Actions secrets.
 - [ ] Nightly scheduled rebuild so date-based content stays fresh with no pushes.
 - [ ] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
+- [ ] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
 
 ### 1.10 Launch
 

@@ -1,0 +1,81 @@
+# Deploys lorehallow.com (BUILD.md 1.9): on every push to main that touches
+# the site's inputs, nightly so date-based content stays fresh, and by hand.
+#
+# It reaches the host over the owner's tailnet (Tailscale SSH) and runs the
+# same deploy/web/deploy.sh as `make deploy-web`. Setup, including the
+# secrets below, is in docs/ops/website.md. Until the secrets exist the
+# deploy step is skipped with a warning, not failed.
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - BUILD.md
+      - web/**
+      - art/processed/web/**
+      - art/style/palette.hex
+      - docs/walkthroughs/**
+      - deploy/web/**
+      - .github/workflows/deploy-web.yml
+  schedule:
+    - cron: "23 7 * * *" # nightly, 07:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one halfway through.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, test and deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      HAS_DEPLOY_SECRETS: ${{ secrets.TS_OAUTH_CLIENT_ID != '' && secrets.TS_OAUTH_SECRET != '' && secrets.LOREHALLOW_DEPLOY_HOST != '' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history: the achievement feed on /progress walks git log of BUILD.md.
+          fetch-depth: 0
+
+      - name: Read pinned versions
+        run: grep -E '^[A-Z_]+=' toolchain.env >> "$GITHUB_ENV"
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: web/go.sum
+
+      - name: Lint BUILD.md and test the site
+        run: make buildmd-lint web-test
+
+      - name: Build (shown in the log even when deploys are off)
+        run: make web-build
+
+      - name: Deploy secrets missing
+        if: env.HAS_DEPLOY_SECRETS != 'true'
+        run: echo "::warning title=Website not deployed::Add TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET and LOREHALLOW_DEPLOY_HOST (docs/ops/website.md)."
+
+      - name: Join the tailnet
+        if: env.HAS_DEPLOY_SECRETS == 'true'
+        uses: tailscale/github-action@v4.4.0
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+
+      - name: Deploy
+        if: env.HAS_DEPLOY_SECRETS == 'true'
+        env:
+          LOREHALLOW_DEPLOY_HOST: ${{ secrets.LOREHALLOW_DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          # Tailscale SSH authenticates the runner by its tailnet identity;
+          # the host key is new on every run.
+          printf 'Host *\n  StrictHostKeyChecking accept-new\n' >> ~/.ssh/config
+          make deploy-web
