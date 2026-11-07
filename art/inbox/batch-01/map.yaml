@@ -8,5 +8,5 @@ files:
   exec-36d2db21-f88c-4b34-8fe8-fce5b01f13db.png: terrain_base
   # Both transition sheets need regenerating: drawn grid lines between tiles,
   # and the stone sheet doesn't follow the 3×3 patch layout.
-  exec-83f6baf4-e1f9-4320-a02d-67aec7327fee.png: terrain_grass_dirt
-  exec-6450b6c4-f32a-48ec-90ac-bcef95587132.png: terrain_grass_stone
+  01-04-terrain_grass_dirt-a6.png: terrain_grass_dirt
+  01-05-terrain_grass_stone-a6.png: terrain_grass_stone
