@@ -142,7 +142,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.
 - [x] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
 - [x] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
-- [ ] Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels.
+- [x] Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels.
 
 ### 0.9 Art Batch 02: brand and website art
 
@@ -186,7 +186,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] On a fresh clone, `make doctor && make setup && make check` passes on macOS, and `make check` passes in CI on Linux.
 - [x] `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
 - [x] Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
-- [ ] Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
+- [x] Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
 - [x] Batch 02 assets are processed and ready in `art/processed/web/`.
 - [x] The Phase 0 walkthrough exists and every `ADR` item in this phase has its ADR.
 

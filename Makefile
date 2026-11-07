@@ -123,6 +123,10 @@ client: ## Launch the Godot client (set GODOT=... to pick the binary)
 	@$(ROOT)/tools/scripts/write-client-buildinfo.sh "$(VERSION)" "$(COMMIT)"
 	$(GODOT) --path $(ROOT)/client
 
+.PHONY: client-art-check
+client-art-check: ## Render the dev art scene in a window and check it is pixel-perfect: [ART=all]
+	$(GODOT) --path $(ROOT)/client -s res://scenes/dev/art_verify.gd -- $(if $(ART),--art=$(ART))
+
 .PHONY: client-lint
 client-lint: ## gdformat --check and gdlint on client scripts
 	cd $(ROOT)/client && gdformat --check $(GD_SOURCES)

@@ -11,7 +11,7 @@ The Godot 4 game client, written in statically typed GDScript.
 | `world/` | Maps, camera and world rendering. |
 | `entities/` | Players, mobs and NPCs. |
 | `ui/` | Screens, HUD, windows and the theme. |
-| `scenes/dev/` | Test and debug scenes. |
+| `scenes/dev/` | Test and debug scenes. `art_test.tscn` shows every synced image at 1x to 4x with a 3×3 seam patch per tileset; `make client-art-check` renders it in a window and checks every pixel against the source (`ART=all` for every image). |
 | `tests/` | GUT tests, run headless by `make test`. |
 
 The client never decides outcomes. It sends inputs and draws what the server reports, and later predicts only its own movement.
