@@ -234,8 +234,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.4 Progress tracker (/progress)
 
-- [ ] BUILD.md parser in `web/src/lib/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
-- [ ] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
+- [x] BUILD.md parser in `web/src/lib/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
+- [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
 - [ ] Overall progress XP bar and per-phase progress bars, computed from the boxes.
 - [ ] Quest map: the 20 phase landmarks from Batch 02 along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
 - [ ] Phase pages (`/progress/phase-N`) with goal, lesson, sections, checklists and `HUMAN` and `ADR` badges.

@@ -51,6 +51,7 @@ setup: ## Install project-local dependencies (safe to re-run)
 	@$(ROOT)/tools/scripts/install-addons.sh
 	@echo "Godot import:"; $(GODOT_HEADLESS) --import >/dev/null 2>&1 && echo "  ok"
 	@echo "Art tools (uv):"; cd $(ROOT)/tools/art && uv sync --frozen --quiet && echo "  ok"
+	@echo "Website (npm):"; cd $(ROOT)/web && npm ci --no-audit --no-fund --loglevel=error && echo "  ok"
 
 # --- Aggregate gates ------------------------------------------------------------
 
@@ -62,10 +63,10 @@ fmt: ## Format all code in place
 	buf format -w $(ROOT)/proto
 
 .PHONY: lint
-lint: server-lint proto-lint client-lint art-lint ## Run every formatter check and linter
+lint: server-lint proto-lint client-lint art-lint web-lint buildmd-lint ## Run every formatter check and linter
 
 .PHONY: test
-test: server-test client-test art-test ## Run every test suite
+test: server-test client-test art-test web-test ## Run every test suite
 
 .PHONY: check
 check: lint proto-check test ## Everything CI runs: format checks, linters, codegen checks, tests
@@ -175,6 +176,20 @@ art-favicons: ## Export the favicon set and client app icon from the emblem
 .PHONY: sync
 sync: ## Mirror art/processed into client/assets/art and web/src/assets/art
 	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art sync --root $(ROOT)
+
+# --- Website and BUILD.md ----------------------------------------------------------
+
+.PHONY: web-lint
+web-lint: ## TypeScript strict typecheck of web/
+	cd $(ROOT)/web && npm run -s typecheck
+
+.PHONY: web-test
+web-test: ## Website unit tests (node --test)
+	cd $(ROOT)/web && npm run -s test
+
+.PHONY: buildmd-lint
+buildmd-lint: ## Fail on any BUILD.md format-contract violation
+	cd $(ROOT)/web && npm run -s buildmd-lint
 
 .PHONY: clean
 clean: ## Remove build output (bin/, Godot import cache)
