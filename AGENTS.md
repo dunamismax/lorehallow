@@ -27,10 +27,19 @@ Contents:
 
 A pixel-art fantasy MMO built around one feeling: **a shared world.** You log in and other people are already there. It takes inspiration from early World of Warcraft (persistent world, zones, quests, grouping, a world that exists without you) rendered in a warm, readable, top-down pixel-art style.
 
-It is a hobby project with two goals of equal weight:
+It is a hobby project with three goals:
 
 1. **Make a small online world that's fun to be in**, even with only a few players.
-2. **Learn real multiplayer and backend engineering by building it.** Every system should teach something. Prefer the approach that teaches the concept clearly over a black box that hides it, and explain it in the phase walkthrough.
+2. **Build an excellent MMO server.** The Go backend and its networking stack are the project's main achievement: fast, scalable, reliable, secure and maintainable. Players see a small, beautiful world; the infrastructure behind it is the showcase.
+3. **Learn real multiplayer and backend engineering by building it.** Every system should teach something. Prefer the approach that teaches the concept clearly over a black box that hides it, and explain it in the phase walkthrough.
+
+**When there is a real choice** of what to build next or how to build it, favor backend and networking quality over content, quest count or gameplay depth. The world stays small and handcrafted; the server behind it is built to a professional standard.
+
+### Scale goal
+
+Lorehallow aims to host **hundreds to thousands of simultaneous, actively connected players**. The architecture grows from one process with many zones to several processes or machines when measurements call for it ([ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md)). [docs/design/scaling.md](docs/design/scaling.md) is the performance contract: three cases (concurrent connections, active players across many zones, a crowded area), tiered targets from about 100 to 1,000 to several thousand, the metric and load test for each, and the hardware they are measured on.
+
+**Thousands is a target, not a capability.** Never claim a player count, in code, docs, the website or a devlog, until it has been measured and recorded in `docs/perf/`.
 
 ### Design pillars
 
@@ -49,8 +58,10 @@ Do not build these, and push back on anything that drifts toward them:
 - Monetization, cash shops or anything pay-to-win
 - 3D, isometric or multiple art styles
 - A large world before one zone feels good
-- Mobile clients
-- Supporting thousands of concurrent players. Dozens is the real target; hundreds is a stretch goal.
+- Mobile clients (a browser build through Godot's web export is planned; native mobile apps are not)
+- Game-server frameworks (Nakama or similar) that hide the server the project exists to build
+- Microservices, Kubernetes, service meshes or distributed databases, until a measured bottleneck justifies one in an ADR
+- Claims about scale that haven't been measured
 
 ---
 
@@ -93,10 +104,10 @@ Never sit idle. Prepare the blocked item so the owner's part takes minutes (prom
 ### Start of session
 
 1. `git pull --rebase origin main`
-2. Read this file, then BUILD.md. The **current phase** is the lowest-numbered phase with an unchecked box.
+2. Read this file, then BUILD.md. The **current phase** is the lowest-numbered phase with an unchecked box. One exception: Phase 1 (the website) runs **in parallel** with the server phases, because most of it waits on the owner's host setup. The current server phase is the lowest-numbered phase from 2 on with an unchecked box, and backend work never waits for Phase 1.
 3. Read the most recent walkthrough in `docs/walkthroughs/` and any ADRs for the area you'll touch.
 4. Run `make doctor` and `make check` (once they exist). If the baseline is red, fixing it is your first task.
-5. Pick work: what the owner assigned, otherwise the first unchecked, unblocked item in the current phase. Items within a phase may be done out of order when their dependencies are met.
+5. Pick work: what the owner assigned, otherwise the first unchecked, unblocked item in the current server phase, then unblocked Phase 1 items. Items within a phase may be done out of order when their dependencies are met. Build what lets later work be measured (connection lifecycle, backpressure, the bot load generator, metrics) before what only adds content.
 
 ### While working
 
@@ -128,6 +139,7 @@ BUILD.md is the plan and the scoreboard. lorehallow.com parses it on every push 
 - **Follow the format contract** at the top of BUILD.md exactly: `## Phase N: Title`, metadata blockquote, `### N.M Title` sections, `### Acceptance criteria`, and single-line `- [ ]` items at column 0 with optional `HUMAN` or `ADR` tags. No nested checkboxes. `make check` lints it from Phase 1 on.
 - **Check a box only when** the work is committed, `make check` passes, and the item does what its line says. Partial work stays unchecked. Check it in the same commit as the work.
 - **Acceptance criteria** are checked last, after verifying each one for real (playtests, measurements, live checks). Record how it was verified in the commit body.
+- **Performance criteria** point at targets in [docs/design/scaling.md](docs/design/scaling.md) and are checked only with a result file in `docs/perf/` measured on the hardware the criterion names.
 - **Adding items** for discovered work is expected. Put them in the right phase and section and explain why in the commit body.
 - **Rewording** an unchecked item is fine if the intent stays the same. Changing scope needs the owner.
 - **Never delete a checked item.** If a regression undoes one, uncheck it and say why in the commit.
@@ -191,8 +203,8 @@ lorehallow/
 │   ├── scenes/dev/        # Test and debug scenes
 │   └── tests/             # GUT tests
 ├── server/                # Go module github.com/dunamismax/lorehallow/server
-│   ├── cmd/               # lorehallow-server, lorehallow-bot, lorehallow-admin, ...
-│   ├── internal/          # sim/, net/, world/, auth/, db/, pb/ (generated), ...
+│   ├── cmd/               # lorehallow-server, lorehallow-bot (load generator), lorehallow-admin, ...
+│   ├── internal/          # sim/, zone/, world/, session/, wire/, bot/, metrics/, auth/, db/, pb/ (generated), ...
 │   └── migrations/        # SQL migrations (Phase 4 on)
 ├── proto/                 # lorehallow/v1/*.proto, buf config, testdata/ golden vectors
 ├── content/               # Canonical game data: maps/, items/, mobs/, quests/, ...
@@ -208,12 +220,17 @@ Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/s
 
 ### Networking model
 
+The architecture is [ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md); the targets are [docs/design/scaling.md](docs/design/scaling.md).
+
 - **Server-authoritative.** Clients send *inputs* ("moving northeast", "use ability 2 on target 41"), never positions or outcomes. The server simulates and validates everything.
-- **Fixed tick rate:** 20 Hz. The server broadcasts state snapshots every tick.
-- **Interpolation:** remote entities are drawn about 100 ms behind the latest snapshot, interpolating between buffered snapshots.
+- **Fixed tick rate:** 20 Hz. The server sends state snapshots every tick; distant entities may update at a lower rate under the bandwidth budget (Phase 3 on).
+- **Deterministic movement:** positions are fixed-point integers and movement is one pure step function, identical on both sides and checked by shared test vectors (Phase 3).
+- **Interpolation:** remote entities are drawn about 100 ms behind the latest snapshot, interpolating between buffered snapshots, with capped extrapolation for short gaps.
 - **Prediction:** the local player's movement is predicted and reconciled against server corrections (Phase 3). Nothing else is predicted.
-- **Interest management:** players only receive updates about entities near them (Phase 7).
-- **Endpoints:** game traffic at `wss://play.lorehallow.com/ws`; HTTP APIs (status, auth) under `https://lorehallow.com/api/`; local dev at `ws://localhost:<port>/ws`.
+- **Interest management:** a uniform spatial grid per zone; players only receive entities in their area of interest, with hysteresis at the edge (Phase 3, extended to chat, combat and AI in Phase 7).
+- **Snapshots are budgeted:** quantized deltas against the last snapshot the client acknowledged, each entity encoded once per tick and shared by every recipient, and a per-player byte budget for crowded areas (Phase 3 and Phase 7).
+- **Connection lifecycle:** handshake with a timeout, heartbeats both ways, a bounded inbox into the zone, a bounded send queue out, slow-client eviction, and a clean, logged removal on every exit path. Reconnects use jittered exponential backoff.
+- **Endpoints:** game traffic at `wss://play.lorehallow.com/ws`; HTTP APIs (status, auth) under `https://lorehallow.com/api/`; local dev at `ws://localhost:<port>/ws`. Metrics and pprof listen on localhost only.
 
 ### Protocol rules
 
@@ -223,15 +240,22 @@ Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/s
 - `PROTOCOL_VERSION` is a single integer. Bump it on any incompatible change; the server rejects mismatched clients with a clear "update required" message.
 - Every message type gets golden round-trip tests: Go writes vectors to `proto/testdata/`, and both Go and GDScript decode and re-encode them byte for byte.
 - Generated code is committed and never hand-edited. `make check` fails when it is stale.
+- **A protocol change lands as one commit:** the schema, both sides' generated code, the golden vectors, the code that uses it on both sides, and a `PROTOCOL_VERSION` bump if it breaks compatibility.
+- **Every message has a size budget**, written next to it in `docs/design/protocol.md`. Hot messages (`Input`, `Snapshot`) are designed for bytes: small field numbers (1 to 15 encode in one byte), packed repeated fields, `sint32` for values that can be negative, and quantized integers instead of floats.
 
 ### Server conventions (Go)
 
 - Standard layout: `cmd/` for binaries, `internal/` for packages. Prefer the standard library; any new dependency needs a reason in the commit body.
 - **The simulation is pure.** `internal/sim` does no I/O, takes an injected clock and is deterministic, so it can be tested tick by tick.
 - **One goroutine owns a zone's world state**: the tick loop. Connection goroutines talk to it through channels. Don't share mutable world state behind locks.
-- `log/slog` for logging (text locally, JSON in production). Wrap errors with `%w`. Pass `context.Context` through I/O.
+- **Channels at the edges, bounded everywhere.** Every queue, channel, buffer and map that a client can grow has a limit, and what happens at the limit (drop and count, or disconnect) is written down and tested. No unbounded `append` driven by client input.
+- **The tick never blocks.** No socket writes, database calls, DNS, disk or locks shared with other goroutines inside a tick. The tick enqueues; writers and persistence workers do the I/O.
+- **Every goroutine has an owner and an exit.** Whoever starts a goroutine stops it (a `context.Context` or a closed channel) and waits for it. Tests check that goroutines return to baseline.
+- **Hot paths are measured, not guessed.** The tick, snapshot encoding and fan-out, input decoding and the send path have `testing.B` benchmarks with `ReportAllocs`; allocation-free paths get a `testing.AllocsPerRun` test so a regression fails `make check`. Profile with pprof before optimizing.
+- **Metrics are part of the feature.** Anything with a queue, a limit or a latency exports it (depth, drops, evictions, histograms) from Phase 3 on.
+- `log/slog` for logging (text locally, JSON in production). Wrap errors with `%w`. Pass `context.Context` through I/O. Log per-connection events with the connection and player ids; never log per tick or per message at info level.
 - Configuration from flags and `LOREHALLOW_*` environment variables, documented in `server/README.md` and `.env.example`.
-- Tests are table-driven, run with `-race`, and never `sleep`; use the fake clock.
+- Tests are table-driven, run with `-race`, and never `sleep`; use the fake clock, or `testing/synctest` for code with goroutines and timers.
 - `gofmt`/`goimports`, `go vet`, `golangci-lint` and `govulncheck` must be clean.
 
 ### Client conventions (Godot 4, GDScript)
@@ -258,7 +282,7 @@ Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/s
 
 ### Versions
 
-- Game builds are versioned `v0.<phase>.<patch>` until 1.0 (Phase 2 ships v0.2.0, Phase 18 ships v0.18.0), and Phase 19 ships v1.0.0.
+- Game builds are versioned `v0.<phase>.<patch>` until 1.0 (Phase 2 ships v0.2.0, Phase 18 ships v0.18.0), and Phase 19 ships v1.0.0. Post-1.0 phases (Phase 20 on) ship `v1.<minor>.<patch>`.
 - The version and git commit are embedded in both the server and client builds and shown in the client title screen and `/version`.
 
 ---
@@ -382,12 +406,18 @@ Code never waits on art. Drawing is fast, so draw the real asset when you can; o
 
 `make check` is the single gate, run locally before every commit and in CI on every push. CI runs on **GitHub Actions** (`.github/workflows/ci.yml`, Linux, same pinned versions from `toolchain.env`). **Codeberg is a mirror**: it receives every push but runs no CI. It covers:
 
-- **Server:** `gofmt` check, `go vet`, `golangci-lint`, `go test -race ./...`, `govulncheck`
+- **Server:** `gofmt` check, `go vet`, `golangci-lint`, `go test -race ./...` (which also runs every fuzz target's seed corpus and every allocation test), `govulncheck`
 - **Protocol:** `buf lint`, `buf breaking`, generated code up to date, golden round-trip tests on both sides
 - **Client:** `gdformat --check`, `gdlint`, GUT tests headless
 - **Web:** `astro check`, lint, unit tests, build, internal link check
 - **Tools:** `ruff`, `pytest`
 - **Content and docs:** content validators, BUILD.md lint
+
+Outside `make check`, because they take longer:
+
+- `make fuzz`: every fuzz target for a short run (CI runs it on every push; a nightly job runs longer).
+- `make bench`: hot-path benchmarks with allocations reported. Results that back a claim go in `docs/perf/`.
+- `make loadtest SCENARIO=<name>`: the scaling.md scenarios against a real server.
 
 Testing expectations:
 
@@ -397,7 +427,26 @@ Testing expectations:
 - Anything touching persistence gets tests against a real Postgres (CI service container), including failure in the middle of an operation.
 - Bugs get a regression test before the fix.
 
-**Definition of done** for any BUILD.md item: it works, it's tested, `make check` is green, docs are updated, and it's pushed.
+### Backend engineering standards
+
+Code that compiles isn't done. The server is the showcase, so each of these needs a test that tries to break it, not just one that shows it working:
+
+| Concern | What the test does | Tool |
+|---|---|---|
+| Concurrency | Runs the real goroutines together and checks the result is the same every time | `-race`, `testing/synctest` |
+| Timing | Drives ticks, timeouts and heartbeats by advancing time, never by waiting for it | the fake clock or `testing/synctest`; no `time.Sleep` in tests |
+| Leaks | Starts and stops connections, zones and servers, then checks goroutines are back to baseline | `testing/synctest` bubbles, or the leak helper in `internal/testutil` |
+| Backpressure | Fills every bounded queue and checks the limit holds, the drop is counted and the tick doesn't wait | slow and stalled fake clients |
+| Authorization | Sends each message from a client that isn't allowed to (wrong state, wrong owner, not logged in) | attack tests |
+| Validation | Sends malformed, oversized, out-of-range and unknown input to the decoder and every handler | fuzzing (`go test -fuzz`) with a committed seed corpus |
+| Duplicates and replays | Sends the same command twice, out of order and after a reconnect | attack tests with request ids |
+| Transactions | Kills the operation between steps and checks nothing was lost or duplicated | real Postgres, failure injected mid-transaction |
+| Recovery | Crashes or restarts the component and checks players end up in a safe, recoverable state | integration tests with the bot client |
+| Performance | Measures the hot path and fails on allocation regressions | `testing.B` with `ReportAllocs`; `testing.AllocsPerRun` in tests; pprof |
+
+A change to the server's hot path or concurrency model includes its benchmark or load-test result in the commit body, measured on named hardware ([scaling.md](docs/design/scaling.md#hardware-and-how-results-count)).
+
+**Definition of done** for any BUILD.md item: it works, it's tested (with the tests above where they apply), `make check` is green, docs are updated, and it's pushed.
 
 ---
 
@@ -446,8 +495,9 @@ Runbooks live in `docs/ops/`. Every new operational procedure gets written down 
 
 - **Decisions:** `docs/decisions/NNNN-short-title.md` (four-digit numbers), with sections Context, Decision, Alternatives considered, Consequences. Add a row to the decision log below.
 - **Walkthroughs:** every phase ends with `docs/walkthroughs/phase-NN-slug.md`, written to teach. Sections: What we built; How to try it; How it works; The key concept (the networking or backend lesson, with diagrams where they help); Read the code (specific files and functions, in reading order); What's next.
-- **Design notes:** `docs/design/` for the protocol, movement, combat, classes, lore and the threat model.
-- **Operations:** `docs/ops/` for runbooks, backups and incidents. `docs/perf/` for measurements.
+- **Design notes:** `docs/design/` for the scaling model ([scaling.md](docs/design/scaling.md)), the protocol, movement, combat, classes, lore and the threat model.
+- **Operations:** `docs/ops/` for runbooks, backups and incidents.
+- **Performance:** `docs/perf/` for measured results only, one file per run, with hardware and commit ([template](docs/perf/README.md)).
 - **Releases:** `docs/releases/vX.Y.Z.md`, which become patch notes on the website.
 - **Devlog drafts:** before the website exists, `docs/devlog-drafts/`; afterwards, `web/src/content/devlog/` with `draft: true`. The owner edits and publishes.
 - **Directory READMEs:** every top-level directory has a short README saying what belongs there and how to work in it.
@@ -463,7 +513,8 @@ Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time ([AD
 |---|---|---|
 | Go | 1.27.3 | |
 | Godot | 4.7.2-stable | Standard build, plus matching export templates |
-| Node.js | 26.13.0 | Current LTS ("Lithium"); used from Phase 1 |
+| Node.js | 26.13.0 | Current LTS ("Lithium"); runs the BUILD.md linter and the website |
+| TypeScript | 7.0.2 | `web/package.json`; strict typecheck in `make web-lint` |
 | Python | 3.14.9 | Managed by uv |
 | uv | 0.13.7 | |
 | buf | 1.75.0 | |
@@ -512,3 +563,7 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 26 | Palette v2: earth, stone and leaf ramps fitted to what the image generator draws, plus sand (33 colors) | Decided | v1 had gaps that sent browns to red and skin and grey stone to pink during quantization | [STYLE.md](art/style/STYLE.md#why-v2) |
 | 27 | Agents hand-draw the pixel art as text sources (`.pxl.yaml` grids and draw scripts); image generation only for large painted web images | Decided | Exact size, palette, layout and seamless edges; generated art missed all four in Phase 0 | [ADR 0004](docs/decisions/0004-hand-drawn-pixel-art.md) |
 | 28 | `make art-draw` renders `source:` assets and owns each batch's `report.md` and previews (intake writes `intake-report.md`); `make check` re-renders every source and fails on any drift; world objects live in a `props` category; `make client-art-check` verifies rendering in Godot pixel by pixel | Decided | One report per batch covering every asset; processed art can never silently diverge from its source; rendering checked by measurement, not by eye | [tools/art/README.md](tools/art/README.md) |
+| 29 | Scale goal: hundreds to thousands of simultaneous, active players, measured against tiered targets in `docs/design/scaling.md`; thousands is a target, not a capability | Decided | The owner made the Go backend the project's main achievement | [ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md) |
+| 30 | One process with many zones: one goroutine owns each zone, channels at the edges, bounded send queues with slow-client eviction, encode once then fan out, spatial-grid interest management; split across processes (Phase 20) only when a measurement says so | Decided | Patterns that hold up at thousands of connections, built in before the first tick loop | [ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md) |
+| 31 | Phase 1 runs in parallel with the server phases; backend work never waits for the website | Decided | Phase 1 is mostly blocked on the owner's host setup | Owner, [section 3](#3-session-workflow) |
+| 32 | The BUILD.md parser and linter are plain TypeScript run by Node's type stripping, with `node --test` | Default | No build step or test framework for a parser the site and `make check` share | [web/README.md](web/README.md) |

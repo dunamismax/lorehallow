@@ -48,6 +48,21 @@ Every setting has a flag and an environment variable. Flags win over the environ
 
 `make server` and `make server-build` set `buildinfo.Version` (from `git describe`) and `buildinfo.Commit` with `-ldflags -X`. A plain `go build` reports `dev` and `unknown`.
 
+## Architecture and scale
+
+The server is the project's main engineering achievement. It aims to host hundreds to thousands of simultaneous, actively connected players; [docs/design/scaling.md](../docs/design/scaling.md) sets the measurable targets and [ADR 0005](../docs/decisions/0005-scale-and-backend-architecture.md) the design. Thousands is a target, not a capability: only numbers measured and recorded in [docs/perf/](../docs/perf/) count.
+
+In short, one process with many zones:
+
+- **One goroutine owns each zone.** Its tick loop is the only code that touches the zone's state. The rules inside it (`internal/sim`) are pure and deterministic.
+- **Channels at the edges.** Each connection has a reader goroutine that validates messages and puts them on the zone's bounded inbox, and a writer goroutine that drains a bounded send queue.
+- **Slow clients are evicted, never waited for.** A full send queue disconnects the client; the tick loop never blocks on a socket, a database or a lock.
+- **Encode once, then fan out.** Each entity's update is serialized once per tick and shared by every player who can see it.
+- **Spatial grid interest management** (Phase 3), quantized delta snapshots and per-player bandwidth budgets for crowds (Phase 7).
+- **Zone handoff by message** (Phase 11), so zones can later move into separate processes and machines (Phase 20) when a measurement shows one process is the limit.
+
+`lorehallow-bot` (Phase 2) is the headless load generator, and `make loadtest SCENARIO=<name>` runs the scaling.md scenarios against a real server.
+
 ## Conventions
 
-See [AGENTS.md section 7](../AGENTS.md#server-conventions-go): pure, deterministic simulation; one goroutine owns a zone's state; table-driven tests with `-race`; no sleeps in tests.
+See [AGENTS.md section 7](../AGENTS.md#server-conventions-go) and the [backend engineering standards](../AGENTS.md#backend-engineering-standards): pure, deterministic simulation; one goroutine owns a zone's state; bounded queues everywhere; nothing blocks a tick; table-driven tests with `-race`; no sleeps in tests (fake clock or `testing/synctest`); fuzzing, allocation benchmarks and leak checks for anything on the hot path or facing clients.
