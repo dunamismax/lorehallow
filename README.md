@@ -18,7 +18,7 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 **Phase 1: lorehallow.com. Pre-alpha, nothing to play yet.**
 
-The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built by a Go program in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. What's left of Phase 1 is switching on automatic deploys from CI and the owner's review. Then work returns to the game server's networking core (Phase 2), which is already partly built. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built by a Go program in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. What's left of Phase 1 is the first published devlog post and the owner's review. Then work returns to the game server's networking core (Phase 2), which is already partly built. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 

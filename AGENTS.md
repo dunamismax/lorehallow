@@ -213,7 +213,7 @@ lorehallow/
 ├── art/                   # style/, batches/, inbox/, processed/
 ├── deploy/                # HOST.md, bootstrap/, caddy/, server/, web/, ...
 ├── docs/                  # decisions/, walkthroughs/, design/, ops/, perf/, releases/
-└── .github/workflows/     # CI, deploys, releases
+└── .github/workflows/     # CI, uptime checks, release builds (never deploys)
 ```
 
 Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/assets/art`, `server/internal/pb`, `client/net/pb`) are committed but never edited by hand. Edit the source and run `make sync` or `make proto`.
@@ -271,7 +271,7 @@ The architecture is [ADR 0005](docs/decisions/0005-scale-and-backend-architectur
 
 - **Go, no Node.** `web/` is its own Go module ([ADR 0011](docs/decisions/0011-go-website.md)). `cmd/lorehallow-web build` writes the static site to `web/dist/`, and Caddy serves it. Templates use `html/template` and are embedded with `go:embed`, and Markdown is rendered with goldmark. The server's Go conventions apply: standard library first, every new dependency justified in its commit body, gofmt, vet, golangci-lint, govulncheck and `go test -race`.
 - **No JavaScript on any page.** No `<script>` tags, inline handlers or third-party scripts. Caddy's CSP refuses scripts, and a generator test fails the build if one appears. Motion (parallax, fireflies, lantern flicker) is CSS only and stops under `prefers-reduced-motion`. Anything that seems to need a script is built at build time, done with plain HTML forms and links, or written up as an ADR first.
-- **Static output.** Everything dynamic (progress, the achievement feed, releases, feeds) is computed at build time from BUILD.md, git history and files in `web/content/` and `web/data/`. The deploy workflow rebuilds on every relevant push and nightly.
+- **Static output.** Everything dynamic (progress, the achievement feed, releases, feeds) is computed at build time from BUILD.md, git history and files in `web/content/` and `web/data/`. `make deploy-web` rebuilds and publishes it, run by hand.
 - **Shared palette.** Colors come from tokens generated from `art/style/palette.hex`, so the site and the game share one palette.
 - **Self-hosted.** No third-party requests: no trackers, CDNs or remotely loaded fonts.
 - **Pixel art** is shown at integer scales with `image-rendering: pixelated` and explicit dimensions read from the image.
@@ -465,7 +465,7 @@ The owner's own server sits behind lorehallow.com. Its details (OS, architecture
 
 ### What agents may do in production
 
-- Deploy with the `make deploy-*` targets after `make check` passes, and roll back with `make rollback-*`.
+- Deploy with the `make deploy-*` targets after `make check` passes, and roll back with `make rollback-*`. **Deploys are always run by hand from a session. Never deploy from GitHub Actions or any other CI, and never give a CI job access to the host** (the owner's standing rule).
 - Read logs, check status, and restart services.
 - Run forward migrations that are part of a deploy.
 
@@ -545,7 +545,7 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 8 | 32×32 tiles, 32×48 characters, ~32-color palette, 640×360 base viewport with integer scaling | Decided | Readable pixel art at 2x, 3x and 4x on common displays | Project brief, this file |
 | 9 | Website before gameplay: phases are 0 scaffold, 1 website, 2+ game | Decided | Public, followable progress from day one | Owner |
 | 10 | Website is an Astro static site; BUILD.md parsed at build time | Superseded by 39 | Static output is fast and simple to self-host; Markdown-native | BUILD.md 1.2 |
-| 11 | Website deploys from GitHub Actions to the host over SSH on every relevant push | Default | Makes the progress tracker update automatically | BUILD.md 1.9 |
+| 11 | Website deploys run by hand with `make deploy-web`; no CI job ever deploys or reaches the host | Decided | The owner's rule: nothing in CI touches the server | Owner |
 | 12 | Caddy as reverse proxy with automatic HTTPS: Lorehallow is one site file on the owner's shared Caddy; never touch the main Caddyfile, other sites, firewall or SSH; validate as the caddy user before every reload | Decided | The host already runs Caddy for other sites | [ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md) |
 | 13 | GNU Make as the single command runner | Default | Already installed on macOS and Linux; one entry point for humans, agents and CI | BUILD.md 0.3 |
 | 14 | Art tooling in Python managed by uv (Pillow, numpy) | Default | Best image-processing ecosystem; uv keeps it reproducible | BUILD.md 0.7 |
@@ -575,5 +575,5 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 38 | Website first: Phase 1 is finished, live and polished before more server-phase work; the server phases resume after it | Decided | The owner wants a live, beautiful lorehallow.com before the game goes much further; the host, DNS and Caddy are already set up | Owner, [section 3](#3-session-workflow) |
 | 39 | The website is a Go static site generator in `web/` (its own module: `html/template`, goldmark, `go:embed`) with no JavaScript on any page; the BUILD.md parser and linter are Go; Node, npm and TypeScript leave the toolchain | Decided | The owner is moving every project to Go; the site is static and needs no Node or browser scripts | Owner, [ADR 0011](docs/decisions/0011-go-website.md) |
 | 40 | Website fonts: a hand-drawn pixel font for headings, compiled to TrueType and WOFF by the generator, and the Go fonts (BSD) for body text, all self-hosted with licenses committed | Decided | Matches the hand-drawn art, pixel-exact at 2x to 4x, no downloads outside the Go module proxy | [ADR 0012](docs/decisions/0012-website-fonts.md) |
-| 41 | Website deploys: timestamped release directories under `/srv/lorehallow/web/releases/`, an atomic `current` symlink switch, a health check through the host's own Caddy with automatic rollback, five releases kept; run by hand with `make deploy-web`, never from CI (no runner logs in to the owner's server) | Decided | Same model as the server deploy; a bad release can't stay live; the owner doesn't want CI on the server | [docs/ops/website.md](docs/ops/website.md) |
+| 41 | Website deploys: timestamped release directories under `/srv/lorehallow/web/releases/`, an atomic `current` symlink switch, a health check through the host's own Caddy with automatic rollback, five releases kept; run by hand with `make deploy-web` | Decided | Same model as the server deploy; a bad release can't stay live | [docs/ops/website.md](docs/ops/website.md) |
 | 42 | Uptime monitoring: a GitHub Actions check every five minutes from outside the home network; one ntfy alert when down for five minutes and one on recovery, plus GitHub's failed-run email | Decided | No account needed, sees home-network outages that a check on the host can't | [ADR 0013](docs/decisions/0013-uptime-monitoring.md) |

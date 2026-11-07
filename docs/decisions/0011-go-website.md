@@ -39,7 +39,7 @@ The site has no need for Node. It is static: pages built from Markdown, BUILD.md
 
 - **Astro (the old plan).** It's a good static site generator, but it keeps Node, npm, a lockfile, `node_modules` and npm audits in the toolchain for one site, and nothing in the site needs them.
 - **Hugo.** It's written in Go and is a single binary. But its templates are another language, and the progress tracker needs the BUILD.md parser, quest-map layout and achievement feed as real code. That code would end up as Go anyway, outside Hugo.
-- **A Go web server that renders each request.** Nothing on the site changes between pushes except the progress data, and that is rebuilt on every push and nightly. Static files are faster, cache better, and leave no process on the host.
+- **A Go web server that renders each request.** Nothing on the site changes between pushes except the progress data, and that is rebuilt at every deploy. Static files are faster, cache better, and leave no process on the host.
 - **templ.** It gives type-safe components, but adds a code generator and a dependency. `html/template` covers a site this size and is in the standard library.
 
 ## Consequences

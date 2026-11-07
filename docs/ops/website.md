@@ -36,7 +36,7 @@ It refuses to run with uncommitted changes to the site's sources, then:
 5. if any check fails, switches back to the previous release and deletes the new one,
 6. deletes all but the newest five releases.
 
-Deploys are run by hand from the owner's machine (or an agent's session), over the same SSH the owner already uses. Nothing in CI logs in to the server: the owner decided against it. `make check` in CI still builds and tests the site on every push.
+Deploys are always run by hand, from the owner's machine or an agent's session, over SSH. `make check` in CI builds and tests the site on every push but never deploys it.
 
 ## Roll back
 

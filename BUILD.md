@@ -32,7 +32,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 | Phase | Title | Ships | Core lesson |
 |---|---|---|---|
 | 0 | Foundations | Scaffold, pipelines, first art | Project structure, codegen, image processing |
-| 1 | lorehallow.com | The website | Linux hosting, DNS, TLS, CI/CD |
+| 1 | lorehallow.com | The website | Linux hosting, DNS, TLS, static sites, deploys and rollback |
 | 2 | Two Players, One World | v0.2.0 | WebSockets, connection lifecycle, backpressure, tick loops, interpolation |
 | 3 | Many Players | v0.3.0 | Prediction, interest management, bandwidth, load testing, profiling |
 | 4 | Accounts and Characters | v0.4.0 | Auth, sessions, PostgreSQL, login storms, backups |
@@ -199,7 +199,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 > **Goal:** A fast, beautiful, self-hosted website at lorehallow.com that sells the dream, links to the public repositories, tracks BUILD.md automatically, hosts a devlog and has a downloads page ready for the first builds.
 > **Ships:** The lorehallow.com website
-> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site generation in Go and automated deploys
+> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site generation in Go and atomic deploys with rollback
 > **Depends on:** Phase 0 sections 0.2, 0.3 and 0.9 (the rest of Phase 0 can finish in parallel)
 
 ### 1.1 Host provisioning and hardening
@@ -1071,8 +1071,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 15.2 Publishing
 
-- [ ] Publish to GitHub Releases and Codeberg releases, and self-host the files on lorehallow.com with checksums.
-- [ ] The workflow updates `web/data/releases.json` and redeploys, so /downloads shows the latest build, checksums and older versions.
+- [ ] Publish to GitHub Releases and Codeberg releases, and self-host the files on lorehallow.com with checksums (copied to the host by hand, like every deploy).
+- [ ] Each release updates `web/data/releases.json`, and the next `make deploy-web` publishes it, so /downloads shows the latest build, checksums and older versions.
 - [ ] `/downloads/latest.json` manifest for the client update check.
 - [ ] /patch-notes built from `docs/releases/`.
 
@@ -1343,4 +1343,3 @@ Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled
 - Controller support, if deferred in Phase 14
 - Languages beyond English
 - More zones and a higher level cap
-- Automatic website deploys from CI on every push and nightly (cut from Phase 1 by the owner: no CI runner logs in to the owner's server; deploys are `make deploy-web` by hand, and /progress updates at each deploy)

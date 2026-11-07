@@ -80,7 +80,7 @@ The achievement feed is the interesting part. `git log -p -U0 -- BUILD.md` lists
 
 Rollback is the same switch in the other direction. `make rehearse-rollback-web` deploys a release with its stylesheet deleted and checks that the health check catches it and the previous release comes back on its own.
 
-Deploys are run by hand. A CI workflow that logged in to the server over Tailscale worked once and was then removed: the owner doesn't want any CI runner logging in to their server.
+Deploys are run by hand with `make deploy-web`, from the owner's machine or an agent's session.
 
 ## The key concept: static sites and atomic releases
 

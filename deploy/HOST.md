@@ -31,7 +31,7 @@ As a load-test target this machine is `prod` in [docs/design/scaling.md](../docs
 | Settings | `/etc/lorehallow/server.env` (0640 root:lorehallow-server, empty: the unit's defaults apply) |
 | Logs | `journalctl -u lorehallow-server`; Caddy access logs `/var/log/caddy/lorehallow*-access.log` |
 
-Agents deploy as `root@ubuntu-vm` over Tailscale SSH (`deploy/host.env`, gitignored). A dedicated `deploy` user would need its own Tailscale SSH rule; that, and CI deploys (which need a Tailscale auth key), are later steps.
+Agents deploy as `root@ubuntu-vm` over Tailscale SSH (`deploy/host.env`, gitignored), by hand from a session. Nothing in CI ever deploys to or logs in to this host.
 
 Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app.sh). Deploy the server: `make deploy-server`. Deploy the website: `make deploy-web` (roll back with `make rollback-web`).
 
@@ -45,4 +45,3 @@ Install or update Lorehallow's pieces: `make install-host` (deploy/bootstrap/app
 | 2026-11-07 | Owner added the `play.lorehallow.com` A record. Caddy got its certificate on the first request; bots joined over `wss://play.lorehallow.com/ws`. | owner, agent |
 | 2026-11-07 | Deployed server 10717ee with `make deploy-server`, then `make rehearse-rollback-server`: a release with no map failed its health check and was rolled back automatically (game down about 10 s). | agent |
 | 2026-11-07 | `make install-host`: added the `lorehallow-deploy` user and gave it `/srv/lorehallow/web`; installed the site file with the no-scripts CSP, immutable caching for `/assets/*` and revalidation for everything else; reloaded Caddy (validated first). dunamismax.com, graceandfootnotes.com, xrayservice.net, lorehallow.com and play.lorehallow.com all answered 200 afterwards. | agent |
-| 2026-11-07 | Owner tagged the VM `tag:lorehallow-host` for a CI deploy over Tailscale SSH; one CI deploy ran (0886cd0). The owner then decided no CI runner should log in to the server, and the deploy workflow was removed. The tag, the `tag:ci` policy rules and the repository secrets can be removed. | owner, agent |
