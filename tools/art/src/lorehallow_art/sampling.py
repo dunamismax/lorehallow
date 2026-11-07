@@ -25,6 +25,29 @@ def downsample(
     palette: Palette | None = None,
     key: RGB | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """Sample one color per grid cell; see sample_cells."""
+    s = sample_cells(img, grid, method, palette, key)
+    return s.rgb, s.alpha
+
+
+@dataclass
+class Sampled:
+    rgb: np.ndarray
+    alpha: np.ndarray
+    # Mean share of each art cell's inner pixels that voted for the winning
+    # color (palette "mode" only, else 1.0; key-colored cells don't count).
+    # A grid that lines up with the art gives nearly uniform cells; a
+    # misaligned one mixes neighbors.
+    purity: float
+
+
+def sample_cells(
+    img: np.ndarray,
+    grid: Grid,
+    method: str = "mode",
+    palette: Palette | None = None,
+    key: RGB | None = None,
+) -> Sampled:
     """Sample one color per grid cell.
 
     img is (H, W, 3) or (H, W, 4) uint8. Returns (rgb, alpha): an (rows,
@@ -55,6 +78,7 @@ def downsample(
             classes[y : y + 64] = np.argmin(d, axis=-1)
     out = np.zeros((rows, cols, 3), dtype=np.uint8)
     alpha = np.ones((rows, cols), dtype=bool)
+    shares: list[float] = []
     xr = [_inner_range(grid.x.start(i), grid.x.period, w) for i in range(cols)]
     yr = [_inner_range(grid.y.start(j), grid.y.period, h) for j in range(rows)]
     for j, (y0, y1) in enumerate(yr):
@@ -69,11 +93,14 @@ def downsample(
                 block = block[opaque]
                 cls = cls[opaque] if cls is not None else None
             if cls is not None:
-                winner = np.bincount(cls).argmax()
+                votes = np.bincount(cls)
+                winner = votes.argmax()
+                if key is None or winner < len(palette.colors):
+                    shares.append(float(votes[winner]) / len(cls))
                 out[j, i] = block[cls == winner, :3].mean(axis=0).round().astype(np.uint8)
             else:
                 out[j, i] = _sample(block[:, :3], method)
-    return out, alpha
+    return Sampled(out, alpha, float(np.mean(shares)) if shares else 1.0)
 
 
 def _inner_range(start: float, period: float, limit: int) -> tuple[int, int]:
@@ -158,16 +185,22 @@ class FitError(ValueError):
     pass
 
 
-def fit(rgba: np.ndarray, width: int, height: int) -> FitResult:
+def fit(
+    rgba: np.ndarray, width: int, height: int, anchor: tuple[int, int] | None = None
+) -> FitResult:
     """Fit the sampled art to the logical size.
 
     Generators often leave a margin of key color, so the grid finds a few
     more cells than the art has. Extra rows and columns are trimmed only
-    where they are fully transparent, keeping the content centered. One
-    missing row or column (a lost partial edge cell) is padded back; more
-    than that means the grid or the image is wrong.
+    where they are fully transparent, keeping the content centered, or,
+    with an anchor (x, y), putting the content's middle column on x and its
+    lowest row on y (a sprite's pivot). One missing row or column (a lost
+    partial edge cell) is padded back; more than that means the grid or the
+    image is wrong.
     """
     h, w = rgba.shape[:2]
+    if anchor is not None:
+        return _fit_anchored(rgba, width, height, anchor)
     out = rgba
     trim = [0, 0]
     pad = [0, 0]
@@ -202,3 +235,29 @@ def fit(rgba: np.ndarray, width: int, height: int) -> FitResult:
             out = padded
             pad[axis] = want - have
     return FitResult(rgba=out, trimmed=(trim[0], trim[1]), padded=(pad[0], pad[1]))
+
+
+def _fit_anchored(rgba: np.ndarray, width: int, height: int, anchor: tuple[int, int]) -> FitResult:
+    """Place the content's bounding box so that it is centered on anchor x
+    (symmetric about the line x = anchor[0]) with its lowest row on anchor y."""
+    h, w = rgba.shape[:2]
+    opaque = rgba[..., 3] > 0
+    if not opaque.any():
+        return fit(rgba, width, height)
+    ys, xs = np.nonzero(opaque)
+    y0, y1, x0, x1 = int(ys.min()), int(ys.max()) + 1, int(xs.min()), int(xs.max()) + 1
+    bw, bh = x1 - x0, y1 - y0
+    for axis, (size, want) in enumerate(((bw, width), (bh, height))):
+        if size > want:
+            raise FitError(
+                f"content is {size} px along {'xy'[axis]}, larger than the logical {want} px"
+            )
+    left = int(np.clip(anchor[0] - bw // 2, 0, width - bw))
+    top = int(np.clip(anchor[1] + 1 - bh, 0, height - bh))
+    out = np.zeros((height, width, 4), dtype=rgba.dtype)
+    out[top : top + bh, left : left + bw] = rgba[y0:y1, x0:x1]
+    return FitResult(
+        rgba=out,
+        trimmed=(max(0, w - width), max(0, h - height)),
+        padded=(max(0, width - w), max(0, height - h)),
+    )

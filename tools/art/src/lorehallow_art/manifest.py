@@ -37,6 +37,7 @@ Map shape::
       "another.png":
         asset: terrain_basic
         crop: [0, 0, 1024, 768]        # optional (x, y, width, height) in the raw image
+        grid: fixed                    # optional: detect (default) or fixed, see intake.py
 """
 
 from __future__ import annotations
@@ -133,6 +134,10 @@ class MapEntry:
     file: str
     asset: str
     crop: tuple[int, int, int, int] | None = None
+    grid: str = "detect"
+
+
+GRID_MODES = ("detect", "fixed")
 
 
 @dataclass(frozen=True)
@@ -292,10 +297,14 @@ def parse_map(data: Any, manifest: Manifest) -> InboxMap:
     ids = {a.id for a in manifest.assets}
     entries = []
     for file, v in files.items():
+        grid = "detect"
         if isinstance(v, str):
             asset, crop = v, None
         elif isinstance(v, dict) and "asset" in v:
             asset = v["asset"]
+            grid = v.get("grid", "detect")
+            if grid not in GRID_MODES:
+                raise ManifestError(f"map.yaml: grid for {file!r} must be one of {GRID_MODES}")
             c = v.get("crop")
             if c is not None and not (
                 isinstance(c, list)
@@ -308,7 +317,7 @@ def parse_map(data: Any, manifest: Manifest) -> InboxMap:
             raise ManifestError(f"map.yaml: entry for {file!r} must be an asset id or a mapping")
         if asset not in ids:
             raise ManifestError(f"map.yaml: {file!r} maps to unknown asset {asset!r}")
-        entries.append(MapEntry(file=str(file), asset=asset, crop=crop))  # type: ignore[arg-type]
+        entries.append(MapEntry(file=str(file), asset=asset, crop=crop, grid=grid))  # type: ignore[arg-type]
     return InboxMap(tuple(entries))
 
 

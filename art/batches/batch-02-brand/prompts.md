@@ -29,7 +29,7 @@ The word "Lorehallow" as a pixel-art logo wordmark, hand-drawn letters, not a fo
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -53,7 +53,7 @@ A square emblem for the game, readable as a tiny favicon: a warm glowing lantern
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -77,7 +77,7 @@ The same emblem as the previous image, redrawn by hand for 16×16 art pixels: a 
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -101,7 +101,7 @@ The key art for the game's website. A lantern-lit fantasy village at the edge of
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -123,7 +123,7 @@ The back layer of a three-layer parallax background for the website, matching th
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -145,7 +145,7 @@ The middle layer of a three-layer parallax background, matching the hero key art
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -169,7 +169,7 @@ The front layer of a three-layer parallax background, matching the hero key art.
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -193,7 +193,7 @@ Five adventurers standing side by side on a short strip of grass and dirt along 
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -221,7 +221,7 @@ Every cell's background is the background color.
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -250,7 +250,7 @@ Every cell's empty space is the background color. Notes and banners have no read
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -274,7 +274,7 @@ A wide banner for the game's development blog: a cozy writing desk inside a timb
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -298,7 +298,7 @@ A background for social media link previews. A calm wide view of rolling mossy h
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 
@@ -322,7 +322,7 @@ A lost adventurer (same scale and style as the reference character) standing in 
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 Match the style of the attached reference image exactly: the same palette, pixel size relative to the subject, 1-pixel #1A1420 outlines on characters and objects, flat 3 to 4 step shading, top-down 3/4 view and light from the top-left. Warm storybook fantasy mood: mossy forests, lantern-lit towns, old stone ruins.
 

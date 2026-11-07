@@ -141,7 +141,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Write Batch 01 prompts and manifest: a style reference sheet, one character concept (32×48) and a grass, dirt and stone tileset (32×32, including transitions).
 - [x] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.
 - [ ] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
-- [ ] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
+- [x] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
 - [ ] Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels.
 
 ### 0.9 Art Batch 02: brand and website art

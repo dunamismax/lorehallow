@@ -1,8 +1,12 @@
 files:
-  # Closest composition and character scale. The detected grid still fails intake.
-  01-01-style_reference-a4.png: style_reference
-  # Passes automated intake but failed visual review: 41 px tall, feet on row 43.
+  # Correct character scale. A painted scene has no single detectable block
+  # size, so it is sampled on the 240×160 layout the prompt asked for.
+  01-01-style_reference-a4.png: {asset: style_reference, grid: fixed}
+  # Square grid (~20 px) and anchored on the pivot: feet on row 45, 42 px tall
+  # including the hair, the tall end of STYLE.md's proportions.
   01-02-concept_hero-a4.png: concept_hero
   exec-36d2db21-f88c-4b34-8fe8-fce5b01f13db.png: terrain_base
+  # Both transition sheets need regenerating: drawn grid lines between tiles,
+  # and the stone sheet doesn't follow the 3×3 patch layout.
   exec-83f6baf4-e1f9-4320-a02d-67aec7327fee.png: terrain_grass_dirt
   exec-6450b6c4-f32a-48ec-90ac-bcef95587132.png: terrain_grass_stone

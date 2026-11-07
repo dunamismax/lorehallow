@@ -2,7 +2,7 @@
 
 The rules every piece of Lorehallow art follows. If something isn't readable at a glance at 1x, it's wrong (design pillar 3). Prompts in `art/batches/` restate these rules, and `make art-intake` enforces the mechanical ones.
 
-**Status:** draft. The palette is awaiting the owner's approval (BUILD.md 0.8).
+**Status:** draft. The palette (v2) is awaiting the owner's approval (BUILD.md 0.8).
 
 ## At a glance
 
@@ -11,7 +11,7 @@ The rules every piece of Lorehallow art follows. If something isn't readable at 
 | Tile | 32×32 px |
 | Character frame | 32×48 px, feet on row 45, pivot (16, 45) |
 | Base viewport | 640×360 (20 × 11¼ tiles), integer scaling only |
-| Palette | the 32 colors in [`palette.hex`](palette.hex), nothing else |
+| Palette | the 33 colors in [`palette.hex`](palette.hex), nothing else |
 | View | top-down 3/4 |
 | Light | from the top-left, always |
 | Outline | 1 px of ink `#1A1420` on characters, creatures, props and items; none on ground tiles |
@@ -23,15 +23,15 @@ The rules every piece of Lorehallow art follows. If something isn't readable at 
 
 ![Palette](palette.png)
 
-32 colors in ramps, dark to light. [`palette.hex`](palette.hex) is the source; `palette.png` and `palette.gpl` (for Aseprite, GIMP and Krita) are generated from it with `make art-generate`.
+33 colors in ramps, dark to light. [`palette.hex`](palette.hex) is the source; `palette.png` and `palette.gpl` (for Aseprite, GIMP and Krita) are generated from it with `make art-generate`.
 
 | Ramp | Colors | Used for |
 |---|---|---|
 | Shadow | ink `#1A1420`, night plum `#2E2433`, dusk violet-grey `#4A3D4D` | Outlines, deepest shadows, night |
-| Stone | slate `#5E5A66`, stone `#807C86`, pale stone `#AAA4A6` | Rock, walls, ruins, metal |
-| Earth and wood | dark soil `#3B2A24`, bark `#5C3F2E`, earth `#7F5A3A`, dry path `#A67C4E` | Soil, paths, trunks, timber, leather |
+| Stone | slate `#615A68`, stone `#857882`, pale stone `#A8979A` | Rock, walls, ruins, metal |
+| Earth and wood | dark soil `#3B2A24`, bark `#74402E`, earth `#965A3A`, dry path `#C08256`, sand `#D4B48A` | Soil, paths, trunks, timber, leather, hair, cloth shading |
 | Lantern light | ember `#B8642A`, amber `#E09A3C`, lantern gold `#F2C45A`, glow `#FBE39B` | Fire, lanterns, gold, warm highlights |
-| Moss and leaf | deep forest `#1F3326`, moss shadow `#2F4F2F`, moss `#4D7136`, leaf `#77953F`, sunlit leaf `#A8BF5A` | Grass, foliage, moss |
+| Moss and leaf | deep forest `#1F3326`, moss shadow `#2F4F2F`, moss `#577139`, leaf `#7A8E3C`, sunlit leaf `#ABB84E` | Grass, foliage, moss |
 | Dusk and water | deep dusk `#1F2A44`, dusk blue `#2F4466`, river `#4A6A8F`, sky `#7A9CBF`, mist `#B4CDE0` | Water, sky, cloth, cool shadows |
 | Skin | skin deep `#9E5A4F`, skin mid `#CC8A6C`, skin light `#EFC4A0` | Skin (with earth tones for deeper skin) |
 | Accents | banner red `#8F2F2F`, berry `#C94A3A`, arcane violet `#5E4A86`, teal glass `#3F8F86` | Banners, berries, magic, potions, gems |
@@ -44,6 +44,12 @@ Rules:
 - Hue-shift shadows toward plum and blue (shadows of green grass use deep forest, then night plum), and highlights toward gold. That warmth is the look.
 - Pure ink is for outlines and the deepest crevices only. Interior detail lines use the darkest step of the material's own ramp.
 - Changing the palette after approval needs an ADR: it changes every asset.
+
+### Why v2
+
+The first draft (v1, 32 colors) was designed by eye. Batch 01 showed that the image generator ignores exact hex values and draws each material in its own colors, and intake then snaps every pixel to the nearest palette color. Where v1 had no color near the generator's, the snap jumped to a different material: brown hair and timber became banner red and skin, the tan path split into amber and pink blotches, and warm grey flagstones turned pink. About 35% of sampled cells were more than 0.04 (OKLab) from any v1 color.
+
+v2 moves only the ramps the generator draws differently (stone slightly warmer and more violet, earth and wood warmer and more saturated, leaf slightly yellower) and adds **sand** between dry path and parchment white for paths, cloth and wood highlights. Shadows, lantern light, dusk and water, skin and accents are unchanged. On the same Batch 01 images, cells more than 0.04 away fell to 25%, and the hair, path and flagstones keep their material. Every pair of colors stays at least 0.03 apart in OKLab, and all stay far from the key color.
 
 ## Grid and scale
 

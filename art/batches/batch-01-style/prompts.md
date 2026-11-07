@@ -28,7 +28,7 @@ Canvas: landscape 3:2. The whole image is exactly 240 art pixels wide and 160 ar
 
 True pixel art: every art pixel is a solid square block of one color. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view, like a classic top-down fantasy RPG. Light always comes from the top-left: lit edges face up and left, shadows fall down and right.
 
@@ -56,7 +56,7 @@ Canvas: portrait 2:3. The whole image is exactly 32 art pixels wide and 48 art p
 
 True pixel art: every art pixel is a solid square block of one color. No anti-aliasing, no gradients, no blur, no texture noise, no dithering.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 The character: a young adventurer standing still, facing the viewer (facing down the screen), arms relaxed, in top-down 3/4 view, so we see the top of the head and the whole front of the body. Storybook proportions, about 2½ heads tall: head about 13 art pixels tall, total height about 30 art pixels from the feet to the top of the hair. Short green cloak over a cream tunic, brown leather belt and boots, a small satchel at the hip, warm brown hair. Eyes are 2 art pixels tall with a dark pupil.
 
@@ -82,7 +82,7 @@ Canvas: square. The whole image is exactly 128 art pixels wide and 128 art pixel
 
 True pixel art: every art pixel is a solid square block of one color. No anti-aliasing, no gradients, no blur, no texture noise, no dithering.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left.
 
@@ -112,7 +112,7 @@ Canvas: square. The whole image is exactly 128 art pixels wide and 128 art pixel
 
 True pixel art: every art pixel is a solid square block of one color. No anti-aliasing, no gradients, no blur, no texture noise, no dithering.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
 
@@ -139,7 +139,7 @@ Canvas: square. The whole image is exactly 128 art pixels wide and 128 art pixel
 
 True pixel art: every art pixel is a solid square block of one color. No anti-aliasing, no gradients, no blur, no texture noise, no dithering.
 
-Palette: use only these 32 colors and no others: #1A1420, #2E2433, #4A3D4D, #5E5A66, #807C86, #AAA4A6, #3B2A24, #5C3F2E, #7F5A3A, #A67C4E, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #4D7136, #77953F, #A8BF5A, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
+Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
 

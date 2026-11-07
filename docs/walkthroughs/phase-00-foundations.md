@@ -11,7 +11,7 @@ Phase 0 builds no gameplay. It builds the workshop: a repository where one comma
 - **A protobuf pipeline**: one schema in `proto/`, generated Go and GDScript, and golden vectors that both sides must decode and re-encode exactly.
 - **A Godot client skeleton** with the pixel-art rendering rules baked into project settings, a title screen that shows its build, and headless tests.
 - **An art intake pipeline** in `tools/art/` that finds the hidden pixel grid in generated images, snaps them to the locked palette and checks sprite sheets.
-- **The art direction**: a 32-color palette, a style guide and ready-to-paste prompts for the first two art batches.
+- **The art direction**: a 33-color palette, a style guide and ready-to-paste prompts for the first two art batches.
 - **CI** on GitHub Actions that runs exactly `make check`.
 
 ## How to try it

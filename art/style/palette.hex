@@ -1,4 +1,6 @@
-; Lorehallow locked palette v1 (draft, awaiting owner approval). 32 colors.
+; Lorehallow palette v2 (draft, awaiting owner approval). 33 colors.
+; v2 retunes the stone, earth and leaf ramps toward the colors the image
+; generator actually draws for these materials, and adds sand (see STYLE.md).
 ; One color per line, Lospec .hex style. Ramps run dark to light.
 ; Never add #FF00FF: it is the key color for backgrounds.
 ; Edit this file, then run `make art-generate` to rebuild palette.png, palette.gpl and prompts.
@@ -8,14 +10,15 @@
 2e2433 ; night plum
 4a3d4d ; dusk violet-grey
 ; Stone
-5e5a66 ; slate
-807c86 ; stone
-aaa4a6 ; pale stone
+615a68 ; slate
+857882 ; stone
+a8979a ; pale stone
 ; Earth and wood
 3b2a24 ; dark soil
-5c3f2e ; bark
-7f5a3a ; earth
-a67c4e ; dry path
+74402e ; bark
+965a3a ; earth
+c08256 ; dry path
+d4b48a ; sand
 ; Lantern light
 b8642a ; ember
 e09a3c ; amber
@@ -24,9 +27,9 @@ fbe39b ; glow
 ; Moss and leaf
 1f3326 ; deep forest
 2f4f2f ; moss shadow
-4d7136 ; moss
-77953f ; leaf
-a8bf5a ; sunlit leaf
+577139 ; moss
+7a8e3c ; leaf
+abb84e ; sunlit leaf
 ; Dusk and water
 1f2a44 ; deep dusk
 2f4466 ; dusk blue

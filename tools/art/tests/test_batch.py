@@ -228,3 +228,19 @@ def test_placeholders_follow_real_assets(tmp_path, rng):
     log = write_placeholders(root)
     assert "remove art/processed/tiles/rock_placeholder.png" in log
     assert (processed / "tiles/never_made_placeholder.png").exists()
+
+
+def test_sync_writes_the_reference_sheet(tmp_path, rng):
+    root = make_root(tmp_path, rng)
+    sync(root)
+    assert not (root / "art/style/reference.png").exists()
+    small = np.zeros((4, 6, 4), dtype=np.uint8)
+    small[1, 2] = (*TEST_COLORS[1], 255)
+    (root / "art/processed/style").mkdir(parents=True)
+    Image.fromarray(small, "RGBA").save(root / "art/processed/style/reference.png")
+    assert "write  art/style/reference.png (6x style/reference.png)" in sync(root, dry_run=True)
+    sync(root)
+    big = np.asarray(Image.open(root / "art/style/reference.png"))
+    assert big.shape == (24, 36, 4)
+    assert np.array_equal(big[::6, ::6], small)
+    assert sync(root, dry_run=True) == []

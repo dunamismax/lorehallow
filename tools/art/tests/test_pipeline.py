@@ -138,3 +138,54 @@ def test_missing_frame_fails(rng, palette):
     res = process_image(Image.fromarray(render(art, 40.0, rng=rng)), sheet_asset(), palette)
     assert res.status == "regenerate"
     assert any("empty" in p and "up_idle_1" in p for p in res.problems)
+
+
+def test_fit_anchors_a_sprite_on_its_pivot():
+    rgba = np.zeros((60, 40, 4), dtype=np.uint8)
+    rgba[10:30, 5:14] = (*TEST_COLORS[1], 255)  # 9 wide, rows 10..29
+    out = fit(rgba, 32, 48, anchor=(16, 45)).rgba
+    rows = np.flatnonzero((out[..., 3] > 0).any(axis=1))
+    cols = np.flatnonzero((out[..., 3] > 0).any(axis=0))
+    assert rows[-1] == 45
+    assert (cols[0], cols[-1]) == (12, 20)  # 9 wide: the middle column is 16
+
+
+def test_small_sprite_on_a_big_canvas(rng, palette):
+    """Generators draw a small sprite in the middle of a large key canvas.
+    The drawn content bounds the block size from below, and the sprite
+    lands on its pivot whatever its margins."""
+    figure = random_art(rng, 18, 30, TEST_COLORS)
+    figure[0, :] = TEST_COLORS[0]  # make the full height and width count
+    figure[-1, :] = TEST_COLORS[0]
+    canvas = np.zeros((77, 51, 3), dtype=np.uint8)
+    canvas[:] = KEY
+    canvas[40:70, 17:35] = figure
+    img = render(canvas, 20.08, rng=rng, blur=0.5, noise=2)
+    asset = make_asset("sprite", (32, 48), pivot=[16, 45])
+    res = process_image(Image.fromarray(img), asset, palette)
+    assert res.status == "accepted", res.problems
+    assert abs(res.grid.x.period - 20.08) < 0.2 and abs(res.grid.y.period - 20.08) < 0.2
+    body = res.image[45 - 29 : 46, 16 - 9 : 16 + 9]  # 18 wide: symmetric about x = 16
+    assert np.array_equal(body, expected_rgba(figure))
+
+
+def test_ambiguous_axis_is_made_square(rng, palette):
+    """When every block is drawn twice as wide in x, the x edges alone
+    suggest double the period. Art pixels are square, so the y period wins."""
+    art = random_art(rng, 24, 24, TEST_COLORS)
+    art = np.repeat(art[:, ::2], 2, axis=1)  # columns come in identical pairs
+    asset = make_asset("tile", (24, 24))
+    res = process_image(Image.fromarray(render(art, 13.0, rng=rng)), asset, palette)
+    assert abs(res.grid.x.period - res.grid.y.period) < 0.5
+    assert res.status == "accepted", res.problems
+    assert np.array_equal(res.image, expected_rgba(art))
+
+
+def test_fixed_grid_mode_takes_the_canvas_as_the_layout(rng, palette):
+    art = random_art(rng, 30, 20, TEST_COLORS)
+    art[art.sum(axis=-1) == sum(KEY)] = TEST_COLORS[2]  # full-bleed, no key
+    img = render(art, 6.4, rng=rng, jitter=0.6)
+    asset = make_asset("ui", (30, 20))
+    res = process_image(Image.fromarray(img), asset, palette, grid_mode="fixed")
+    assert res.status == "accepted", res.problems
+    assert np.array_equal(res.image, expected_rgba(art))

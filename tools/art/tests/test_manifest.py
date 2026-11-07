@@ -88,6 +88,14 @@ def test_map_entries_and_errors():
         parse_map({"files": {"a.png": {"asset": "grass", "crop": [1, 2]}}}, m)
 
 
+def test_map_grid_mode():
+    m = parse_manifest(base())
+    imap = parse_map({"files": {"a.png": "grass", "b.png": {"asset": "grass", "grid": "fixed"}}}, m)
+    assert [e.grid for e in imap.entries] == ["detect", "fixed"]
+    with pytest.raises(ManifestError, match="grid"):
+        parse_map({"files": {"a.png": {"asset": "grass", "grid": "magic"}}}, m)
+
+
 def test_tileset_frames_with_names():
     m = parse_manifest(
         base(

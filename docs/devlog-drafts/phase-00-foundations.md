@@ -23,11 +23,11 @@ The server and the client talk in Protocol Buffers, a compact binary format desc
 
 The art starts in an image generator, which is surprisingly good at the look of pixel art but never quite produces the real thing: a 32-pixel-wide character arrives as a 1024-pixel image where every "pixel" is a slightly blurry blob of slightly-off color.
 
-So I built an intake pipeline that recovers the real pixels. The trick for finding the hidden grid is a small piece of signal processing: if you add up where the color changes from one column to the next, you get a row of spikes, one at every block boundary, and a Fourier transform finds their spacing even when the blocks are 5.33 screen pixels wide and wobble a bit. After that, every block is snapped to a locked 32-color palette, the magenta background is removed, and sprite sheets are checked so every animation frame keeps its feet on the same row.
+So I built an intake pipeline that recovers the real pixels. The trick for finding the hidden grid is a small piece of signal processing: if you add up where the color changes from one column to the next, you get a row of spikes, one at every block boundary, and a Fourier transform finds their spacing even when the blocks are 5.33 screen pixels wide and wobble a bit. After that, every block is snapped to a locked 33-color palette, the magenta background is removed, and sprite sheets are checked so every animation frame keeps its feet on the same row.
 
 ## The look
 
-Lorehallow's palette is 32 colors: mossy greens, lantern golds, old-stone greys, dusk blues, warm earth and a few accents for banners and magic. Light always comes from the top-left, characters get a one-pixel dark outline, and everything is drawn on a 32-pixel grid. The first two batches of art (a style reference, the first character and terrain, then the logo and website art) are written up as prompts and waiting to be generated.
+Lorehallow's palette is 33 colors: mossy greens, lantern golds, old-stone greys, dusk blues, warm earth and a few accents for banners and magic. Light always comes from the top-left, characters get a one-pixel dark outline, and everything is drawn on a 32-pixel grid. The first two batches of art (a style reference, the first character and terrain, then the logo and website art) are written up as prompts and waiting to be generated.
 
 ## What's next
 

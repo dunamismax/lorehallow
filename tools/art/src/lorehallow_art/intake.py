@@ -12,10 +12,10 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
-from .grid import Grid, detect_grid
+from .grid import Axis, Grid, detect_axis, detect_grid, edge_profile, fixed_grid
 from .manifest import Asset, InboxMap, Manifest, load_manifest, load_map
 from .palette import Palette
-from .sampling import FitError, downsample, fit, quantize, remove_key
+from .sampling import FitError, downsample, fit, quantize, remove_key, sample_cells
 from .sheet import check_frames, frame_records, slice_frames
 
 FixFn = Callable[[str, Image.Image], Image.Image]
@@ -77,21 +77,100 @@ def load_fixes(batch_dir: Path) -> FixFn | None:
     return fn
 
 
+def block_hint(img: np.ndarray, asset: Asset) -> float:
+    """The expected size of one art pixel, in screen pixels.
+
+    Art pixels are square and the art fits inside the canvas, so the
+    limiting dimension gives an upper bound. Generators often draw a small
+    sprite in the middle of a large key-colored canvas; then the drawn
+    content, which is at most the logical size, gives a lower bound. When
+    the content is clearly smaller than the canvas, the geometric mean of
+    the two sits close to the truth; otherwise the upper bound does.
+    """
+    h, w = img.shape[:2]
+    upper = min(w / asset.size[0], h / asset.size[1])
+    rgb = img[..., :3].astype(np.int16)
+    key = np.array(asset.key_color, dtype=np.int16)
+    content = np.abs(rgb - key).sum(axis=-1) > 96
+    if img.shape[2] == 4:
+        content &= img[..., 3] >= 128
+    if not content.any():
+        return upper
+    ys, xs = np.nonzero(content)
+    # Ignore a few stray pixels at the extremes.
+    x0, x1 = np.percentile(xs, [0.1, 99.9])
+    y0, y1 = np.percentile(ys, [0.1, 99.9])
+    lower = max((x1 - x0) / asset.size[0], (y1 - y0) / asset.size[1])
+    if lower >= upper * 0.6:
+        return upper
+    return float(np.sqrt(lower * upper))
+
+
+# Art pixels are square: axes whose periods differ by more than this are
+# suspect, and a square alternative wins unless it samples clearly worse.
+SQUARE_TOLERANCE = 0.05
+PURITY_SLACK = 0.01
+
+
+def square_grid(img: np.ndarray, grid: Grid, asset: Asset, palette: Palette) -> Grid:
+    """Prefer a square grid when detection returned a non-square one.
+
+    One axis of a small sprite can be ambiguous (blocks drawn in pairs, or
+    slightly uneven widths). Re-detect each axis near the other's period and
+    keep whichever square grid samples the art most cleanly.
+    """
+    px, py = grid.x.period, grid.y.period
+    if abs(px - py) / min(px, py) <= SQUARE_TOLERANCE:
+        return grid
+
+    def purity(g: Grid) -> float:
+        return sample_cells(img, g, asset.downsample, palette, asset.key_color).purity
+
+    best, best_purity = grid, purity(grid)
+    rgb = img[..., :3]
+    options = (
+        Grid(_redetect(rgb, 1, py), grid.y),
+        Grid(grid.x, _redetect(rgb, 0, px)),
+    )
+    for g in options:
+        if abs(g.x.period - g.y.period) / min(g.x.period, g.y.period) > SQUARE_TOLERANCE:
+            continue
+        p = purity(g)
+        if p >= best_purity - PURITY_SLACK and (best is grid or p > best_purity):
+            best, best_purity = g, p
+    return best
+
+
+def _redetect(rgb: np.ndarray, axis: int, near: float) -> Axis:
+    lo, hi = near * (1 - SQUARE_TOLERANCE / 2), near * (1 + SQUARE_TOLERANCE / 2)
+    return detect_axis(edge_profile(rgb, axis=axis), hint=near, min_period=lo, max_period=hi)
+
+
 def process_image(
-    raw: Image.Image, asset: Asset, palette: Palette, fix: FixFn | None = None
+    raw: Image.Image,
+    asset: Asset,
+    palette: Palette,
+    fix: FixFn | None = None,
+    grid_mode: str = "detect",
 ) -> AssetResult:
-    """Run one raw image through the pipeline for one asset."""
+    """Run one raw image through the pipeline for one asset.
+
+    grid_mode "fixed" skips detection: the (cropped) image is taken to be
+    exactly the logical size. Painterly full-bleed scenes have no single
+    block size to detect (trees drawn in bigger clusters than faces), so
+    for them the layout the prompt asked for is the best grid there is.
+    """
     res = AssetResult(asset=asset)
     img = np.asarray(raw.convert("RGBA"))
     if not (img[..., 3] < 255).any():
         img = img[..., :3]
     h, w = img.shape[:2]
     res.raw_size = (w, h)
-    # Art pixels are square, and the art fits inside the canvas, so the
-    # limiting dimension gives the expected block size for both axes.
-    scale = min(w / asset.size[0], h / asset.size[1])
-    hint = (scale, scale)
-    grid = detect_grid(img[..., :3], hint=hint)
+    if grid_mode == "fixed":
+        grid = fixed_grid(w / asset.size[0], h / asset.size[1])
+    else:
+        hint = block_hint(img, asset)
+        grid = square_grid(img, detect_grid(img[..., :3], hint=(hint, hint)), asset, palette)
     res.grid = grid
     rgb, alpha = downsample(img, grid, asset.downsample, palette, asset.key_color)
     res.cells = (rgb.shape[1], rgb.shape[0])
@@ -100,7 +179,7 @@ def process_image(
     q = quantize(rgb, key.opaque, palette)
     res.changed, res.max_distance = q.changed, q.max_distance
     try:
-        fitted = fit(q.rgba, *asset.size)
+        fitted = fit(q.rgba, *asset.size, anchor=_anchor(asset))
     except FitError as e:
         res.status = "regenerate"
         res.problems.append(str(e))
@@ -118,11 +197,22 @@ def process_image(
     res.problems.extend(_palette_problems(out, palette))
     if asset.grid:
         res.problems.extend(check_frames(slice_frames(out, asset), asset))
+    anchor = _anchor(asset)
+    if anchor is not None and (out[..., 3] > 0).any():
+        bottom = int(np.flatnonzero((out[..., 3] > 0).any(axis=1))[-1])
+        if bottom != anchor[1]:
+            res.problems.append(f"lowest pixel is on row {bottom}, expected {anchor[1]}")
     if not (out[..., 3] > 0).any():
         res.problems.append("the image is empty after removing the key color")
     res.image = out
     res.status = "regenerate" if res.problems else status
     return res
+
+
+def _anchor(asset: Asset) -> tuple[int, int] | None:
+    """Single sprites with a pivot stand on it: centered on the pivot
+    column, lowest pixel on the pivot row (the foot baseline)."""
+    return asset.pivot if asset.kind == "sprite" and asset.pivot and not asset.grid else None
 
 
 def _palette_problems(rgba: np.ndarray, palette: Palette) -> list[str]:
@@ -167,7 +257,7 @@ def run_batch(root: Path, batch: str, write: bool = True) -> BatchResult:
             if entry.crop:
                 x, y, cw, ch = entry.crop
                 raw = raw.crop((x, y, x + cw, y + ch))
-            r = process_image(raw, asset, palettes[asset.palette], fix)
+            r = process_image(raw, asset, palettes[asset.palette], fix, entry.grid)
         r.source = entry.file
         results.append(r)
 
