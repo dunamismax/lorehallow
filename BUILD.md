@@ -153,7 +153,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `HUMAN` Generate Batch 02 and drop it into `art/inbox/batch-02/`.
 - [x] Run intake on Batch 02 (same palette, larger logical sizes allowed for web art) and iterate until accepted.
 - [x] Export the favicon set (16, 32, 180, 192 and 512 px) and the client app icon from the emblem.
-- [ ] `HUMAN` Approve the logo and hero art as the public face of the project.
+- [x] `HUMAN` Approve the logo and hero art as the public face of the project.
 
 ### 0.10 Continuous integration
 
