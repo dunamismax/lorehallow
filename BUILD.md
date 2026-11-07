@@ -316,11 +316,11 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 2.1 Protocol v1
 
-- [ ] Handshake: `ClientHello` (protocol version, client version, display name) and `ServerHello` (player id, tick rate, server tick, spawn state); mismatched protocol versions get a clear rejection.
+- [x] Handshake: `ClientHello` (protocol version, client version, display name) and `ServerHello` (player id, tick rate, server tick, spawn state); mismatched protocol versions get a clear rejection.
 - [x] `PlayerInput` (not `Input`, a Godot class name): sequence number, client tick and 8-way movement intent. Never a position.
 - [x] `Snapshot`: server tick, the last input sequence processed for the receiving player, and entity states (id, position, facing, animation state).
 - [x] `EntityJoined`, `EntityLeft`, `Ping` and `Pong`.
-- [ ] `Disconnect`: a reason code (protocol mismatch, server full, too slow, kicked, shutting down, timed out, bad message) and readable text, sent before the server closes a connection.
+- [x] `Disconnect`: a reason code (protocol mismatch, server full, too slow, kicked, shutting down, timed out, bad message) and readable text, sent before the server closes a connection.
 - [x] Framing, limits and a byte budget per message (one `Envelope` per binary WebSocket message, maximum sizes per direction) documented in `docs/design/protocol.md`.
 - [x] Round-trip golden tests for every new message.
 - [x] Hardened decoding: size checked before decoding, unknown payloads rejected, and fuzz targets for envelope decoding with a committed seed corpus, run by `make fuzz`.
@@ -335,31 +335,31 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 2.3 Connection lifecycle and backpressure
 
-- [ ] `ADR` WebSocket library (coder/websocket recommended); endpoint `/ws` with origin checks, read limits and compression off.
-- [ ] Connection lifecycle as an explicit state machine (handshaking, in world, closing, closed): handshake timeout, player id assignment, spawn selection, and one cleanup path for every exit (close, error, timeout, eviction, shutdown).
-- [ ] One reader and one writer goroutine per connection: the reader decodes, validates and forwards to the zone's bounded inbox; the writer drains a send queue bounded by message count and bytes.
-- [ ] Slow-client eviction: a full send queue closes the connection with `Disconnect` ("too slow"), and the tick loop never waits on a socket (tested with a stalled reader).
-- [ ] Heartbeats: the server pings every connection, a read deadline drops silent ones, and round-trip time is recorded per connection.
-- [ ] Limits: maximum connections (beyond it, `Disconnect` "server full"), pending handshakes per IP, message size and inbound message rate, each with a test that proves the limit holds.
-- [ ] Graceful shutdown sends `Disconnect` ("shutting down") to everyone, drains, and leaves no goroutines behind (leak test).
+- [x] `ADR` WebSocket library (coder/websocket recommended); endpoint `/ws` with origin checks, read limits and compression off.
+- [x] Connection lifecycle as an explicit state machine (handshaking, in world, closing, closed): handshake timeout, player id assignment, spawn selection, and one cleanup path for every exit (close, error, timeout, eviction, shutdown).
+- [x] One reader and one writer goroutine per connection: the reader decodes, validates and forwards to the zone's bounded inbox; the writer drains a send queue bounded by message count and bytes.
+- [x] Slow-client eviction: a full send queue closes the connection with `Disconnect` ("too slow"), and the tick loop never waits on a socket (tested with a stalled reader).
+- [x] Heartbeats: the server pings every connection, a read deadline drops silent ones, and round-trip time is recorded per connection.
+- [x] Limits: maximum connections (beyond it, `Disconnect` "server full"), pending handshakes per IP, message size and inbound message rate, each with a test that proves the limit holds.
+- [x] Graceful shutdown sends `Disconnect` ("shutting down") to everyone, drains, and leaves no goroutines behind (leak test).
 
 ### 2.4 Server simulation
 
-- [ ] One goroutine owns the zone: a fixed 20 Hz tick on a monotonic clock, measuring tick duration and warning on overruns, with no locks around world state.
-- [ ] Per-connection input queues drained each tick; inputs applied in sequence order; stale and duplicate inputs dropped.
-- [ ] Movement: fixed speed in tiles per second, axis-separated collision against the collision layer.
-- [ ] Validation: input floods, impossible speeds and wall-walking have no effect; repeat offenders are disconnected and logged.
-- [ ] Snapshot broadcast every tick to every connected player, each entity's state encoded once per tick and shared by every recipient (interest management comes in Phase 3).
-- [ ] Disconnects remove the entity for everyone within one second (`EntityLeft` on close, heartbeat timeout for silent drops).
-- [ ] Deterministic tests of the simulation with a fake clock: movement, collision, validation, join and leave.
-- [ ] Benchmarks with `ReportAllocs` for the tick, snapshot encoding and input decoding, and an allocation test that fails `make check` if the steady-state simulation step allocates.
+- [x] One goroutine owns the zone: a fixed 20 Hz tick on a monotonic clock, measuring tick duration and warning on overruns, with no locks around world state.
+- [x] Per-connection input queues drained each tick; inputs applied in sequence order; stale and duplicate inputs dropped.
+- [x] Movement: fixed speed in tiles per second, axis-separated collision against the collision layer.
+- [x] Validation: input floods, impossible speeds and wall-walking have no effect; repeat offenders are disconnected and logged.
+- [x] Snapshot broadcast every tick to every connected player, each entity's state encoded once per tick and shared by every recipient (interest management comes in Phase 3).
+- [x] Disconnects remove the entity for everyone within one second (`EntityLeft` on close, heartbeat timeout for silent drops).
+- [x] Deterministic tests of the simulation with a fake clock: movement, collision, validation, join and leave.
+- [x] Benchmarks with `ReportAllocs` for the tick, snapshot encoding and input decoding, and an allocation test that fails `make check` if the steady-state simulation step allocates.
 
 ### 2.5 Bots and load generation
 
-- [ ] `server/cmd/lorehallow-bot`: a headless Go client that connects, handshakes and wanders; `-n` runs many from one process cheaply, and it reports its own CPU and memory.
-- [ ] Cheat mode for the bot: input flooding, forged sequence numbers, oversized messages, unknown message types and a handshake that never finishes.
-- [ ] Integration test proving cheat mode never moves a bot faster than allowed or through walls.
-- [ ] Integration test: server plus two bots; each sees the other move, and sees the leave within one second of a disconnect.
+- [x] `server/cmd/lorehallow-bot`: a headless Go client that connects, handshakes and wanders; `-n` runs many from one process cheaply, and it reports its own CPU and memory.
+- [x] Cheat mode for the bot: input flooding, forged sequence numbers, oversized messages, unknown message types and a handshake that never finishes.
+- [x] Integration test proving cheat mode never moves a bot faster than allowed or through walls.
+- [x] Integration test: server plus two bots; each sees the other move, and sees the leave within one second of a disconnect.
 - [ ] `make loadtest SCENARIO=<name>` runs a [scaling.md](docs/design/scaling.md) scenario against a fresh server and writes a draft result to `docs/perf/`; `idle` and `spread` work.
 - [ ] Baseline on `dev-m5`: Case 1 Tier 1 (100 idle connections) and 100 bots in `spread`, recorded in `docs/perf/` with memory per connection, goroutines, tick p99 and bytes per player.
 

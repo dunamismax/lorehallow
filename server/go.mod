@@ -7,7 +7,10 @@ tool (
 	google.golang.org/protobuf/cmd/protoc-gen-go
 )
 
-require google.golang.org/protobuf v1.36.12
+require (
+	github.com/coder/websocket v1.8.15
+	google.golang.org/protobuf v1.36.12
+)
 
 require (
 	golang.org/x/mod v0.42.0 // indirect

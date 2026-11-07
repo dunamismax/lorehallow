@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -23,10 +25,26 @@ type Config struct {
 	LogLevel slog.Level
 	// ShutdownTimeout bounds how long graceful shutdown may take.
 	ShutdownTimeout time.Duration
+	// MapPath is the zone's Tiled map.
+	MapPath string
+	// AdminAddr serves /metrics and /debug/pprof on loopback only; empty disables it.
+	AdminAddr string
+	// MaxConnections caps open game connections.
+	MaxConnections int
+	// MaxPendingPerIP caps unfinished handshakes from one IP.
+	MaxPendingPerIP int
+	// AllowedOrigins lists extra browser origins allowed to open /ws.
+	AllowedOrigins []string
+	// TrustProxy takes client IPs from X-Forwarded-For on loopback connections.
+	TrustProxy bool
 }
 
-// DefaultAddr is the documented local-development listen address.
-const DefaultAddr = "127.0.0.1:7420"
+// Documented local-development defaults.
+const (
+	DefaultAddr      = "127.0.0.1:7420"
+	DefaultAdminAddr = "127.0.0.1:7421"
+	DefaultMapPath   = "content/maps/starter.tmj"
+)
 
 // EnvPrefix is prepended to every environment variable name.
 const EnvPrefix = "LOREHALLOW_"
@@ -48,11 +66,17 @@ func Load(args []string, getenv func(string) string, stderr io.Writer) (Config, 
 	}
 
 	var cfg Config
-	var level, timeout string
+	var level, timeout, maxConns, maxPending, origins, trustProxy string
 	fs.StringVar(&cfg.Addr, "addr", env("ADDR", DefaultAddr), "listen address (env LOREHALLOW_ADDR)")
 	fs.StringVar(&cfg.LogFormat, "log-format", env("LOG_FORMAT", "text"), "log format: text or json (env LOREHALLOW_LOG_FORMAT)")
 	fs.StringVar(&level, "log-level", env("LOG_LEVEL", "info"), "log level: debug, info, warn, error (env LOREHALLOW_LOG_LEVEL)")
-	fs.StringVar(&timeout, "shutdown-timeout", env("SHUTDOWN_TIMEOUT", "10s"), "graceful shutdown timeout (env LOREHALLOW_SHUTDOWN_TIMEOUT)")
+	fs.StringVar(&timeout, "shutdown-timeout", env("SHUTDOWN_TIMEOUT", "20s"), "graceful shutdown timeout (env LOREHALLOW_SHUTDOWN_TIMEOUT)")
+	fs.StringVar(&cfg.MapPath, "map", env("MAP", DefaultMapPath), "zone map, a Tiled .tmj file (env LOREHALLOW_MAP)")
+	fs.StringVar(&cfg.AdminAddr, "admin-addr", env("ADMIN_ADDR", DefaultAdminAddr), "loopback address for /metrics and /debug/pprof; empty disables (env LOREHALLOW_ADMIN_ADDR)")
+	fs.StringVar(&maxConns, "max-connections", env("MAX_CONNECTIONS", "5000"), "maximum open game connections (env LOREHALLOW_MAX_CONNECTIONS)")
+	fs.StringVar(&maxPending, "max-pending-per-ip", env("MAX_PENDING_PER_IP", "16"), "maximum unfinished handshakes per client IP (env LOREHALLOW_MAX_PENDING_PER_IP)")
+	fs.StringVar(&origins, "allowed-origins", env("ALLOWED_ORIGINS", ""), "comma-separated extra browser origins allowed on /ws (env LOREHALLOW_ALLOWED_ORIGINS)")
+	fs.StringVar(&trustProxy, "trust-proxy", env("TRUST_PROXY", "false"), "take client IPs from X-Forwarded-For on loopback connections (env LOREHALLOW_TRUST_PROXY)")
 
 	if err := fs.Parse(args); err != nil {
 		return Config{}, err
@@ -81,6 +105,36 @@ func Load(args []string, getenv func(string) string, stderr io.Writer) (Config, 
 		errs = append(errs, fmt.Errorf("shutdown-timeout must be positive, got %s", d))
 	default:
 		cfg.ShutdownTimeout = d
+	}
+	if cfg.MapPath == "" {
+		errs = append(errs, errors.New("map must not be empty"))
+	}
+	if cfg.AdminAddr != "" {
+		host, _, err := net.SplitHostPort(cfg.AdminAddr)
+		ip := net.ParseIP(host)
+		if err != nil || (host != "localhost" && (ip == nil || !ip.IsLoopback())) {
+			errs = append(errs, fmt.Errorf("admin-addr must be a loopback address (metrics and pprof are never public), got %q", cfg.AdminAddr))
+		}
+	}
+	positive := func(name, v string, dst *int) {
+		n, err := strconv.Atoi(v)
+		if err != nil || n <= 0 {
+			errs = append(errs, fmt.Errorf("%s must be a positive integer, got %q", name, v))
+			return
+		}
+		*dst = n
+	}
+	positive("max-connections", maxConns, &cfg.MaxConnections)
+	positive("max-pending-per-ip", maxPending, &cfg.MaxPendingPerIP)
+	for _, o := range strings.Split(origins, ",") {
+		if o = strings.TrimSpace(o); o != "" {
+			cfg.AllowedOrigins = append(cfg.AllowedOrigins, o)
+		}
+	}
+	if b, err := strconv.ParseBool(trustProxy); err != nil {
+		errs = append(errs, fmt.Errorf("trust-proxy must be true or false, got %q", trustProxy))
+	} else {
+		cfg.TrustProxy = b
 	}
 	if len(errs) > 0 {
 		return Config{}, errors.Join(errs...)

@@ -4,8 +4,19 @@ The Go game server, module `github.com/dunamismax/lorehallow/server`.
 
 | Path | What goes there |
 |---|---|
-| `cmd/lorehallow-server/` | The game server binary. |
+| `cmd/lorehallow-server/` | The game server binary, and the end-to-end tests (real server, real bots, loopback WebSockets). |
+| `cmd/lorehallow-bot/` | Headless bots: one for a quick check, thousands for a load test. |
+| `cmd/lorehallow-content/` | Validates `content/` (`make content-lint`). |
 | `cmd/lorehallow-protovectors/` | Writes the golden protocol vectors to `proto/testdata/` (run by `make proto`). |
+| `internal/sim/` | The game rules: a pure, deterministic simulation of one zone, advanced a tick at a time. No I/O, no clock. |
+| `internal/zone/` | The goroutine that owns a zone's `sim.World`: the tick loop, joins and leaves, encode-once snapshots. |
+| `internal/session/` | One client connection: handshake, read loop, writer goroutine, bounded send queue, eviction, heartbeats, rate limits. |
+| `internal/gameserver/` | The `/ws` endpoint: connection caps, per-IP handshake caps, ordered shutdown. |
+| `internal/wire/` | Envelope decoding with size limits, and the hand-assembled Snapshot encoder. |
+| `internal/mapdata/` | Loads and validates Tiled maps ([ADR 0006](../docs/decisions/0006-tiled-map-format.md)). |
+| `internal/bot/` | The headless client and the swarm that drives many of them. |
+| `internal/metrics/` | A small Prometheus-text metrics registry (counters, gauges, histograms). |
+| `internal/procstat/` | Process CPU and RSS for load tests. |
 | `internal/config/` | Flags and `LOREHALLOW_*` environment variables. |
 | `internal/logging/` | `log/slog` setup: text locally, JSON in production. |
 | `internal/httpapi/` | Plain HTTP endpoints. |
@@ -20,9 +31,15 @@ The Go game server, module `github.com/dunamismax/lorehallow/server`.
 make server        # builds bin/lorehallow-server and runs it on 127.0.0.1:7420
 curl localhost:7420/healthz
 curl localhost:7420/version
+curl localhost:7421/metrics   # admin port, loopback only
+
+# in another terminal: ten wandering bots for a minute
+make server-build && bin/lorehallow-bot -n 10 -duration 1m
 ```
 
-Stop it with Ctrl-C. SIGINT and SIGTERM trigger a graceful shutdown bounded by the shutdown timeout.
+Stop it with Ctrl-C. SIGINT and SIGTERM trigger a graceful shutdown: stop accepting, send every player `Disconnect` (SHUTTING_DOWN), stop the zone, all bounded by the shutdown timeout.
+
+`lorehallow-bot` flags: `-n` bots, `-behavior` (wander, idle, still, follow), `-cheat` with `-cheat-n` (flood, forge-seq, oversize, unknown, bad-values), `-silent` (connect and never say hello), `-ramp`, `-duration`, `-json`. Bots all dial from one IP, so for more than 16 at once start the server with `-max-pending-per-ip` raised.
 
 ## Configuration
 
@@ -33,7 +50,13 @@ Every setting has a flag and an environment variable. Flags win over the environ
 | `-addr` | `LOREHALLOW_ADDR` | `127.0.0.1:7420` | Listen address for HTTP and WebSocket traffic |
 | `-log-format` | `LOREHALLOW_LOG_FORMAT` | `text` | `text` locally, `json` in production |
 | `-log-level` | `LOREHALLOW_LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
-| `-shutdown-timeout` | `LOREHALLOW_SHUTDOWN_TIMEOUT` | `10s` | How long graceful shutdown may take |
+| `-shutdown-timeout` | `LOREHALLOW_SHUTDOWN_TIMEOUT` | `20s` | How long graceful shutdown may take |
+| `-map` | `LOREHALLOW_MAP` | `content/maps/starter.tmj` | The zone's Tiled map |
+| `-admin-addr` | `LOREHALLOW_ADMIN_ADDR` | `127.0.0.1:7421` | Loopback-only address for `/metrics` and `/debug/pprof`; empty disables. A non-loopback address is refused. |
+| `-max-connections` | `LOREHALLOW_MAX_CONNECTIONS` | `5000` | Open game connections; beyond it clients get `Disconnect` SERVER_FULL |
+| `-max-pending-per-ip` | `LOREHALLOW_MAX_PENDING_PER_IP` | `16` | Unfinished handshakes from one IP (slowloris protection); over it, HTTP 429 |
+| `-allowed-origins` | `LOREHALLOW_ALLOWED_ORIGINS` | none | Extra browser origins allowed on `/ws` (non-browser clients send no Origin) |
+| `-trust-proxy` | `LOREHALLOW_TRUST_PROXY` | `false` | Behind Caddy: client IP from the last `X-Forwarded-For` entry, only on loopback connections |
 
 [`.env.example`](../.env.example) lists the variable names.
 
@@ -43,6 +66,9 @@ Every setting has a flag and an environment variable. Flags win over the environ
 |---|---|
 | `GET /healthz` | `ok` with status 200 while the process is serving |
 | `GET /version` | JSON: `version`, `commit` and `protocol_version` |
+| `GET /ws` | The game WebSocket ([docs/design/protocol.md](../docs/design/protocol.md)) |
+| `GET /metrics` (admin port) | Prometheus text: tick histogram, connections, queues, drops, evictions, bytes, GC, goroutines |
+| `/debug/pprof/` (admin port) | Go profiling |
 
 ## Build identity
 

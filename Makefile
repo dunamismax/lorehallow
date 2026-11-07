@@ -80,7 +80,7 @@ check: lint proto-check test ## Everything CI runs: format checks, linters, code
 .PHONY: server
 server: ## Build and run the game server on SERVER_ADDR (default 127.0.0.1:7420)
 	cd $(ROOT)/server && go build -ldflags "$(GO_LDFLAGS)" -o $(BIN)/lorehallow-server ./cmd/lorehallow-server
-	$(BIN)/lorehallow-server -addr $(SERVER_ADDR)
+	$(BIN)/lorehallow-server -addr $(SERVER_ADDR) -map $(ROOT)/content/maps/starter.tmj
 
 .PHONY: server-build
 server-build: ## Build server binaries into bin/

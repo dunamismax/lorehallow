@@ -4,10 +4,23 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
+
+// base is the default configuration with the given changes.
+func base(edit func(c *Config)) Config {
+	c := Config{
+		Addr: DefaultAddr, LogFormat: "text", LogLevel: slog.LevelInfo, ShutdownTimeout: 20 * time.Second,
+		MapPath: DefaultMapPath, AdminAddr: DefaultAdminAddr, MaxConnections: 5000, MaxPendingPerIP: 16,
+	}
+	if edit != nil {
+		edit(&c)
+	}
+	return c
+}
 
 func envMap(m map[string]string) func(string) string {
 	return func(k string) string { return m[k] }
@@ -23,7 +36,7 @@ func TestLoad(t *testing.T) {
 	}{
 		{
 			name: "defaults",
-			want: Config{Addr: DefaultAddr, LogFormat: "text", LogLevel: slog.LevelInfo, ShutdownTimeout: 10 * time.Second},
+			want: base(nil),
 		},
 		{
 			name: "environment overrides defaults",
@@ -33,14 +46,30 @@ func TestLoad(t *testing.T) {
 				"LOREHALLOW_LOG_LEVEL":        "debug",
 				"LOREHALLOW_SHUTDOWN_TIMEOUT": "3s",
 			},
-			want: Config{Addr: ":9000", LogFormat: "json", LogLevel: slog.LevelDebug, ShutdownTimeout: 3 * time.Second},
+			want: base(func(c *Config) {
+				c.Addr, c.LogFormat, c.LogLevel, c.ShutdownTimeout = ":9000", "json", slog.LevelDebug, 3*time.Second
+			}),
 		},
 		{
 			name: "flags override environment",
 			args: []string{"-addr", "0.0.0.0:1234", "-log-level", "warn"},
 			env:  map[string]string{"LOREHALLOW_ADDR": ":9000", "LOREHALLOW_LOG_LEVEL": "debug"},
-			want: Config{Addr: "0.0.0.0:1234", LogFormat: "text", LogLevel: slog.LevelWarn, ShutdownTimeout: 10 * time.Second},
+			want: base(func(c *Config) { c.Addr, c.LogLevel = "0.0.0.0:1234", slog.LevelWarn }),
 		},
+		{
+			name: "game server settings",
+			args: []string{"-map", "x.tmj", "-max-connections", "100", "-allowed-origins", "lorehallow.com, www.lorehallow.com", "-trust-proxy", "true", "-admin-addr", ""},
+			env:  map[string]string{"LOREHALLOW_MAX_PENDING_PER_IP": "4"},
+			want: base(func(c *Config) {
+				c.MapPath, c.MaxConnections, c.MaxPendingPerIP, c.TrustProxy, c.AdminAddr = "x.tmj", 100, 4, true, ""
+				c.AllowedOrigins = []string{"lorehallow.com", "www.lorehallow.com"}
+			}),
+		},
+		{name: "public admin address", args: []string{"-admin-addr", "0.0.0.0:7421"}, wantErr: "loopback"},
+		{name: "admin on localhost is fine", args: []string{"-admin-addr", "localhost:9"}, want: base(func(c *Config) { c.AdminAddr = "localhost:9" })},
+		{name: "zero connections", args: []string{"-max-connections", "0"}, wantErr: "max-connections"},
+		{name: "bad trust-proxy", args: []string{"-trust-proxy", "maybe"}, wantErr: "trust-proxy"},
+		{name: "empty map", args: []string{"-map", ""}, wantErr: "map must not be empty"},
 		{name: "bad log format", args: []string{"-log-format", "xml"}, wantErr: "log-format"},
 		{name: "bad log level", env: map[string]string{"LOREHALLOW_LOG_LEVEL": "loud"}, wantErr: "log-level"},
 		{name: "bad timeout", args: []string{"-shutdown-timeout", "soon"}, wantErr: "shutdown-timeout"},
@@ -61,7 +90,7 @@ func TestLoad(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Load() unexpected error: %v", err)
 			}
-			if got != tt.want {
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Load() = %+v, want %+v", got, tt.want)
 			}
 		})
