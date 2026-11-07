@@ -140,16 +140,16 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Write `art/style/STYLE.md`: grid, scale, perspective, light, outlines, shading steps, character proportions, animation rules, and do and don't examples.
 - [x] Write Batch 01 prompts and manifest: a style reference sheet, one character concept (32×48) and a grass, dirt and stone tileset (32×32, including transitions).
 - [x] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.
-- [ ] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
+- [x] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
 - [x] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
 - [ ] Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels.
 
 ### 0.9 Art Batch 02: brand and website art
 
 - [x] Write Batch 02 prompts and manifest: logo wordmark, square emblem (favicon and app icon), hero key-art scene, 2 or 3 parallax background layers, a character lineup, section icons, a sheet of 20 progress-map landmarks (one per phase, from a starting campfire to a castle for v1.0), devlog header art, an Open Graph card background (1200×630) and 404 art.
-- [ ] `HUMAN` Generate Batch 02 and drop it into `art/inbox/batch-02/`.
-- [ ] Run intake on Batch 02 (same palette, larger logical sizes allowed for web art) and iterate until accepted.
-- [ ] Export the favicon set (16, 32, 180, 192 and 512 px) and the client app icon from the emblem.
+- [x] `HUMAN` Generate Batch 02 and drop it into `art/inbox/batch-02/`.
+- [x] Run intake on Batch 02 (same palette, larger logical sizes allowed for web art) and iterate until accepted.
+- [x] Export the favicon set (16, 32, 180, 192 and 512 px) and the client app icon from the emblem.
 - [ ] `HUMAN` Approve the logo and hero art as the public face of the project.
 
 ### 0.10 Continuous integration
@@ -170,7 +170,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
 - [x] Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
 - [ ] Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
-- [ ] Batch 02 assets are processed and ready in `art/processed/web/`.
+- [x] Batch 02 assets are processed and ready in `art/processed/web/`.
 - [x] The Phase 0 walkthrough exists and every `ADR` item in this phase has its ADR.
 
 ---
@@ -337,6 +337,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 - [ ] Write Batch 03 prompts and manifest: the player character sheet (32×48, four directions, idle 2 frames, walk 4 frames) and the extra tiles the starter map needs (trees, rocks, path edges, water edges and a few props).
 - [ ] `HUMAN` Generate Batch 03 into `art/inbox/batch-03/`.
+- [ ] Make the Batch 01 transition tiles self-tile: a fix script so each edge and center tile's opposite borders match (generated sheets differ by up to half a tile edge today).
 - [ ] Run intake, check frame alignment, iterate until accepted, and `make sync`.
 - [ ] Character SpriteFrames and animation setup in the client; placeholder art fully replaced.
 

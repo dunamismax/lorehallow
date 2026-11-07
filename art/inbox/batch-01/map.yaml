@@ -6,7 +6,8 @@ files:
   # including the hair, the tall end of STYLE.md's proportions.
   01-02-concept_hero-a4.png: concept_hero
   exec-36d2db21-f88c-4b34-8fe8-fce5b01f13db.png: terrain_base
-  # Both transition sheets need regenerating: drawn grid lines between tiles,
-  # and the stone sheet doesn't follow the 3×3 patch layout.
-  01-04-terrain_grass_dirt-a6.png: terrain_grass_dirt
-  01-05-terrain_grass_stone-a6.png: terrain_grass_stone
+  # Attempt 6 of each follows its layout guide with no lines between tiles.
+  # Drawn at ~156 art pixels across instead of 128, so they are sampled on
+  # the 4×4 tile layout. Edges don't yet self-tile perfectly (BUILD.md 2.5).
+  01-04-terrain_grass_dirt-a6.png: {asset: terrain_grass_dirt, grid: fixed}
+  01-05-terrain_grass_stone-a6.png: {asset: terrain_grass_stone, grid: fixed}
