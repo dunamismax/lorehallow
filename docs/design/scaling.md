@@ -82,7 +82,7 @@ A connection counts when it has completed the handshake, is in a zone and answer
 
 | Metric | Tier 1: 100 | Tier 2: 1,000 | Tier 3: 5,000 | Tier 4: 10,000 (stretch) |
 |---|---|---|---|---|
-| Server memory per idle connection: (RSS at N − RSS at 0) / N | ≤ 64 KiB | ≤ 48 KiB | ≤ 48 KiB | ≤ 48 KiB |
+| Server memory per idle connection, marginal: (RSS at N − RSS at N/2) / (N/2) | ≤ 64 KiB | ≤ 48 KiB | ≤ 48 KiB | ≤ 48 KiB |
 | Goroutines: total − baseline | ≤ 2N | ≤ 2N | ≤ 2N | ≤ 2N |
 | Server CPU at steady state | ≤ 2% of one core | ≤ 10% of one core | ≤ 50% of one core | ≤ 1 core |
 | Idle bandwidth per connection, both directions | ≤ 200 B/s | ≤ 200 B/s | ≤ 200 B/s | ≤ 200 B/s |
@@ -91,6 +91,8 @@ A connection counts when it has completed the handshake, is in a zone and answer
 | Goroutines and memory after everyone disconnects | Back to baseline ±1% within 10 s | same | same | same |
 
 **Scenario:** `make loadtest SCENARIO=idle N=<n>`. Bots connect at a steady rate, handshake, spawn spread across the map and then only answer heartbeats (and take one step a minute). Hold for 10 minutes, then disconnect all and watch memory and goroutines return to baseline.
+
+**Why memory is measured as a marginal cost** (changed 2026-11-07, owner-approved, [ADR 0010](../decisions/0010-per-connection-memory.md)): the bots connect in two halves, and RSS is sampled once the first half has settled and again over the main window. Memory at N is a fixed part plus N times a per-connection part, and the difference between the two samples cancels the fixed part. The fixed part is real but not per player: the Go runtime's GC won't collect until the heap reaches 4 MB, and runtime structures grow once with the first connections. The old metric, (RSS at N − RSS at 0) / N, spread that fixed part over N, which inflated small tiers: about 30 KiB of the 72 KiB measured at 100 connections. Every result still records the old metric and the fixed part, so neither is hidden. The fixed-part estimate is noisy at large N and can come out negative when the GC's heap goal steps up between the two samples. The marginal number then reads high, so the error is on the strict side.
 
 ## Case 2: active players across many zones
 
@@ -210,8 +212,8 @@ Updated whenever a result lands in `docs/perf/`. A tier is met only with a linke
 
 | Case | Tier | `dev-m5` | `prod` | Phase that must meet it |
 |---|---|---|---|---|
-| 1. Connections | T1 100 | **Not met**: memory 72 KiB per connection (target 64), mostly Go's minimum-heap slack at this size (ADR 0010); bandwidth, CPU, RTT, tick pass ([result](../perf/2026-11-07-idle-t1-2.md)) | Not measured | 2 |
-| 1. Connections | T2 1,000 | **Not met**: memory passes (39 KiB, target 48); bandwidth, CPU and tick p99 over without interest management ([result](../perf/2026-11-07-idle-t2-2.md)) | Not measured | 3 |
+| 1. Connections | T1 100 | **Met**: memory 42 and 46 KiB per connection, marginal (target 64); CPU, bandwidth, RTT, tick pass ([result](../perf/2026-11-07-idle-t1-3.md), [repeat](../perf/2026-11-07-idle-t1-4.md)) | Not measured | 2 |
+| 1. Connections | T2 1,000 | **Not met**: memory passes (39 KiB marginal, target 48); bandwidth, CPU and tick p99 over without interest management ([result](../perf/2026-11-07-idle-t2-3.md)) | Not measured | 3 |
 | 1. Connections | T3 5,000 | Not measured | Not measured | 12 |
 | 1. Connections | T4 10,000 | Not measured | Not measured | Stretch |
 | 2. Active, spread | T1 100 | Tick and CPU pass; bandwidth 15 KB/s not yet held (one zone, no interest management) ([result](../perf/2026-11-07-spread-t1.md)) | Not measured | 3 |

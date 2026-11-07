@@ -4,10 +4,14 @@
 //	lorehallow-loadtest -scenario idle -n 100 -duration 2m
 //
 // It starts bin/lorehallow-server as a separate process (so the server's
-// memory and CPU are its own), connects an in-process bot swarm, waits a
-// warm-up, then measures over a window: it scrapes the server's /metrics
-// at the start and end of the window and samples the server's RSS every
-// second. After the window it disconnects every bot and checks the server
+// memory and CPU are its own) and connects an in-process bot swarm in two
+// halves. After the first half and a warm-up it samples the server's RSS
+// for a short window; after the second half and another warm-up it
+// measures the main window: it scrapes the server's /metrics at the start
+// and end and samples RSS every second. Memory per connection is the
+// difference between the two windows divided by the second half's size,
+// the marginal cost of a connection, so the runtime's fixed overhead
+// (present in both) cancels out (scaling.md, ADR 0010). After the window it disconnects every bot and checks the server
 // returns to its baseline. The draft names the hardware it ran on and
 // marks each scaling.md target pass or fail; an agent checks the numbers
 // and fills in the notes before committing it.
@@ -50,6 +54,7 @@ type options struct {
 	outDir, commit string
 	hardware       string
 	protocol       uint
+	halfWindow     time.Duration
 }
 
 func run(args []string) error {
@@ -66,6 +71,7 @@ func run(args []string) error {
 	fs.StringVar(&o.commit, "commit", "unknown", "git commit being measured")
 	fs.StringVar(&o.hardware, "hardware", "", "hardware name and description (default: this machine as dev-m5 if it matches)")
 	fs.UintVar(&o.protocol, "protocol-version", 0, "protocol version the bots announce (0: current; set it to measure an older server build)")
+	fs.DurationVar(&o.halfWindow, "half-window", 0, "RSS sampling window with the first half connected (default: a quarter of -duration, at least 15 s)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -80,6 +86,12 @@ func run(args []string) error {
 	}
 	if o.ramp == 0 {
 		o.ramp = time.Duration(o.n) * 10 * time.Millisecond
+	}
+	if o.halfWindow == 0 {
+		o.halfWindow = max(o.duration/4, 15*time.Second)
+	}
+	if o.n < 2 {
+		return fmt.Errorf("-n must be at least 2 (the swarm connects in two halves)")
 	}
 
 	// Start the server on free ports, with limits that fit the test.
@@ -107,27 +119,70 @@ func run(args []string) error {
 		return err
 	}
 
-	// Connect the swarm.
+	// Connect the swarm in two halves. Memory per connection is measured
+	// as the marginal cost between them, so fixed runtime overhead (the
+	// GC's minimum heap goal, runtime structures) doesn't count against it.
 	ctx, stopSwarm := context.WithCancel(context.Background())
 	defer stopSwarm()
 	stats := &bot.Stats{}
-	ready := make(chan *bot.Swarm, 1)
-	swarmDone := make(chan *bot.Swarm, 1)
 	genCPU0 := procstat.SelfCPU()
 	genPeak := procstat.NewPeakRSS(os.Getpid(), time.Second)
-	connectStart := time.Now()
-	go func() {
-		swarmDone <- bot.RunSwarm(ctx, bot.SwarmConfig{URL: "ws://" + game + "/ws", N: o.n, Ramp: o.ramp, Behavior: behavior, Seed: 1, Stats: stats, ProtocolVersion: uint32(o.protocol)},
-			func(s *bot.Swarm) { ready <- s })
-	}()
-	sw := <-ready
-	connectTook := time.Since(connectStart)
-	fmt.Fprintf(os.Stderr, "loadtest: %d of %d bots connected in %v; warming up %v\n", len(sw.Bots()), o.n, connectTook.Round(time.Millisecond), o.warmup)
-	if len(sw.Bots()) != o.n {
+	half := o.n / 2
+	var swarms []*bot.Swarm
+	var dones []chan *bot.Swarm
+	stopAll := func() {
 		stopSwarm()
-		<-swarmDone
-		return fmt.Errorf("only %d of %d bots connected; first errors: %v", len(sw.Bots()), o.n, sw.Errs[:min(3, len(sw.Errs))])
+		for _, d := range dones {
+			<-d
+		}
 	}
+	connect := func(n int, seed uint64, ramp time.Duration) error {
+		ready := make(chan *bot.Swarm, 1)
+		done := make(chan *bot.Swarm, 1)
+		dones = append(dones, done)
+		go func() {
+			done <- bot.RunSwarm(ctx, bot.SwarmConfig{URL: "ws://" + game + "/ws", N: n, Ramp: ramp, Behavior: behavior, Seed: seed, Stats: stats, ProtocolVersion: uint32(o.protocol)},
+				func(s *bot.Swarm) { ready <- s })
+		}()
+		sw := <-ready
+		swarms = append(swarms, sw)
+		if len(sw.Bots()) != n {
+			stopAll()
+			return fmt.Errorf("only %d of %d bots connected; first errors: %v", len(sw.Bots()), n, sw.Errs[:min(3, len(sw.Errs))])
+		}
+		return nil
+	}
+	sampleRSS := func(d time.Duration) (mean, peak int64) {
+		var sum, n int64
+		tick := time.NewTicker(time.Second)
+		defer tick.Stop()
+		for t0 := time.Now(); time.Since(t0) < d; {
+			<-tick.C
+			if v, err := procstat.RSS(pid); err == nil {
+				sum += v
+				n++
+				peak = max(peak, v)
+			}
+		}
+		return sum / max(n, 1), peak
+	}
+
+	connectStart := time.Now()
+	halfRamp := time.Duration(int64(o.ramp) * int64(half) / int64(o.n))
+	if err := connect(half, 1, halfRamp); err != nil {
+		return err
+	}
+	fmt.Fprintf(os.Stderr, "loadtest: first %d bots connected; warming up %v, then sampling RSS for %v\n", half, o.warmup, o.halfWindow)
+	connectTook := time.Since(connectStart)
+	settle(o.warmup)
+	halfRSS, _ := sampleRSS(o.halfWindow)
+
+	secondStart := time.Now()
+	if err := connect(o.n-half, 1+uint64(half), o.ramp-halfRamp); err != nil {
+		return err
+	}
+	connectTook += time.Since(secondStart)
+	fmt.Fprintf(os.Stderr, "loadtest: all %d bots connected; warming up %v\n", o.n, o.warmup)
 	settle(o.warmup)
 
 	// Measure.
@@ -138,18 +193,7 @@ func run(args []string) error {
 	}
 	t0 := time.Now()
 	in0, out0 := stats.BytesIn.Load(), stats.BytesOut.Load()
-	var rssSum, rssMax int64
-	var rssN int64
-	tick := time.NewTicker(time.Second)
-	for time.Since(t0) < o.duration {
-		<-tick.C
-		if v, err := procstat.RSS(pid); err == nil {
-			rssSum += v
-			rssN++
-			rssMax = max(rssMax, v)
-		}
-	}
-	tick.Stop()
+	meanRSS, maxRSS := sampleRSS(o.duration)
 	end, err := scrape()
 	if err != nil {
 		return err
@@ -157,17 +201,18 @@ func run(args []string) error {
 	window := time.Since(t0).Seconds()
 	genIn, genOut := stats.BytesIn.Load()-in0, stats.BytesOut.Load()-out0
 	stillOn := 0
-	for _, b := range sw.Bots() {
-		select {
-		case <-b.Done():
-		default:
-			stillOn++
+	for _, sw := range swarms {
+		for _, b := range sw.Bots() {
+			select {
+			case <-b.Done():
+			default:
+				stillOn++
+			}
 		}
 	}
 
 	// Disconnect everyone and check the server returns to baseline.
-	stopSwarm()
-	<-swarmDone
+	stopAll()
 	genCPU := (procstat.SelfCPU() - genCPU0).Seconds()
 	genRSS := genPeak.Stop()
 	var after metrics.Scrape
@@ -185,7 +230,7 @@ func run(args []string) error {
 
 	r := result{o: o, window: window, connectTook: connectTook, n: float64(o.n), stillOn: stillOn,
 		base: base, start: start, end: end, after: after, backAt: backAt,
-		baseRSS: baseRSS, meanRSS: rssSum / max(rssN, 1), maxRSS: rssMax,
+		baseRSS: baseRSS, halfRSS: halfRSS, half: half, meanRSS: meanRSS, maxRSS: maxRSS,
 		genCPU: genCPU, genRSS: genRSS, genIn: genIn, genOut: genOut, stats: stats}
 	path, err := r.write()
 	if err != nil {
@@ -241,6 +286,8 @@ type result struct {
 	base, start, end, after  metrics.Scrape
 	backAt                   time.Duration
 	baseRSS, meanRSS, maxRSS int64
+	halfRSS                  int64 // mean RSS with the first half connected
+	half                     int
 	genCPU                   float64
 	genRSS                   int64
 	genIn, genOut            int64
@@ -288,7 +335,12 @@ func (r *result) rows() []row {
 	outPerPlayer := r.delta("lorehallow_bytes_out_total") / r.window / r.n
 	msgsOutPerPlayer := r.delta("lorehallow_messages_out_total") / r.window / r.n
 	inPerPlayer := r.delta("lorehallow_bytes_in_total") / r.window / r.n
-	memPerConn := float64(r.meanRSS-r.baseRSS) / r.n
+	// The marginal cost of a connection: what the second half added.
+	memPerConn := float64(r.meanRSS-r.halfRSS) / float64(r.o.n-r.half)
+	// What the old metric measured: everything above an empty server,
+	// fixed runtime overhead included.
+	memPerConnTotal := float64(r.meanRSS-r.baseRSS) / r.n
+	fixed := float64(r.halfRSS-r.baseRSS) - float64(r.half)*memPerConn
 	heapPerConn := ((r.end.Values["lorehallow_heap_inuse_bytes"] + r.end.Values["lorehallow_stack_inuse_bytes"]) -
 		(r.base.Values["lorehallow_heap_inuse_bytes"] + r.base.Values["lorehallow_stack_inuse_bytes"])) / r.n
 	gor := r.end.Values["lorehallow_goroutines"] - r.base.Values["lorehallow_goroutines"]
@@ -306,7 +358,8 @@ func (r *result) rows() []row {
 		{"Ticks over the 50 ms budget", "(recorded)", fmt.Sprintf("%.0f of %.0f", overruns, tick.Count()), "n/a"},
 		{"Evicted as too slow", "0", fmt.Sprintf("%.0f", evicted), check(evicted == 0)},
 		{"Server goroutines above baseline", fmt.Sprintf("≤ 2N = %d", 2*r.o.n), fmt.Sprintf("%.0f (%.2f per connection)", gor, gor/r.n), check(gor <= 2*r.n)},
-		{"Server memory per connection, RSS ((mean RSS − baseline) / N)", "(see below)", fmt.Sprintf("%.1f KiB", memPerConn/1024), "n/a"},
+		{"Server memory per connection including fixed overhead ((mean RSS − baseline) / N)", "(recorded)", fmt.Sprintf("%.1f KiB", memPerConnTotal/1024), "n/a"},
+		{"Server fixed overhead above baseline (RSS at N/2 − N/2 × marginal − baseline)", "(recorded)", fmt.Sprintf("%.1f MB", fixed/1e6), "n/a"},
 		{"Server heap + stacks per connection", "(recorded)", fmt.Sprintf("%.1f KiB", heapPerConn/1024), "n/a"},
 		{"Server allocations per tick (whole process)", "(recorded)", fmt.Sprintf("%.0f", mallocsPerTick), "n/a"},
 		{"Server CPU", "(see below)", fmt.Sprintf("%.3f cores", cpuCores), "n/a"},
@@ -327,7 +380,7 @@ func (r *result) rows() []row {
 		}
 		both := outPerPlayer + inPerPlayer
 		out = []row{
-			{"Server memory per idle connection (RSS)", fmt.Sprintf("≤ %.0f KiB", memT), fmt.Sprintf("%.1f KiB", memPerConn/1024), check(memPerConn/1024 <= memT)},
+			{"Server memory per idle connection (marginal RSS: (RSS at N − RSS at N/2) / (N/2))", fmt.Sprintf("≤ %.0f KiB", memT), fmt.Sprintf("%.1f KiB", memPerConn/1024), check(memPerConn/1024 <= memT)},
 			{"Server CPU at steady state", fmt.Sprintf("≤ %.0f%% of one core", cpuT*100), fmt.Sprintf("%.1f%% of one core", cpuCores*100), check(cpuCores <= cpuT)},
 			{"Idle bandwidth per connection, both directions", "≤ 200 B/s", fmt.Sprintf("%.0f B/s", both), check(both <= 200)},
 			{"Heartbeat round trip p99, loopback", fmt.Sprintf("≤ %v", rttT), ms(rtt.Quantile(0.99)), check(rtt.Count() > 0 && rtt.Quantile(0.99) <= rttT)},
@@ -378,15 +431,15 @@ func (r *result) write() (string, error) {
 	fmt.Fprintf(&b, "- **Generator:** `lorehallow-loadtest` in-process swarm on the same machine as the server; generator CPU %.1f s over the whole run (%.2f cores averaged over connect, warm-up and window), peak RSS %.1f MB\n",
 		r.genCPU, r.genCPU/(r.connectTook.Seconds()+r.o.warmup.Seconds()+r.window), float64(r.genRSS)/1e6)
 	fmt.Fprintf(&b, "- **Command:** `make loadtest SCENARIO=%s N=%d DURATION=%s`\n", r.o.scenario, r.o.n, r.o.duration)
-	fmt.Fprintf(&b, "- **Duration:** connect %.1f s (ramp %s), warm-up %s, measured window %.1f s\n- **Map:** `%s` (one zone; Phase 2 sends every entity to every player)\n\n",
-		r.connectTook.Seconds(), r.o.ramp, r.o.warmup, r.window, r.o.mp)
+	fmt.Fprintf(&b, "- **Duration:** connect %.1f s in two halves (ramp %s), warm-up %s after each half, RSS sampled %s with %d connected, measured window %.1f s\n- **Map:** `%s` (one zone; Phase 2 sends every entity to every player)\n\n",
+		r.connectTook.Seconds(), r.o.ramp, r.o.warmup, r.o.halfWindow, r.half, r.window, r.o.mp)
 	fmt.Fprintf(&b, "## Results\n\nTargets from [scaling.md](../design/scaling.md) for this case and tier. \"n/a\" rows are recorded, not held. Tick times are bucket upper bounds (an over-estimate by at most ×1.41).\n\n")
 	fmt.Fprintf(&b, "| Metric | Target | Measured | Pass |\n|---|---|---|---|\n")
 	for _, x := range rows {
 		fmt.Fprintf(&b, "| %s | %s | %s | %s |\n", x.metric, x.target, x.measured, x.pass)
 	}
-	fmt.Fprintf(&b, "\nServer RSS: baseline %.1f MB, mean %.1f MB and peak %.1f MB during the window. Generator saw %.0f B/s in and %.0f B/s out per bot.\n\n",
-		float64(r.baseRSS)/1e6, float64(r.meanRSS)/1e6, float64(r.maxRSS)/1e6, float64(r.genIn)/r.window/r.n, float64(r.genOut)/r.window/r.n)
+	fmt.Fprintf(&b, "\nServer RSS: baseline %.1f MB, mean %.1f MB with %d connected, mean %.1f MB and peak %.1f MB during the window. Generator saw %.0f B/s in and %.0f B/s out per bot.\n\n",
+		float64(r.baseRSS)/1e6, float64(r.halfRSS)/1e6, r.half, float64(r.meanRSS)/1e6, float64(r.maxRSS)/1e6, float64(r.genIn)/r.window/r.n, float64(r.genOut)/r.window/r.n)
 	fmt.Fprintf(&b, "## Notes\n\n(Fill in: what limited the run, anything surprising, what to try next.)\n")
 	if err := os.MkdirAll(r.o.outDir, 0o755); err != nil {
 		return "", err

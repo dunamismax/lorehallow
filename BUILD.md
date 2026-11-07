@@ -413,7 +413,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Closing a client removes that player for everyone within one second.
 - [ ] A modified client sending forged or flooded input cannot move faster than allowed (integration test).
 - [ ] A stalled client is evicted without raising anyone else's tick time, and the server shuts down with no goroutines left behind (integration tests).
-- [ ] Case 1 Tier 1 in [scaling.md](docs/design/scaling.md) (100 idle connections) is met on `dev-m5`, with the result in `docs/perf/`.
+- [x] Case 1 Tier 1 in [scaling.md](docs/design/scaling.md) (100 idle connections) is met on `dev-m5`, with the result in `docs/perf/`.
 - [ ] The walkthrough explains the tick loop, the snapshot format, interpolation and backpressure.
 
 ---
