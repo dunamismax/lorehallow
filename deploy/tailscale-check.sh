@@ -14,7 +14,7 @@ out="${GITHUB_OUTPUT:-/dev/null}"
 
 shape() { # name, value
   local v="$2" note=""
-  [[ "$v" != "${v#"${v%%[![:space:]]*}"}" || "$v" != "${v%"${v##*[![:space:]]}"}" ]] && note=" (has leading or trailing whitespace)"
+  if [[ "$v" =~ ^[[:space:]] || "$v" =~ [[:space:]]$ ]]; then note=" (has leading or trailing whitespace)"; fi
   case "$v" in
   tskey-client-*) echo "$1: ${#v} chars, an OAuth client secret (tskey-client-)$note" ;;
   tskey-api-*) echo "$1: ${#v} chars, an API ACCESS TOKEN (tskey-api-), not an OAuth secret$note" ;;

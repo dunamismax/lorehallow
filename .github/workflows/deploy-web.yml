@@ -61,13 +61,21 @@ jobs:
         if: env.HAS_DEPLOY_SECRETS != 'true'
         run: echo "::warning title=Website not deployed::Add TS_OAUTH_CLIENT_ID, TS_OAUTH_SECRET and LOREHALLOW_DEPLOY_HOST (docs/ops/website.md)."
 
+      - name: Check the Tailscale credentials
+        id: ts
+        if: env.HAS_DEPLOY_SECRETS == 'true'
+        env:
+          TS_OAUTH_CLIENT_ID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          TS_OAUTH_SECRET: ${{ secrets.TS_OAUTH_SECRET }}
+        run: deploy/tailscale-check.sh
+
       - name: Join the tailnet
         if: env.HAS_DEPLOY_SECRETS == 'true'
         uses: tailscale/github-action@v4.4.0
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
+          tags: ${{ steps.ts.outputs.tags }}
 
       - name: Deploy
         if: env.HAS_DEPLOY_SECRETS == 'true'
