@@ -546,7 +546,7 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 9 | Website before gameplay: phases are 0 scaffold, 1 website, 2+ game | Decided | Public, followable progress from day one | Owner |
 | 10 | Website is an Astro static site; BUILD.md parsed at build time | Default | Static output is fast and simple to self-host; Markdown-native | BUILD.md 1.2 |
 | 11 | Website deploys from GitHub Actions to the host over SSH on every relevant push | Default | Makes the progress tracker update automatically | BUILD.md 1.9 |
-| 12 | Caddy as reverse proxy with automatic HTTPS | Default | Automatic certificates and simple WebSocket proxying | BUILD.md 1.1 |
+| 12 | Caddy as reverse proxy with automatic HTTPS: Lorehallow is one site file on the owner's shared Caddy; never touch the main Caddyfile, other sites, firewall or SSH; validate as the caddy user before every reload | Decided | The host already runs Caddy for other sites | [ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md) |
 | 13 | GNU Make as the single command runner | Default | Already installed on macOS and Linux; one entry point for humans, agents and CI | BUILD.md 0.3 |
 | 14 | Art tooling in Python managed by uv (Pillow, numpy) | Default | Best image-processing ecosystem; uv keeps it reproducible | BUILD.md 0.7 |
 | 15 | GUT for Godot tests; gdtoolkit for GDScript format and lint | Default | Mature, headless-friendly | BUILD.md 0.6 |

@@ -204,14 +204,14 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.1 Host provisioning and hardening
 
-- [ ] `HUMAN` Fill in `deploy/HOST.md` (or give an agent the facts to write it): OS and version, CPU architecture, RAM and disk, network setup (public IP, or ports 80 and 443 forwarded if it's at home), and anything else already running on it.
+- [x] `HUMAN` Fill in `deploy/HOST.md` (or give an agent the facts to write it): OS and version, CPU architecture, RAM and disk, network setup (public IP, or ports 80 and 443 forwarded if it's at home), and anything else already running on it.
 - [ ] `HUMAN` Point DNS A and AAAA records for `lorehallow.com`, `www.lorehallow.com` and `play.lorehallow.com` at the host, and note the DNS provider in `deploy/HOST.md`.
 - [ ] Write `deploy/bootstrap/host.sh`, an idempotent provisioning script: create the `deploy` and service users, key-only SSH with root login off, firewall allowing only 22, 80 and 443, automatic security updates, fail2ban or equivalent, Caddy, and the `/srv/lorehallow` and `/etc/lorehallow` layout.
 - [ ] `HUMAN` Review and run the bootstrap script with sudo (or let an agent run it), and authorize SSH keys for agent sessions and for CI on the `deploy` user.
-- [ ] `ADR` Reverse proxy: Caddy with automatic HTTPS (recommended). Config in `deploy/caddy/Caddyfile`, site root `/srv/lorehallow/web/current`.
-- [ ] HTTPS works with valid certificates; HTTP redirects to HTTPS and `www` redirects to the apex.
-- [ ] Security headers (HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), compression, and long cache lifetimes for fingerprinted assets.
-- [ ] Every host change documented in `deploy/HOST.md`.
+- [x] `ADR` Reverse proxy: Caddy with automatic HTTPS (recommended). Config in `deploy/caddy/lorehallow.caddy` (a site file on the shared host, ADR 0009), site root `/srv/lorehallow/web/current`.
+- [x] HTTPS works with valid certificates; HTTP redirects to HTTPS and `www` redirects to the apex.
+- [x] Security headers (HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), compression, and long cache lifetimes for fingerprinted assets.
+- [x] Every host change documented in `deploy/HOST.md`.
 
 ### 1.2 Site scaffold
 
@@ -388,12 +388,12 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 2.9 Deploy the game server
 
-- [ ] systemd unit `deploy/server/lorehallow-server.service`: dedicated user, restart on failure, sandboxing options, `LimitNOFILE` raised for many connections, env file at `/etc/lorehallow/server.env`.
+- [x] systemd unit `deploy/server/lorehallow-server.service`: dedicated user, restart on failure, sandboxing options, `LimitNOFILE` raised for many connections, env file at `/etc/lorehallow/server.env`.
 - [ ] Caddy site for `play.lorehallow.com` proxying `/ws` WebSocket upgrades to the server on localhost.
 - [ ] `make deploy-server`: cross-compile for the host, upload, switch, restart, check `/healthz`, and roll back automatically on failure.
 - [ ] Public `GET /api/status` (online count, uptime, version, protocol version) at `lorehallow.com/api/status`, cached briefly.
 - [ ] Website /status page and a landing-page indicator showing server state and player count (progressive enhancement).
-- [ ] Logs in journald, and `docs/ops/runbook.md` started with start, stop, logs, deploy and rollback commands.
+- [x] Logs in journald, and `docs/ops/runbook.md` started with start, stop, logs, deploy and rollback commands.
 
 ### 2.10 Playtest builds
 
