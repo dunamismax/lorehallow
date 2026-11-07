@@ -176,9 +176,9 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Redraw the grass-to-dirt and grass-to-flagstone transition sets so every edge and center tile self-tiles and the 3×3 patch closes.
 - [x] Redraw the concept hero (32×48, feet on row 45, 28 to 32 px tall to the top of the head).
 - [x] Draw the props the reference scene needs (a tree, a mossy rock, a lantern post, a cottage corner) and rebuild the style reference vignette (240×160) as a composite of the hand-drawn tiles, hero and props; `art/style/reference.png` follows.
-- [ ] Redraw the logo wordmark (192×64), the 32 and 16 px emblems, the 16 section icons and the 20 progress landmarks, then re-export the favicons and app icon.
-- [ ] Redraw the character lineup with five hand-drawn adventurers at the in-game 32×48 scale.
-- [ ] Keep the generated hero scene, parallax layers, devlog header, social card and 404 art; check they still sit well next to the hand-drawn art, and note any that should be regenerated.
+- [x] Redraw the logo wordmark (192×64), the 32 and 16 px emblems, the 16 section icons and the 20 progress landmarks, then re-export the favicons and app icon.
+- [x] Redraw the character lineup with five hand-drawn adventurers at the in-game 32×48 scale.
+- [x] Keep the generated hero scene, parallax layers, devlog header, social card and 404 art; check they still sit well next to the hand-drawn art, and note any that should be regenerated.
 - [ ] Update the Phase 0 walkthrough and devlog draft to describe hand-drawn art.
 
 ### Acceptance criteria
@@ -262,9 +262,9 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 1.7 More pages
 
 - [ ] /world: the setting and mood (mossy forests, lantern-lit towns, old stone ruins) with an art gallery, marked as early and subject to change.
-- [ ] /about: the project's two goals, building in the open, how it's made (the owner's direction, AI agents writing the code, AI-generated art run through the processing pipeline) and the tech stack.
+- [ ] /about: the project's two goals, building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
 - [ ] /faq: is it free, when can I play, which platforms, how many players, how to follow along.
-- [ ] Custom 404 page with the 404 art.
+- [ ] Custom 404 page with hand-drawn 404 art (redraw `not_found` by hand: the generated one shows the old hero design).
 - [ ] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [ ] No third-party trackers, scripts or fonts on any page.
 

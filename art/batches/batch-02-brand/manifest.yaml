@@ -1,6 +1,8 @@
 # Batch 02: brand and website art. Schema: tools/art/src/lorehallow_art/manifest.py
 # Web art uses the same palette and rules at larger logical sizes, and is
-# always shown at whole-number scales.
+# always shown at whole-number scales. The logo, emblems, icons, landmarks
+# and lineup are hand-drawn (art/src/, ADR 0004); the large painted images
+# stay generated and go through intake.
 batch: "02"
 title: Brand and website art
 palette: art/style/palette.hex
@@ -32,7 +34,10 @@ assets:
     target: web/hero_scene.png
     kind: web
     size: [240, 160]
-    notes: Landing-page key art, the composite of the three parallax layers.
+    notes: >
+      Landing-page key art, the composite of the three parallax layers.
+      Generated (large painted scene). Its small figures and cottages are the
+      old generated designs; regenerate against the hand-drawn reference.
 
   - id: parallax_far
     prompt: 02-05
@@ -56,8 +61,8 @@ assets:
     notes: Front layer, foreground grass, ferns and a lantern post, transparent above.
 
   - id: character_lineup
-    prompt: 02-08
     target: web/character_lineup.png
+    source: web/character_lineup.py
     kind: web
     size: [192, 128]
     notes: Five adventurers side by side, for the landing page and /world.
@@ -76,8 +81,8 @@ assets:
               world, about, faq, source]
 
   - id: progress_landmarks
-    prompt: 02-10
     target: web/progress_landmarks.png
+    source: web/progress_landmarks.py
     kind: tileset
     size: [160, 128]
     grid: {cell: [32, 32], columns: 5, rows: 4}
@@ -101,11 +106,17 @@ assets:
     target: web/og_card.png
     kind: web
     size: [240, 126]
-    notes: Shown at exactly 5x as the 1200×630 Open Graph card background.
+    notes: >
+      Shown at exactly 5x as the 1200×630 Open Graph card background.
+      Generated (large painted scene). Its traveler is the old generated hero;
+      regenerate against the hand-drawn reference.
 
   - id: not_found
     prompt: 02-13
     target: web/not_found.png
     kind: web
     size: [160, 120]
-    notes: Art for the 404 page.
+    notes: >
+      Art for the 404 page. Generated, but it is a close-up of the old hero
+      design and clashes with the hand-drawn one; small enough to hand-draw
+      (BUILD.md 1.7).
