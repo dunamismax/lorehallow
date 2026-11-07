@@ -1,6 +1,6 @@
 # 0002: Toolchain versions and how they are pinned
 
-- **Status:** Accepted
+- **Status:** Accepted. Node.js was later removed from the toolchain by [ADR 0011](0011-go-website.md); the rest stands.
 - **Date:** 2026-11-06
 - **BUILD.md:** 0.3
 

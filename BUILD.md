@@ -83,7 +83,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `ADR` Pin toolchain versions (Go, Godot 4.x, Node LTS, Python, uv, buf, golangci-lint, gdtoolkit, GUT) to the latest stable releases and fill in the AGENTS.md toolchain table.
 - [x] Root `Makefile` with at least: `help`, `doctor`, `setup`, `fmt`, `lint`, `test`, `check`, `server`, `client`, `proto`, `sync`, `art-intake`. `make help` lists every target with a one-line description.
 - [x] `make doctor` checks every required tool and version and prints how to install anything missing (Homebrew on macOS, apt on Debian/Ubuntu).
-- [x] `make setup` installs project-local dependencies (Go modules, npm packages, uv environments, Godot addons) and is safe to re-run.
+- [x] `make setup` installs project-local dependencies (Go modules, uv environments, Godot addons) and is safe to re-run.
 - [x] `make check` runs every format check, linter and test suite in the repo, and is exactly what CI runs.
 
 ### 0.4 Go server skeleton
@@ -132,7 +132,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Output: write to `art/processed/` with project names, plus a sidecar `.json` for sheets (frames, order, pivot, source file, batch).
 - [x] Intake report (`art/batches/<batch>/report.md`): status per asset (accepted, fixed, regenerate), a 4x preview contact sheet, and corrected prompts for anything to regenerate.
 - [x] Per-batch fix scripts are supported so small cleanups are reproducible when intake re-runs.
-- [x] `make sync` mirrors `art/processed/` into `client/assets/art/` and `web/src/assets/art/`.
+- [x] `make sync` mirrors `art/processed/` into `client/assets/art/` and `web/assets/art/`.
 - [x] Tests with synthetic fixtures (upscaled, jittered, off-grid, off-palette and misaligned images with known expected output).
 - [x] `make art-intake BATCH=<id>` runs the whole pipeline for one batch, and re-running it gives the same result.
 
@@ -157,7 +157,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 0.10 Continuous integration
 
-- [x] GitHub Actions workflow runs `make check` on every push to `main` (Linux), caching Go, npm and uv.
+- [x] GitHub Actions workflow runs `make check` on every push to `main` (Linux), caching Go and uv.
 - [x] Godot headless tests run in CI with the pinned Godot version.
 - [x] CI status badge in README.md.
 - [x] Document in AGENTS.md that CI runs on GitHub and Codeberg is a mirror.
@@ -199,7 +199,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 > **Goal:** A fast, beautiful, self-hosted website at lorehallow.com that sells the dream, links to the public repositories, tracks BUILD.md automatically, hosts a devlog and has a downloads page ready for the first builds.
 > **Ships:** The lorehallow.com website
-> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site builds and automated deploys
+> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site generation in Go and automated deploys
 > **Depends on:** Phase 0 sections 0.2, 0.3 and 0.9 (the rest of Phase 0 can finish in parallel)
 
 ### 1.1 Host provisioning and hardening
@@ -215,16 +215,17 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.2 Site scaffold
 
-- [ ] `ADR` Website stack: Astro static site with TypeScript strict in `web/` (recommended).
+- [x] `ADR` Website stack: a Go static site generator in `web/` (its own module) with no JavaScript on any page ([ADR 0011](docs/decisions/0011-go-website.md)).
+- [ ] `cmd/lorehallow-web` with `build` (writes the site to `web/dist/`) and `serve` (local preview that rebuilds on change, drafts included); templates (`html/template`), CSS and fonts embedded with `go:embed`.
 - [ ] Design tokens generated from `art/style/palette.hex` into CSS custom properties, so the site and the game share one palette.
 - [ ] `ADR` Fonts: an open-licensed pixel font for headings and a readable body font, both self-hosted with license files committed.
 - [ ] Base layout: header with logo and navigation (Home, World, Progress, Devlog, Downloads, About), footer linking GitHub, Codeberg, RSS and the licenses.
 - [ ] Pixel image component: integer scaling, `image-rendering: pixelated`, explicit dimensions, lazy loading below the fold.
-- [ ] Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (astro check, linter, formatter), included in `make check`.
+- [ ] Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (gofmt, go vet, golangci-lint, govulncheck), with the tests and linters included in `make check`.
 
 ### 1.3 Landing page
 
-- [ ] Hero: key art with gentle parallax layers, the wordmark, a one-line pitch and calls to action (Follow the build, Read the devlog, View the source).
+- [ ] Hero: key art with gentle CSS-only parallax layers, the wordmark, a one-line pitch and calls to action (Follow the build, Read the devlog, View the source).
 - [ ] "A world that's already there": what Lorehallow is and the feeling it's going for, in plain language.
 - [ ] Design pillars with pixel icons.
 - [ ] "What you'll do" teaser: explore, quest, group up and fight with other people around you, clearly marked as planned.
@@ -232,12 +233,12 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Latest three devlog posts.
 - [ ] Art showcase strip built from processed art.
 - [ ] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
-- [ ] Ambient touches (drifting fireflies, lantern flicker) that switch off under `prefers-reduced-motion`.
-- [ ] The page works fully without JavaScript; scripts only add enhancements.
+- [ ] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
+- [ ] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
 
 ### 1.4 Progress tracker (/progress)
 
-- [x] BUILD.md parser in `web/src/lib/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
+- [x] BUILD.md parser in `web/internal/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
 - [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
 - [ ] Overall progress XP bar and per-phase progress bars, computed from the boxes.
 - [ ] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
@@ -250,8 +251,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.5 Devlog (/devlog)
 
-- [ ] Content collection in `web/src/content/devlog/` with a schema (title, date, summary, tags, cover image, draft).
-- [ ] Posts with `draft: true` show in local dev only and are never published.
+- [ ] Devlog posts as Markdown files with front matter in `web/content/devlog/`, rendered with goldmark and validated at build time (title, date, summary, tags, cover image, draft).
+- [ ] Posts with `draft: true` show only in `serve` and are never written by `build`.
 - [ ] Index, tag pages and post pages with pixel-art styling and comfortable reading typography.
 - [ ] RSS and Atom feeds.
 - [ ] Move the Phase 0 devlog draft into the collection.
@@ -260,7 +261,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 1.6 Downloads (/downloads)
 
 - [ ] Platform cards for Windows, macOS and Linux with an honest "Not available yet. Follow the progress." state.
-- [ ] Page driven by `web/src/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
+- [ ] Page driven by `web/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
 - [ ] System requirements and "verify your download" sections that appear once releases exist.
 
 ### 1.7 More pages
@@ -274,11 +275,12 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.8 Quality gates
 
-- [ ] Lighthouse CI on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile.
+- [ ] Lighthouse audit from Chrome DevTools on the live landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/` (Lighthouse is a Node tool, so it isn't in CI; ADR 0011).
+- [ ] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
 - [ ] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
 - [ ] Responsive from 360 px phones to 4K screens, with art always scaled by whole numbers.
 - [ ] Internal link checker in `make check`.
-- [ ] Landing page transfers under 1 MB.
+- [ ] Landing page transfers under 1 MB, enforced by a test on the built output.
 
 ### 1.9 Deploy automation
 
@@ -302,7 +304,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Every page links to the GitHub and Codeberg repositories.
 - [ ] The devlog has at least one published post and a valid RSS feed.
 - [ ] /downloads exists and accurately says no builds are available yet.
-- [ ] Lighthouse budgets pass and every page works with JavaScript disabled.
+- [ ] Lighthouse budgets pass and no page ships any JavaScript.
 - [ ] A deliberately bad deploy was rolled back with one command.
 
 ---
@@ -1073,7 +1075,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 15.2 Publishing
 
 - [ ] Publish to GitHub Releases and Codeberg releases, and self-host the files on lorehallow.com with checksums.
-- [ ] The workflow updates `web/src/data/releases.json` and redeploys, so /downloads shows the latest build, checksums and older versions.
+- [ ] The workflow updates `web/data/releases.json` and redeploys, so /downloads shows the latest build, checksums and older versions.
 - [ ] `/downloads/latest.json` manifest for the client update check.
 - [ ] /patch-notes built from `docs/releases/`.
 
@@ -1139,7 +1141,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 16.4 Host and supply chain
 
 - [ ] Host audit (open ports, services, users, SSH, updates, file permissions) with findings fixed and documented.
-- [ ] Automated dependency updates (Renovate or Dependabot) for Go, npm and GitHub Actions, plus `govulncheck` and `npm audit` in CI.
+- [ ] Automated dependency updates (Renovate or Dependabot) for the Go modules (server and web), the art tools' Python lockfile and GitHub Actions, plus `govulncheck` in CI.
 
 ### 16.5 Walkthrough
 

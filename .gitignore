@@ -31,11 +31,8 @@ coverage.*
 *.translation
 export_credentials.cfg
 
-# Node / web
-node_modules/
-dist/
-.astro/
-/web/.lighthouseci/
+# Website build output
+/web/dist/
 
 # Python
 .venv/

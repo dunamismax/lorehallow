@@ -87,7 +87,7 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 | Transport | WebSocket over TLS (`wss://`) |
 | Protocol | Protobuf, schemas in [`proto/`](proto/) shared by client and server |
 | Persistence | PostgreSQL |
-| Website | Astro static site |
+| Website | Go static site generator, no JavaScript (ADR 0011) |
 | Hosting | Self-hosted behind lorehallow.com (Caddy, systemd) |
 
 **Networking model:** the server is authoritative and simulates at 20 Hz. Clients send inputs, never positions. Remote players are interpolated about 100 ms behind the latest snapshot, your own character is predicted and reconciled, and each player only receives updates about what is near them, found through a spatial grid.
@@ -131,7 +131,7 @@ make client   # launch the Godot client against the local server
 make web-dev  # run the website locally
 ```
 
-Prerequisites: Go, Godot 4, Node.js (LTS), [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
+Prerequisites: Go, Godot 4, [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
 
 ## How it's made
 
@@ -149,7 +149,7 @@ Lorehallow uses two licenses, one for code and one for art and writing.
 
 **Art and writing: [Creative Commons Attribution-NonCommercial 4.0](LICENSE-ART)** (CC BY-NC 4.0). You can share and remix it with credit, but not sell it. This covers:
 
-- everything in `art/`, and the synced copies in `client/assets/art/` and `web/src/assets/art/`
+- everything in `art/`, and the synced copies in `client/assets/art/` and `web/assets/art/`
 - the game's written content in `content/`: lore, quest and dialogue text, item, creature and place names and descriptions
 - the devlog (`docs/devlog-drafts/` and the website's devlog posts)
 

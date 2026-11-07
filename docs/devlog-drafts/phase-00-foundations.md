@@ -13,7 +13,7 @@ Lorehallow is a small pixel-art MMO built around one feeling: you log in, and ot
 
 ## One command to check everything
 
-The project mixes four languages: Go for the server, GDScript for the Godot client, Python for the art tools, and soon TypeScript for the website. It would be easy for each corner to drift into its own habits. Instead there's one entry point: `make check` runs every formatter, linter and test in the repository, and the CI server runs exactly the same command on every push. If it's green on my machine, it's green everywhere.
+The project mixes three languages: Go for the server and the website, GDScript for the Godot client, and Python for the art tools. It would be easy for each corner to drift into its own habits. Instead there's one entry point: `make check` runs every formatter, linter and test in the repository, and the CI server runs exactly the same command on every push. If it's green on my machine, it's green everywhere.
 
 ## Teaching two languages to agree
 

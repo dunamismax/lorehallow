@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installs the pinned system tools on a Linux x86_64 CI runner: Godot,
-# buf, golangci-lint and gdtoolkit. Go, Node and uv come from their setup
+# buf, golangci-lint and gdtoolkit. Go and uv come from their setup
 # actions. Versions come from toolchain.env; downloads are checked against
 # each release's published checksum file.
 set -euo pipefail

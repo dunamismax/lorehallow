@@ -54,13 +54,14 @@ setup: ## Install project-local dependencies (safe to re-run)
 	@$(ROOT)/tools/scripts/install-addons.sh
 	@echo "Godot import:"; $(GODOT_HEADLESS) --import >/dev/null 2>&1 && echo "  ok"
 	@echo "Art tools (uv):"; cd $(ROOT)/tools/art && uv sync --frozen --quiet && echo "  ok"
-	@echo "Website (npm):"; cd $(ROOT)/web && npm ci --no-audit --no-fund --loglevel=error && echo "  ok"
+	@echo "Website Go modules:"; cd $(ROOT)/web && go mod download && echo "  ok"
 
 # --- Aggregate gates ------------------------------------------------------------
 
 .PHONY: fmt
 fmt: ## Format all code in place
 	cd $(ROOT)/server && gofmt -w $$(find . -name '*.go' -not -path './internal/pb/*')
+	cd $(ROOT)/web && gofmt -w .
 	cd $(ROOT)/client && gdformat $(GD_SOURCES)
 	cd $(ROOT)/tools/art && uv run --frozen ruff format . && uv run --frozen ruff check --fix .
 	buf format -w $(ROOT)/proto
@@ -216,16 +217,19 @@ sync: ## Mirror art/processed into client/ and web/, and content/ into client/as
 # --- Website and BUILD.md ----------------------------------------------------------
 
 .PHONY: web-lint
-web-lint: ## TypeScript strict typecheck of web/
-	cd $(ROOT)/web && npm run -s typecheck
+web-lint: ## Website (Go): gofmt check, go vet, golangci-lint and govulncheck
+	@cd $(ROOT)/web && out="$$(gofmt -l .)" && if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
+	cd $(ROOT)/web && go vet ./...
+	cd $(ROOT)/web && golangci-lint run ./...
+	cd $(ROOT)/web && go tool govulncheck ./...
 
 .PHONY: web-test
-web-test: ## Website unit tests (node --test)
-	cd $(ROOT)/web && npm run -s test
+web-test: ## Website (Go) tests: go test -race ./...
+	cd $(ROOT)/web && go test -race -count=1 ./...
 
 .PHONY: buildmd-lint
 buildmd-lint: ## Fail on any BUILD.md format-contract violation
-	cd $(ROOT)/web && npm run -s buildmd-lint
+	cd $(ROOT)/web && go run ./cmd/buildmd-lint ../BUILD.md
 
 .PHONY: clean
 clean: ## Remove build output (bin/, Godot import cache)

@@ -15,7 +15,7 @@ from PIL import Image
 # no use for website-only art.
 DESTINATIONS: dict[str, tuple[str, ...]] = {
     "client/assets/art": ("web",),
-    "web/src/assets/art": (),
+    "web/assets/art": (),
 }
 # Files tools create next to synced art that must survive a sync (as long
 # as the image they belong to is still there).

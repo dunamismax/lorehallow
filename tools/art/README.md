@@ -104,7 +104,7 @@ Statuses: `accepted`, `fixed`, `regenerate` (failed a check) and `missing` (no i
 
 ## Sync
 
-`make sync` copies `art/processed/` to `web/src/assets/art/` and, except the website-only `web/` category, to `client/assets/art/`. It also writes `art/style/reference.png`: the accepted style reference at 6x, the image attached to every later prompt. It removes files that no longer exist in the source, and keeps Godot's `.import` files for images that still exist.
+`make sync` copies `art/processed/` to `web/assets/art/` and, except the website-only `web/` category, to `client/assets/art/`. It also writes `art/style/reference.png`: the accepted style reference at 6x, the image attached to every later prompt. It removes files that no longer exist in the source, and keeps Godot's `.import` files for images that still exist.
 
 ## Tests
 

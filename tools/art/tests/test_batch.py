@@ -169,7 +169,7 @@ def test_sync_mirrors_and_prunes(tmp_path, rng):
     root = make_root(tmp_path, rng)
     run_batch(root, "07")
     log = sync(root)
-    for dest in ("client/assets/art", "web/src/assets/art"):
+    for dest in ("client/assets/art", "web/assets/art"):
         assert (root / dest / "tiles/rock.png").read_bytes() == (
             root / "art/processed/tiles/rock.png"
         ).read_bytes()
@@ -178,7 +178,7 @@ def test_sync_mirrors_and_prunes(tmp_path, rng):
     (root / "art/processed/web").mkdir()
     (root / "art/processed/web/banner.png").write_bytes(b"png")
     sync(root)
-    assert (root / "web/src/assets/art/web/banner.png").exists()
+    assert (root / "web/assets/art/web/banner.png").exists()
     assert not (root / "client/assets/art/web").exists()
     # Godot's .import companion survives; orphans are pruned.
     godot = root / "client/assets/art"
@@ -192,7 +192,7 @@ def test_sync_mirrors_and_prunes(tmp_path, rng):
     (root / "art/processed/tiles/rock.png").write_bytes(b"changed")
     assert sync(root, dry_run=True) == [
         "copy   client/assets/art/tiles/rock.png",
-        "copy   web/src/assets/art/tiles/rock.png",
+        "copy   web/assets/art/tiles/rock.png",
     ]
     assert (godot / "tiles/rock.png").read_bytes() != b"changed"
 

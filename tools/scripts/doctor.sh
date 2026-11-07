@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Checks that every required tool is installed at the pinned version.
 # Pins live in toolchain.env. A tool passes when its major.minor matches
-# the pin and its patch is the same or newer (Node: same major, newer or
-# equal overall). Exit status is non-zero if anything is missing or wrong.
+# the pin and its patch is the same or newer. Exit status is non-zero if
+# anything is missing or wrong.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -72,7 +72,6 @@ find_godot() {
 echo "Lorehallow toolchain (pins in toolchain.env)"
 check go "$GO_VERSION" minor "$(hint go 'https://go.dev/dl/ (tarball into /usr/local/go)')" go version
 check godot "$GODOT_VERSION" minor "$(hint 'godot --cask' 'https://godotengine.org/download/linux/ (put the binary on PATH or set GODOT=)')" "$(find_godot)" --version
-check node "$NODE_VERSION" major "$(hint node 'https://nodejs.org/en/download (or mise/nvm)')" node --version
 check uv "$UV_VERSION" minor "$(hint uv 'curl -LsSf https://astral.sh/uv/install.sh | sh')  (or: uv self update)" uv --version
 check python "$PYTHON_VERSION" minor "uv python install $PYTHON_VERSION" uv run --no-project --python "$PYTHON_VERSION" python --version
 check buf "$BUF_VERSION" minor "$(hint bufbuild/buf/buf 'https://buf.build/docs/cli/installation/')" buf --version
