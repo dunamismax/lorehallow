@@ -64,3 +64,7 @@ jobs:
       - name: make check
         # Compare protocol changes against the commit before this push.
         run: make check BUF_AGAINST_REF=${{ github.event.before || 'HEAD~1' }}
+
+      - name: make fuzz
+        # Every Go fuzz target for a short run; the seed corpora already ran in make check.
+        run: make fuzz FUZZTIME=10s

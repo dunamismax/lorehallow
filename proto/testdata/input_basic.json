@@ -1,0 +1,8 @@
+{
+  "input": {
+    "seq": 1,
+    "client_tick": 100,
+    "move_x": 1,
+    "move_y": -1
+  }
+}

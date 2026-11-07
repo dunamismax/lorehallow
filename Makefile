@@ -32,6 +32,9 @@ GD_SOURCES = $(shell cd $(ROOT)/client && find . -name '*.gd' -not -path './addo
 # Protobuf: buf breaking compares against this git ref (CI overrides it).
 BUF_AGAINST_REF ?= main
 
+# Fuzzing time per target for `make fuzz`.
+FUZZTIME ?= 10s
+
 # Art intake batch, e.g. `make art-intake BATCH=01`.
 BATCH ?=
 
@@ -91,8 +94,16 @@ server-lint: ## gofmt check, go vet, golangci-lint and govulncheck
 	cd $(ROOT)/server && go tool govulncheck ./...
 
 .PHONY: server-test
-server-test: ## go test -race ./...
+server-test: ## go test -race ./... (includes fuzz seed corpora and allocation tests)
 	cd $(ROOT)/server && go test -race -count=1 ./...
+
+.PHONY: fuzz
+fuzz: ## Run every Go fuzz target for FUZZTIME each (default 10s)
+	@FUZZTIME="$(FUZZTIME)" $(ROOT)/tools/scripts/fuzz.sh
+
+.PHONY: bench
+bench: ## Run server benchmarks with allocations: [BENCH=regex] [PKG=./internal/...]
+	cd $(ROOT)/server && go test -run='^$$' -bench='$(or $(BENCH),.)' -benchmem $(or $(PKG),./...)
 
 # --- Protocol ---------------------------------------------------------------------
 

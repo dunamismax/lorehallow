@@ -1,6 +1,7 @@
 // The Lorehallow wire protocol. Every binary WebSocket message carries
 // exactly one Envelope. Field numbers are never reused or renumbered;
-// removed fields are marked reserved. See proto/README.md.
+// removed fields are marked reserved. See proto/README.md and
+// docs/design/protocol.md (framing, limits and byte budgets).
 syntax = "proto3";
 
 package lorehallow.v1;
@@ -8,11 +9,21 @@ package lorehallow.v1;
 option go_package = "github.com/dunamismax/lorehallow/server/internal/pb";
 
 // Envelope wraps every message sent in either direction.
+//
+// Field numbers 1 to 15 encode their tag in one byte; the hot messages
+// (PlayerInput, Snapshot) must stay in that range.
 message Envelope {
   // payload is the one message this envelope carries.
   oneof payload {
     Ping ping = 1;
     Pong pong = 2;
+    ClientHello client_hello = 3;
+    ServerHello server_hello = 4;
+    PlayerInput input = 5;
+    Snapshot snapshot = 6;
+    EntityJoined entity_joined = 7;
+    EntityLeft entity_left = 8;
+    Disconnect disconnect = 9;
   }
 }
 
@@ -34,4 +45,140 @@ message Pong {
   int64 ping_sent_at_ms = 2;
   // received_at_ms is the responder's clock in milliseconds when the Ping arrived.
   int64 received_at_ms = 3;
+}
+
+// ClientHello is the first message a client sends. Nothing else is
+// accepted before it.
+message ClientHello {
+  // protocol_version must equal the server's PROTOCOL_VERSION.
+  uint32 protocol_version = 1;
+  // client_version is the client build, for logs (for example v0.2.0).
+  string client_version = 2;
+  // display_name is shown above the player. 1 to 16 characters.
+  string display_name = 3;
+}
+
+// ServerHello accepts the client into the world.
+message ServerHello {
+  // player_id is the entity id of the client's own character.
+  uint32 player_id = 1;
+  // tick_rate is the simulation rate in ticks per second.
+  uint32 tick_rate = 2;
+  // server_tick is the tick the client joins on.
+  uint32 server_tick = 3;
+  // spawn is the client's own entity as it enters the world.
+  EntityState spawn = 4;
+  // map_id names the map the zone runs (content/maps/<map_id>.tmj).
+  string map_id = 5;
+  // server_version is the server build, for logs.
+  string server_version = 6;
+}
+
+// PlayerInput is what the player is trying to do this tick. Never a
+// position: the server simulates movement and reports the result. (Not
+// named Input: that is a native class in Godot.)
+message PlayerInput {
+  // seq increases by one per PlayerInput. The server applies inputs in seq
+  // order and drops stale and duplicate ones.
+  uint32 seq = 1;
+  // client_tick is the server tick the client believes it is on.
+  uint32 client_tick = 2;
+  // move_x is the horizontal intent: -1 (left), 0 or 1 (right).
+  sint32 move_x = 3;
+  // move_y is the vertical intent: -1 (up), 0 or 1 (down).
+  sint32 move_y = 4;
+}
+
+// Facing is the direction a character looks.
+enum Facing {
+  FACING_UNSPECIFIED = 0;
+  FACING_DOWN = 1;
+  FACING_UP = 2;
+  FACING_LEFT = 3;
+  FACING_RIGHT = 4;
+}
+
+// Anim is the animation a character plays.
+enum Anim {
+  ANIM_UNSPECIFIED = 0;
+  ANIM_IDLE = 1;
+  ANIM_WALK = 2;
+}
+
+// EntityState is one entity's visible state on one tick.
+//
+// Positions are fixed-point integers in subpixels: 16 subpixels per
+// pixel, 512 per 32-pixel tile, measured from the map's top-left corner
+// to the entity's feet.
+message EntityState {
+  // id is the entity id, unique within the server while the entity exists.
+  uint32 id = 1;
+  // x is the feet position in subpixels.
+  sint32 x = 2;
+  // y is the feet position in subpixels.
+  sint32 y = 3;
+  // facing is the direction the entity looks.
+  Facing facing = 4;
+  // anim is the animation it plays.
+  Anim anim = 5;
+}
+
+// Snapshot is the world as the receiving player sees it on one tick.
+//
+// The server builds it from per-entity bytes encoded once per tick and
+// shared by every recipient, so `entities` must stay the last field.
+message Snapshot {
+  // tick is the server tick this snapshot describes.
+  uint32 tick = 1;
+  // ack_input_seq is the last PlayerInput seq the server applied for the
+  // receiving player. Prediction (Phase 3) replays inputs after it.
+  uint32 ack_input_seq = 2;
+  // entities are the entities the player can see, including itself.
+  repeated EntityState entities = 3;
+}
+
+// EntityJoined introduces an entity the player can now see.
+message EntityJoined {
+  // state is the entity's state when it appeared.
+  EntityState state = 1;
+  // display_name is shown above the entity.
+  string display_name = 2;
+}
+
+// EntityLeft says an entity is gone (disconnected, or out of view).
+message EntityLeft {
+  // id is the entity that left.
+  uint32 id = 1;
+}
+
+// DisconnectReason says why the server is closing the connection.
+enum DisconnectReason {
+  DISCONNECT_REASON_UNSPECIFIED = 0;
+  // The client's protocol version differs from the server's: update required.
+  DISCONNECT_REASON_PROTOCOL_MISMATCH = 1;
+  // The server is at its connection limit.
+  DISCONNECT_REASON_SERVER_FULL = 2;
+  // The client didn't read fast enough and its send queue filled.
+  DISCONNECT_REASON_TOO_SLOW = 3;
+  // An operator removed the player.
+  DISCONNECT_REASON_KICKED = 4;
+  // The server is shutting down or restarting.
+  DISCONNECT_REASON_SHUTTING_DOWN = 5;
+  // The client went silent, or didn't finish the handshake in time.
+  DISCONNECT_REASON_TIMED_OUT = 6;
+  // The client sent a malformed, oversized or out-of-place message.
+  DISCONNECT_REASON_BAD_MESSAGE = 7;
+  // The client sent messages faster than allowed, repeatedly.
+  DISCONNECT_REASON_RATE_LIMITED = 8;
+  // The handshake was invalid (for example a bad display name).
+  DISCONNECT_REASON_INVALID_HELLO = 9;
+}
+
+// Disconnect is the last message the server sends before closing.
+message Disconnect {
+  // reason is machine-readable.
+  DisconnectReason reason = 1;
+  // text is readable text for the player. (Not named `message`: godobuf
+  // treats that as a keyword.)
+  string text = 2;
 }

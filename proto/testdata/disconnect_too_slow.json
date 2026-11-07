@@ -1,0 +1,6 @@
+{
+  "disconnect": {
+    "reason": 3,
+    "text": "Your connection couldn't keep up."
+  }
+}

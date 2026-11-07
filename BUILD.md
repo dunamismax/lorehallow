@@ -317,13 +317,13 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 2.1 Protocol v1
 
 - [ ] Handshake: `ClientHello` (protocol version, client version, display name) and `ServerHello` (player id, tick rate, server tick, spawn state); mismatched protocol versions get a clear rejection.
-- [ ] `Input`: sequence number, client tick and 8-way movement intent. Never a position.
-- [ ] `Snapshot`: server tick, the last input sequence processed for the receiving player, and entity states (id, position, facing, animation state).
-- [ ] `EntityJoined`, `EntityLeft`, `Ping` and `Pong`.
+- [x] `PlayerInput` (not `Input`, a Godot class name): sequence number, client tick and 8-way movement intent. Never a position.
+- [x] `Snapshot`: server tick, the last input sequence processed for the receiving player, and entity states (id, position, facing, animation state).
+- [x] `EntityJoined`, `EntityLeft`, `Ping` and `Pong`.
 - [ ] `Disconnect`: a reason code (protocol mismatch, server full, too slow, kicked, shutting down, timed out, bad message) and readable text, sent before the server closes a connection.
-- [ ] Framing, limits and a byte budget per message (one `Envelope` per binary WebSocket message, maximum sizes per direction) documented in `docs/design/protocol.md`.
-- [ ] Round-trip golden tests for every new message.
-- [ ] Hardened decoding: size checked before decoding, unknown payloads rejected, and fuzz targets for envelope decoding with a committed seed corpus, run by `make fuzz`.
+- [x] Framing, limits and a byte budget per message (one `Envelope` per binary WebSocket message, maximum sizes per direction) documented in `docs/design/protocol.md`.
+- [x] Round-trip golden tests for every new message.
+- [x] Hardened decoding: size checked before decoding, unknown payloads rejected, and fuzz targets for envelope decoding with a committed seed corpus, run by `make fuzz`.
 
 ### 2.2 Shared map format
 

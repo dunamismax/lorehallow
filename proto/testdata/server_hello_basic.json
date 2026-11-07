@@ -1,0 +1,16 @@
+{
+  "server_hello": {
+    "player_id": 42,
+    "tick_rate": 20,
+    "server_tick": 123456,
+    "spawn": {
+      "id": 42,
+      "x": 2560,
+      "y": 3584,
+      "facing": 1,
+      "anim": 1
+    },
+    "map_id": "starter",
+    "server_version": "v0.2.0"
+  }
+}

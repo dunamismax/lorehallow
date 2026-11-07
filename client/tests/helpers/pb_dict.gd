@@ -6,6 +6,8 @@ extends RefCounted
 ## - fields at their proto3 default (0, "", false, empty list) are omitted
 ## - a set sub-message is a nested Dictionary, even when empty
 ## - every scalar becomes a String (protojson writes 64-bit ints as strings)
+## - enums are numbers (the vectors use protojson's UseEnumNumbers)
+## - repeated messages are Arrays of Dictionaries
 
 
 ## Returns a normalized Dictionary for a godobuf message object.
@@ -23,7 +25,7 @@ static func from_message(msg: Object) -> Dictionary:
 			out[name] = from_message(value)
 		elif value is Array:
 			if not (value as Array).is_empty():
-				out[name] = (value as Array).map(_scalar)
+				out[name] = (value as Array).map(_element)
 		elif not _is_default(value):
 			out[name] = _scalar(value)
 	return out
@@ -37,7 +39,7 @@ static func from_json(value: Dictionary) -> Dictionary:
 		if v is Dictionary:
 			out[key] = from_json(v)
 		elif v is Array:
-			out[key] = (v as Array).map(_json_scalar)
+			out[key] = (v as Array).map(_json_element)
 		else:
 			out[key] = _json_scalar(v)
 	return out
@@ -56,6 +58,18 @@ static func _is_default(value: Variant) -> bool:
 		TYPE_PACKED_BYTE_ARRAY:
 			return (value as PackedByteArray).is_empty()
 	return false
+
+
+static func _element(value: Variant) -> Variant:
+	if value is Object:
+		return from_message(value)
+	return _scalar(value)
+
+
+static func _json_element(value: Variant) -> Variant:
+	if value is Dictionary:
+		return from_json(value)
+	return _json_scalar(value)
 
 
 static func _scalar(value: Variant) -> String:
