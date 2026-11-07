@@ -1,0 +1,34 @@
+# The 16 px emblem (favicon size): the same lantern on a branch over a
+# dusk disc, reduced by hand so every pixel still reads at 1x.
+size: [16, 16]
+legend:
+  ".": transparent
+  K: ink
+  s: river
+  m: dusk blue
+  d: deep dusk
+  e: ember
+  l: leaf
+  L: sunlit leaf
+  b: bark
+  a: amber
+  g: lantern gold
+  G: glow
+frames:
+  - |
+    .....KKKKKK.....
+    ...KKssssmmKK...
+    ..KsssssmmmmmK..
+    .KssseeeeemmmmK.
+    .KsseLlmmmemmmK.
+    KsseLlmmmmKmmmmK
+    KssemlmmmbbbmmmK
+    KsmemmmmeagaemmK
+    KmmmmmmmegGgemdK
+    KmmmmmmmegGgeddK
+    KmmmmmmmeagaeddK
+    .KmmmmmmmbbbddK.
+    .KmmmmmmddddddK.
+    ..KmmddddddddK..
+    ...KKddddddKK...
+    .....KKKKKK.....

@@ -1,0 +1,325 @@
+# The 16 website section icons, 16×16 each, in manifest order. Ink outline,
+# light from the top-left, one clear silhouette each.
+size: [16, 16]
+legend:
+  ".": transparent
+  K: ink
+  w: parchment white
+  c: sand
+  p: dry path
+  e: earth
+  b: bark
+  n: dark soil
+  G: glow
+  g: lantern gold
+  a: amber
+  r: ember
+  L: sunlit leaf
+  l: leaf
+  m: moss
+  M: moss shadow
+  S: sky
+  R: river
+  D: dusk blue
+  d: deep dusk
+  "1": pale stone
+  "2": stone
+  "3": slate
+  "4": dusk violet-grey
+  x: berry
+  X: banner red
+  v: arcane violet
+  t: teal glass
+  s: skin light
+  k: skin mid
+  q: skin deep
+  z: mist
+frames:
+  # shared_world: two adventurers side by side
+  - |
+    ................
+    ..KKKK....KKKK..
+    .KppppK..KbbbbK.
+    .KpsskK..KbsskK.
+    .KsKsKK..KsKsKK.
+    .KsskqK..KsskqK.
+    ..KKKK....KKKK..
+    .KllllK..KxxxxK.
+    KLlllmMKKxxxxXXK
+    KlllmmMKKxxxXXXK
+    KklllmMKKkxxXXkK
+    .KlmmMK..KxXXXK.
+    .KbKKbK..KdKKdK.
+    .KbK.KbKKdK.KdK.
+    ..K...K..K...K..
+    ................
+  # small_but_alive: a sprout in a mound of soil
+  - |
+    ................
+    ................
+    ..KKK....KKKK...
+    .KLLlK..KLLllK..
+    .KLllmK.KLlllmK.
+    ..KlmmMKKlmmMK..
+    ...KKMMllMMKK...
+    ......KlmK......
+    ......KlmK......
+    ......KlmK......
+    ....KKKlmKKK....
+    ..KKppeemeebKK..
+    .KppeeeeebbbbnK.
+    KppeeeeebbbbnnnK
+    KKKKKKKKKKKKKKKK
+    ................
+  # readable_art: a framed picture of hills under a sky
+  - |
+    ................
+    KKKKKKKKKKKKKKKK
+    KGggggggggggggaK
+    KgKKKKKKKKKKKKaK
+    KgKzSSSSSSSSSKaK
+    KgKSSSSSSGGSSKaK
+    KgKSSSSSSGGSRKaK
+    KgKSSSSLLSSRRKaK
+    KgKSSLLlllSRRKaK
+    KgKLLlllllmlRKaK
+    KgKlllmmmmmmmKaK
+    KgKmmMMMMMMMMKaK
+    KgKKKKKKKKKKKKaK
+    KgaaaaaaaaaaaarK
+    KKKKKKKKKKKKKKKK
+    ................
+  # server_decides: a crown on a stone plinth
+  - |
+    ................
+    ................
+    ..K....KK....K..
+    .KGK..KGGK..KGK.
+    .KgK.KGggaK.KgK.
+    .KgaKKgggaKKgaK.
+    .KggGggxggggaaK.
+    .KgGggxXxgggaaK.
+    .KggggggggggaaK.
+    .KaaaaaaaaaarrK.
+    .KKKKKKKKKKKKKK.
+    ..K1111112222K..
+    ..K1122222223K..
+    ..K2222222333K..
+    ..KKKKKKKKKKKK..
+    ................
+  # playable_milestones: a flag on a grassy hill
+  - |
+    ................
+    ....KKKKK.......
+    ....KbXxxKK.....
+    ....KbXxxxxK....
+    ....KbXXxxxXK...
+    ....KbXXXXXK....
+    ....KbKKKKK.....
+    ....KbK.........
+    ....KbK.........
+    ...KKbKKK.......
+    ..KLLLlllKK.....
+    .KLLllllmmMKKK..
+    KLllllllmmmMMMK.
+    KllllmmmmmMMMMMK
+    KKKKKKKKKKKKKKKK
+    ................
+  # explore: a brass compass
+  - |
+    ................
+    .....KKKKKK.....
+    ...KKggggaaKK...
+    ..KgGccccccaaK..
+    .KgccccccccxarK.
+    .KgcccccccxXcrK.
+    KgcccccccxXcccrK
+    KgccccccgXcccarK
+    Kgcccc1gccccccrK
+    Kgccc13cccccccrK
+    .Kgc13cccccccrK.
+    .Ka3cccccccccrK.
+    ..KacccccccarK..
+    ...KKaaaarrKK...
+    .....KKKKKK.....
+    ................
+  # quest: a rolled scroll with a red wax seal
+  - |
+    ................
+    .KKKKKKKKKKKKK..
+    KpcwwwwwwwwwcpK.
+    KbKKKKKKKKKKKbK.
+    .KwwwwwwwwwwwK..
+    .Kw3333333wwcK..
+    .KwwwwwwwwwwcK..
+    .Kw33333333wcK..
+    .KwwwwwwwwwccK..
+    .Kw333333KKKcK..
+    .KwwwwwwKxxxXK..
+    .KwwwwwwKxXxXK..
+    KKKKKKKKKKXXKKK.
+    KpcwwwwwwKKKcpK.
+    .KKKKKKKKKKKKK..
+    ................
+  # group_up: three heads, a party
+  - |
+    ................
+    ......KKKK......
+    .....KbbbbK.....
+    .....KbsskK.....
+    ..KKKKsKsKKKKK..
+    .KppKKsskqKeeeK.
+    .KpsskKKKKKsskK.
+    .KsKsKllllKsKsK.
+    .KsskKLlllKskqK.
+    ..KKKKllmMKKKK..
+    .KDDDKlmmMKxxxK.
+    KRDDDDKKKKxxxXXK
+    KRDDDdK..KxxXXXK
+    KDDDddK..KxXXXXK
+    .KKKKK....KKKKK.
+    ................
+  # fight: two crossed swords
+  - |
+    ................
+    .KK..........KK.
+    KwzK........Kz3K
+    KzwzK......Kz13K
+    .KzwzK....Kz13K.
+    ..KzwzK..Kz13K..
+    ...KzwzKKz13K...
+    ....KzwKz13K....
+    .....KzK13K.....
+    ....KbKKK3gK....
+    ...KbbK.KggK....
+    ..KgKbK.KgKbK...
+    .KgaKK...KKbbK..
+    .KaK.......KbaK.
+    ..K.........KK..
+    ................
+  # devlog: a quill in an ink pot
+  - |
+    ...........KKK..
+    ..........KwwzK.
+    .........KwwzzK.
+    ........KwwzzK..
+    .......KwwzzK...
+    ......KwwzzK....
+    ......KwzzK.....
+    .....KwzzK......
+    ....KKKzKKK.....
+    ...KdDDKDDdK....
+    ..KDRDDDDDddK...
+    ..KDRDDDDDddK...
+    ..KDDDDDDdddK...
+    ..KdDDDDdddnK...
+    ...KKKKKKKKK....
+    ................
+  # progress: a map with a dotted path to an X
+  - |
+    ................
+    KKKKKKKKKKKKKKKK
+    KcccpcccccpcccpK
+    KcLLccccccccccpK
+    KcLlc3cccccc3cpK
+    KccccccccccccxpK
+    Kcc3ccccccccccpK
+    KcccccccccccXcpK
+    Kcc3cc3cc3ccccpK
+    KccccccccccccxpK
+    KcccSSccccccccpK
+    KccSRRcccccLLcpK
+    KcccSccccccLlcpK
+    KppppppppppppppK
+    KKKKKKKKKKKKKKKK
+    ................
+  # downloads: a down arrow into a chest
+  - |
+    ......KKKK......
+    ......KGaK......
+    ......KgaK......
+    ......KgaK......
+    ...KKKKgaKKKK...
+    ...KGgggggaaK...
+    ....KGgggaaK....
+    .....KGgaaK.....
+    ......KgaK......
+    .......KK.......
+    .KKKKKKKKKKKKKK.
+    .KpppppppppppeK.
+    .KKKKKKgaKKKKKK.
+    .KeeeeKaaKebbbK.
+    .KbbbbbKKbbnnnK.
+    .KKKKKKKKKKKKKK.
+  # world: a globe of sea and land
+  - |
+    ................
+    .....KKKKKK.....
+    ...KKzSSSRRKK...
+    ..KzSSLLSSRRDK..
+    .KSSLLllSSRRDDK.
+    .KSLllllmSRRDDK.
+    KSSSllmmSSRRDDdK
+    KSSSSlmSSRRllDdK
+    KSSSSSSSRRlmmDdK
+    KSRRSSSRRRlmMddK
+    .KRRllRRRRMDddK.
+    .KRRlmRRRDDDddK.
+    ..KDDDRRDDDddK..
+    ...KKDDDDddKK...
+    .....KKKKKK.....
+    ................
+  # about: an open book
+  - |
+    ................
+    ................
+    .KKKKKK..KKKKKK.
+    KwwwwwwKKwwwwwcK
+    Kw3333wKKw3333cK
+    KwwwwwwKKwwwwwcK
+    Kw3333wKKw333wcK
+    KwwwwwwKKwwwwwcK
+    Kw333wwKKw3333cK
+    KwwwwwwKKwwwwwcK
+    KcwwwwwKKwwwwccK
+    KKKKKccKKccKKKKK
+    KXXXXXKKKKXXXXXK
+    .KKKKKK..KKKKKK.
+    ................
+    ................
+  # faq: a speech bubble with a question mark
+  - |
+    ................
+    ...KKKKKKKKKK...
+    ..KwwwwwwwwwcK..
+    .KwwwwKKKKwwccK.
+    .KwwwKXXXXKwccK.
+    .KwwwKXKKXXKccK.
+    .KwwwwKKwKXKccK.
+    .KwwwwwwKXXKccK.
+    .KwwwwwKXXKwccK.
+    .KwwwwwKXKwwccK.
+    .KcwwwwwKwwcccK.
+    ..KccwwKXKcccK..
+    ...KKKKKKKKKK...
+    ...KcK..........
+    ...KK...........
+    ................
+  # source: a scroll of code, angle brackets
+  - |
+    ................
+    .KKKKKKKKKKKKK..
+    KpcwwwwwwwwwcpK.
+    KbKKKKKKKKKKKbK.
+    .KwwwwwwwwwwwK..
+    .KwwwKwwwwKwcK..
+    .KwwKwwwwwwKcK..
+    .KwKwwwKwwwwKK..
+    .KwwKwwKwwwKcK..
+    .KwwwKKwwwKwcK..
+    .KwwwwKwwwwwcK..
+    .KwwwwwwwwwccK..
+    KKKKKKKKKKKKKKK.
+    KpcwwwwwwwwwcpK.
+    .KKKKKKKKKKKKK..
+    ................

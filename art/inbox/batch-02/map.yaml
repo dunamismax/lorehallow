@@ -1,17 +1,9 @@
 files:
-  # Generated logo, lineup and landmarks are drawn finer than their logical
-  # size (170 to 250 art pixels across); sampled on the layout instead.
-  02-01-logo_wordmark-a5.png: {asset: logo_wordmark, grid: fixed}
-  02-02-emblem-a1.png: emblem
-  # Hand-pixeled 16×16 source (32x, magenta background): every generated
-  # attempt drew detail far too fine to read at 16 px.
-  02-03-emblem_16-hand1.png: emblem_16
   02-04-hero_scene-a1.png: {asset: hero_scene, grid: fixed}
   02-05-parallax_far-a1.png: {asset: parallax_far, grid: fixed}
   02-06-parallax_mid-a2.png: {asset: parallax_mid, grid: fixed}
   02-07-parallax_near-a1.png: {asset: parallax_near, grid: fixed}
   02-08-character_lineup-a5.png: {asset: character_lineup, grid: fixed}
-  02-09-section_icons-a1.png: section_icons
   02-10-progress_landmarks-a5.png: {asset: progress_landmarks, grid: fixed}
   02-11-devlog_header-a1.png: {asset: devlog_header, crop: [314, 111, 1500, 500], grid: fixed}
   02-12-og_card-a1.png: {asset: og_card, crop: [48, 134, 1440, 756], grid: fixed}

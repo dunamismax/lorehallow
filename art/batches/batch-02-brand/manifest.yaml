@@ -7,22 +7,22 @@ palette: art/style/palette.hex
 key_color: "#FF00FF"
 assets:
   - id: logo_wordmark
-    prompt: 02-01
     target: web/logo_wordmark.png
+    source: web/logo_wordmark.py
     kind: web
     size: [192, 64]
     notes: Shown at 2x to 4x in the site header and hero. Transparent background.
 
   - id: emblem
-    prompt: 02-02
     target: icons/emblem.png
+    source: icons/emblem.py
     kind: web
     size: [32, 32]
     notes: Square emblem. Source for the 32, 192 and 512 px favicons and the client app icon.
 
   - id: emblem_16
-    prompt: 02-03
     target: icons/emblem_16.png
+    source: icons/emblem_16.pxl.yaml
     kind: web
     size: [16, 16]
     notes: Hand-reduced emblem for the 16 px favicon (pixel art can't be halved cleanly).
@@ -63,8 +63,8 @@ assets:
     notes: Five adventurers side by side, for the landing page and /world.
 
   - id: section_icons
-    prompt: 02-09
     target: icons/section_icons.png
+    source: icons/section_icons.pxl.yaml
     kind: tileset
     size: [64, 64]
     grid: {cell: [16, 16], columns: 4, rows: 4}
