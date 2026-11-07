@@ -143,51 +143,105 @@ func (s *Server) Run(ctx context.Context) {
 }
 
 // Handler is the /ws endpoint.
+//
+// Once the WebSocket is accepted, the session runs on a goroutine of its
+// own and the HTTP handler returns. That lets net/http's per-connection
+// state (the request, its headers, the response, the server's 4 KiB
+// buffers and the handler goroutine's deep stack) be collected, instead
+// of living as long as the player stays online (ADR 0010). The goroutine
+// count per connection is unchanged: the session goroutine reads, and
+// session.Serve starts the writer.
 func (s *Server) Handler() http.Handler {
 	opts := &websocket.AcceptOptions{OriginPatterns: s.cfg.OriginPatterns, CompressionMode: websocket.CompressionDisabled}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !s.begin() {
-			s.rejected.Inc()
-			http.Error(w, "shutting down", http.StatusServiceUnavailable)
+		conn, sl := s.admit(w, r, opts)
+		if conn == nil {
 			return
 		}
-		defer s.sessions.Done()
-
-		n := s.conns.Add(1)
-		defer s.conns.Add(-1)
-		if n > int64(s.cfg.MaxConnections+hardCapExtra) {
-			s.rejected.Inc()
-			http.Error(w, "server full", http.StatusServiceUnavailable)
-			return
-		}
-		ip := s.clientIP(r)
-		if !s.addPending(ip) {
-			s.rejected.Inc()
-			http.Error(w, "too many connections", http.StatusTooManyRequests)
-			return
-		}
-		var pendingOnce sync.Once
-		donePending := func() { pendingOnce.Do(func() { s.removePending(ip) }) }
-		defer donePending()
-
-		conn, err := websocket.Accept(w, r, opts)
-		if err != nil {
-			s.rejected.Inc()
-			return // Accept wrote the HTTP error (bad upgrade, bad origin)
-		}
-		if n > int64(s.cfg.MaxConnections) {
-			s.rejected.Inc()
-			Reject(conn, pb.DisconnectReason_DISCONNECT_REASON_SERVER_FULL, "The world is full. Try again soon.")
-			return
-		}
-		session.Serve(s.ctx, conn, s.cfg.Session, session.Deps{
-			World:   s.zone,
-			NextID:  func() uint32 { return s.nextID.Add(1) },
-			Log:     s.log,
-			Metrics: s.sm,
-			Joined:  func(uint32) { donePending() },
-		})
+		go func() {
+			defer sl.release()
+			session.Serve(s.ctx, conn, s.cfg.Session, session.Deps{
+				World:   s.zone,
+				NextID:  func() uint32 { return s.nextID.Add(1) },
+				Log:     s.log,
+				Metrics: s.sm,
+				Joined:  func(uint32) { sl.joined() },
+			})
+		}()
 	})
+}
+
+// admit applies the connection limits and accepts the WebSocket. On
+// success the caller owns the returned slot and must release it when the
+// session ends; on failure admit has answered the client and released
+// everything itself.
+func (s *Server) admit(w http.ResponseWriter, r *http.Request, opts *websocket.AcceptOptions) (*websocket.Conn, *slot) {
+	if !s.begin() {
+		s.rejected.Inc()
+		http.Error(w, "shutting down", http.StatusServiceUnavailable)
+		return nil, nil
+	}
+	sl := &slot{s: s}
+	accepted := false
+	defer func() {
+		if !accepted {
+			sl.release()
+		}
+	}()
+
+	n := s.conns.Add(1)
+	if n > int64(s.cfg.MaxConnections+hardCapExtra) {
+		s.rejected.Inc()
+		http.Error(w, "server full", http.StatusServiceUnavailable)
+		return nil, nil
+	}
+	ip := s.clientIP(r)
+	if !s.addPending(ip) {
+		s.rejected.Inc()
+		http.Error(w, "too many connections", http.StatusTooManyRequests)
+		return nil, nil
+	}
+	sl.ip, sl.pending = ip, true
+
+	conn, err := websocket.Accept(withSmallBuffers(w), r, opts)
+	if err != nil {
+		s.rejected.Inc()
+		return nil, nil // Accept wrote the HTTP error (bad upgrade, bad origin)
+	}
+	if n > int64(s.cfg.MaxConnections) {
+		s.rejected.Inc()
+		Reject(conn, pb.DisconnectReason_DISCONNECT_REASON_SERVER_FULL, "The world is full. Try again soon.")
+		return nil, nil
+	}
+	accepted = true
+	return conn, sl
+}
+
+// slot is one admitted connection's share of the server's limits: a
+// place in the session count, the connection count and, until the
+// handshake finishes, its IP's pending count.
+type slot struct {
+	s       *Server
+	mu      sync.Mutex
+	ip      string
+	pending bool
+}
+
+// joined frees the pending-handshake place. It's safe to call more than once.
+func (sl *slot) joined() {
+	sl.mu.Lock()
+	defer sl.mu.Unlock()
+	if sl.pending {
+		sl.pending = false
+		sl.s.removePending(sl.ip)
+	}
+}
+
+// release gives everything back. Call it exactly once.
+func (sl *slot) release() {
+	sl.joined()
+	sl.s.conns.Add(-1)
+	sl.s.sessions.Done()
 }
 
 // begin registers a session unless the server is shutting down.

@@ -15,8 +15,10 @@
 // one) and closes the socket, which ends the read loop. Serve then
 // removes the player from the zone and releases everything queued.
 //
-// Goroutines per connection: exactly two. The caller's goroutine (the
-// HTTP handler) runs the read loop; Serve starts one writer.
+// Goroutines per connection: exactly two. The caller's goroutine runs
+// the read loop; Serve starts one writer. The caller is a goroutine the
+// game server starts for the session, not the HTTP handler, so net/http's
+// request state can be collected (ADR 0010).
 package session
 
 import (
@@ -160,8 +162,8 @@ type Session struct {
 	drops    int
 }
 
-// Serve runs conn until it closes and returns why. It blocks; call it from
-// the HTTP handler goroutine that accepted the connection. Cancelling ctx
+// Serve runs conn until it closes and returns why. It blocks, and the
+// goroutine that calls it becomes the reader. Cancelling ctx
 // (server shutdown) disconnects the client with SHUTTING_DOWN.
 func Serve(ctx context.Context, conn Conn, cfg Config, deps Deps) pb.DisconnectReason {
 	cfg = cfg.withDefaults()
@@ -179,7 +181,7 @@ func Serve(ctx context.Context, conn Conn, cfg Config, deps Deps) pb.DisconnectR
 		queue:    newSendQueue(cfg.SendQueueLen, cfg.SendQueueBytes),
 		inputs:   make(chan sim.Input, cfg.InputQueueLen),
 		closing:  make(chan struct{}),
-		rbuf:     make([]byte, 0, wire.MaxClientMessage),
+		rbuf:     make([]byte, 0, 64), // grows on demand up to the read limit; inputs are ~10 bytes
 		tokens:   cfg.RateBurst,
 		tokensAt: time.Now(),
 	}

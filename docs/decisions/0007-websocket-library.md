@@ -1,6 +1,6 @@
 # 0007: coder/websocket for the WebSocket transport
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [ADR 0010](0010-per-connection-memory.md) (the session runs on its own goroutine, with smaller buffers)
 - **Date:** 2026-11-07
 - **BUILD.md:** 2.3
 
@@ -34,3 +34,4 @@ How the server uses it:
 
 - One small dependency, recorded in `server/go.mod`.
 - If Case 1 measurements miss the memory budget because of the 8 KiB of bufio buffers per connection, the options are smaller buffers through a custom `http.Server` connection setup, or gobwas/ws. That decision would supersede this ADR.
+- They did. [ADR 0010](0010-per-connection-memory.md) keeps this library, swaps in 1 KiB and 2 KiB buffers at the hijack, and runs the session off the HTTP handler goroutine.

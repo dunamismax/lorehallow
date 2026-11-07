@@ -210,8 +210,8 @@ Updated whenever a result lands in `docs/perf/`. A tier is met only with a linke
 
 | Case | Tier | `dev-m5` | `prod` | Phase that must meet it |
 |---|---|---|---|---|
-| 1. Connections | T1 100 | **Not met**: memory 84 KiB per connection (target 64); bandwidth, CPU, RTT, tick pass ([result](../perf/2026-11-07-idle-t1.md)) | Not measured | 2 |
-| 1. Connections | T2 1,000 | **Not met**: memory 60 KiB (48), bandwidth and CPU over without interest management ([result](../perf/2026-11-07-idle-t2.md)) | Not measured | 3 |
+| 1. Connections | T1 100 | **Not met**: memory 72 KiB per connection (target 64), mostly Go's minimum-heap slack at this size (ADR 0010); bandwidth, CPU, RTT, tick pass ([result](../perf/2026-11-07-idle-t1-2.md)) | Not measured | 2 |
+| 1. Connections | T2 1,000 | **Not met**: memory passes (39 KiB, target 48); bandwidth, CPU and tick p99 over without interest management ([result](../perf/2026-11-07-idle-t2-2.md)) | Not measured | 3 |
 | 1. Connections | T3 5,000 | Not measured | Not measured | 12 |
 | 1. Connections | T4 10,000 | Not measured | Not measured | Stretch |
 | 2. Active, spread | T1 100 | Tick and CPU pass; bandwidth 15 KB/s not yet held (one zone, no interest management) ([result](../perf/2026-11-07-spread-t1.md)) | Not measured | 3 |
