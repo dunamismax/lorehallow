@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# Provisions the Lorehallow host (BUILD.md 1.1). Idempotent: safe to run
-# again after any change. The owner reviews it and runs it with sudo:
+# Hardens a FRESH host for Lorehallow (BUILD.md 1.1). Idempotent. Not
+# needed on a host that is already hardened (ubuntu-vm is: see
+# deploy/HOST.md); Lorehallow's own pieces are installed by
+# deploy/bootstrap/app.sh either way. The owner reviews it and runs it
+# with sudo:
 #
 #   sudo LOREHALLOW_ACME_EMAIL=you@example.com ./host.sh --dry-run   # print what it would do
 #   sudo LOREHALLOW_ACME_EMAIL=you@example.com ./host.sh
@@ -46,7 +49,7 @@ debian | ubuntu) ;;
 esac
 command -v systemctl >/dev/null || die "systemd is required"
 [[ -n "${LOREHALLOW_ACME_EMAIL:-}" ]] || die "set LOREHALLOW_ACME_EMAIL (Caddy's certificate account address)"
-for f in "$REPO/deploy/server/lorehallow-server.service" "$REPO/deploy/caddy/Caddyfile"; do
+for f in "$REPO/deploy/server/lorehallow-server.service" "$REPO/deploy/caddy/lorehallow.caddy"; do
   [[ -f "$f" ]] || die "missing $f: run from a checkout of the repository"
 done
 ((DRY)) && say "DRY RUN: nothing will change"
@@ -113,6 +116,9 @@ fi
 
 # --- 4. Firewall ---------------------------------------------------------------------
 say "firewall: 22, 80, 443 only"
+if ufw status | grep -q "Status: active"; then
+  echo "    SKIPPED: ufw is already active; its rules are yours (Lorehallow needs only 80/tcp, 443/tcp and 443/udp open)."
+else
 run ufw allow 22/tcp
 run ufw allow 80/tcp
 run ufw allow 443/tcp
@@ -120,6 +126,7 @@ run ufw allow 443/udp
 run ufw default deny incoming
 run ufw default allow outgoing
 run ufw --force enable
+fi
 
 # --- 5. Layout ------------------------------------------------------------------------
 say "layout"
@@ -134,17 +141,18 @@ say "systemd unit, Caddyfile, sudo rules"
 run install -m 0644 "$REPO/deploy/server/lorehallow-server.service" /etc/systemd/system/lorehallow-server.service
 run systemctl daemon-reload
 run systemctl enable lorehallow-server
-run install -m 0644 "$REPO/deploy/caddy/Caddyfile" /etc/caddy/Caddyfile
-if ((DRY)); then
-  echo "    would set LOREHALLOW_ACME_EMAIL for caddy and reload it"
-else
-  install -d /etc/systemd/system/caddy.service.d
-  printf '[Service]\nEnvironment=LOREHALLOW_ACME_EMAIL=%s\n' "$LOREHALLOW_ACME_EMAIL" >/etc/systemd/system/caddy.service.d/lorehallow.conf
-  systemctl daemon-reload
-  LOREHALLOW_ACME_EMAIL="$LOREHALLOW_ACME_EMAIL" caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
-  run systemctl enable --now caddy
-  run systemctl reload caddy
+# Never replace a main Caddyfile that serves other sites. On a fresh
+# Caddy, make the main file import one file per site; app.sh adds ours.
+if [[ ! -d /etc/caddy/sites ]]; then
+  run install -d -m 0755 /etc/caddy/sites
+  if grep -q "import /etc/caddy/sites" /etc/caddy/Caddyfile 2>/dev/null; then :; else
+    run cp /etc/caddy/Caddyfile "/etc/caddy/Caddyfile.before-lorehallow.$(date +%s)"
+    if ((DRY)); then echo "    would write /etc/caddy/Caddyfile: import /etc/caddy/sites/*.caddy"; else
+      printf '{\n\temail %s\n}\n\nimport /etc/caddy/sites/*.caddy\n' "$LOREHALLOW_ACME_EMAIL" >/etc/caddy/Caddyfile
+    fi
+  fi
 fi
+run systemctl enable --now caddy
 sudoers=/etc/sudoers.d/lorehallow-deploy
 if ((DRY)); then
   echo "    would write $sudoers (deploy may restart and inspect lorehallow-server and reload caddy, nothing else)"

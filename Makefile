@@ -102,6 +102,10 @@ loadtest: server-build ## Run a scaling.md scenario, write a draft to docs/perf/
 	cd $(ROOT) && $(BIN)/lorehallow-loadtest -scenario $(or $(SCENARIO),idle) -n $(or $(N),100) \
 		-duration $(or $(DURATION),2m) $(if $(WARMUP),-warmup $(WARMUP)) -commit $(COMMIT)
 
+.PHONY: install-host
+install-host: ## Install or update Lorehallow's pieces on the host (unit, Caddy site, layout): [DRY=1]
+	@$(ROOT)/deploy/bootstrap/app.sh $(if $(DRY),--dry-run)
+
 .PHONY: deploy-server
 deploy-server: ## Build for the host, upload, switch, restart, check /healthz, roll back on failure
 	@$(ROOT)/deploy/server/deploy.sh deploy

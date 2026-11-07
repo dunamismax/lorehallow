@@ -60,7 +60,7 @@ deploy)
   previous="$(remote "readlink $BASE/current 2>/dev/null | xargs -r basename" || true)"
   echo "deploy: uploading release $stamp (previous: ${previous:-none})"
   remote "mkdir -p $BASE/releases/$stamp"
-  tar -C "$out" -czf - . | remote "tar -xzf - -C $BASE/releases/$stamp"
+  COPYFILE_DISABLE=1 tar --no-xattrs -C "$out" -czf - . | remote "tar -xzf - -C $BASE/releases/$stamp"
   switch_to "$stamp"
   if check_health; then
     echo "deploy: $version is live"

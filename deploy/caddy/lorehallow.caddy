@@ -1,0 +1,84 @@
+# Lorehallow's Caddy site file (BUILD.md 1.1, 2.9). Installed as
+# /etc/caddy/sites/lorehallow.caddy by deploy/bootstrap/app.sh and loaded
+# by the host's main Caddyfile (`import /etc/caddy/sites/*.caddy`), which
+# this file never replaces: other sites share the host.
+#
+# Automatic HTTPS: Caddy gets and renews the certificates itself. DNS for
+# all three names points straight at the host (not proxied), so client
+# addresses are real.
+#
+# Check and reload:  caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy
+
+www.lorehallow.com {
+	redir https://lorehallow.com{uri} permanent
+}
+
+lorehallow.com {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# No third-party anything: everything is served from here.
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self' wss://play.lorehallow.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		-Server
+	}
+
+	# The static website (BUILD.md 1.2, 1.9), one release at a time.
+	root * /srv/lorehallow/web/current
+	@immutable path /_astro/*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	file_server
+
+	handle_errors {
+		rewrite * /404.html
+		file_server
+	}
+
+	log {
+		output file /var/log/caddy/lorehallow-access.log {
+			roll_size 10MiB
+			roll_keep 7
+			roll_keep_for 168h
+		}
+	}
+}
+
+play.lorehallow.com {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		-Server
+	}
+
+	# Game WebSocket traffic. Caddy proxies the upgrade and sets
+	# X-Forwarded-For to the client address (the server trusts it only from
+	# loopback: LOREHALLOW_TRUST_PROXY=true).
+	handle /ws {
+		reverse_proxy 127.0.0.1:7420 {
+			# Don't buffer: snapshots must leave as soon as they're written.
+			flush_interval -1
+			# A config reload would otherwise close every open WebSocket.
+			stream_close_delay 5m
+		}
+	}
+	handle /healthz {
+		reverse_proxy 127.0.0.1:7420
+	}
+	handle /version {
+		reverse_proxy 127.0.0.1:7420
+	}
+	handle {
+		respond "Lorehallow game server. https://lorehallow.com" 404
+	}
+
+	log {
+		output file /var/log/caddy/lorehallow-play-access.log {
+			roll_size 10MiB
+			roll_keep 7
+			roll_keep_for 168h
+		}
+	}
+}
