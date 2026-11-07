@@ -179,7 +179,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Redraw the logo wordmark (192×64), the 32 and 16 px emblems, the 16 section icons and the 20 progress landmarks, then re-export the favicons and app icon.
 - [x] Redraw the character lineup with five hand-drawn adventurers at the in-game 32×48 scale.
 - [x] Keep the generated hero scene, parallax layers, devlog header, social card and 404 art; check they still sit well next to the hand-drawn art, and note any that should be regenerated.
-- [ ] Update the Phase 0 walkthrough and devlog draft to describe hand-drawn art.
+- [x] Update the Phase 0 walkthrough and devlog draft to describe hand-drawn art.
 
 ### Acceptance criteria
 
