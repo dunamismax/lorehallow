@@ -110,8 +110,10 @@ CI reaches the host over the owner's tailnet with Tailscale SSH and logs in as `
    ```bash
    gh secret set TS_OAUTH_CLIENT_ID      # paste the client ID
    gh secret set TS_OAUTH_SECRET         # paste the client secret
-   gh secret set LOREHALLOW_DEPLOY_HOST --body 'lorehallow-deploy@ubuntu-vm'
+   gh secret set LOREHALLOW_DEPLOY_HOST --body 'lorehallow-deploy@ubuntu-server-vm'
    ```
+
+   Use the machine's MagicDNS name, `ubuntu-server-vm`: `ubuntu-vm` is an alias in the owner's own `~/.ssh/config`, which the runner doesn't have.
 
 6. **Try it:**
 
