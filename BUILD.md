@@ -1,12 +1,14 @@
 # Lorehallow Build Plan
 
-The single source of truth for what gets built, in what order, and what "done" means. It takes Lorehallow from an empty repository (Phase 0) to the public v1.0 release (Phase 19). Agents work through it and check boxes as work lands, and lorehallow.com reads it on every push to render the live progress tracker.
+The single source of truth for what gets built, in what order, and what "done" means. It takes Lorehallow from an empty repository (Phase 0) to the public v1.0 release (Phase 19), then a post-1.0 track that splits the server across machines when measurements call for it (Phase 20). Agents work through it and check boxes as work lands, and lorehallow.com reads it on every push to render the live progress tracker.
 
 Read [AGENTS.md](AGENTS.md) before changing this file.
 
 ## How this file works
 
 - **Phases run in order.** The current phase is the lowest-numbered phase with an unchecked box. Within a phase, sections run roughly top to bottom, but independent items can be done in any order or in parallel.
+- **Phase 1 runs in parallel** with the server phases. Most of it waits on the owner's host setup, and backend work never waits for the website. The current server phase is the lowest-numbered phase from 2 on with an unchecked box.
+- **Performance criteria are measured, never estimated.** They point at targets in [docs/design/scaling.md](docs/design/scaling.md), name the hardware (`dev-m5` until the production host exists, then `prod`) and are checked only with a result in `docs/perf/`.
 - **Check a box only when it's really done:** committed, `make check` green, and doing what the line says. Partial work stays unchecked.
 - **Every phase ends with acceptance criteria.** A phase is done when every box in it is checked, acceptance criteria included.
 - **`HUMAN` items need the owner:** generating art, money, accounts, DNS, credentials, approvals and playtests. Agents prepare everything around them and keep working on whatever isn't blocked.
@@ -31,24 +33,25 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 |---|---|---|---|
 | 0 | Foundations | Scaffold, pipelines, first art | Project structure, codegen, image processing |
 | 1 | lorehallow.com | The website | Linux hosting, DNS, TLS, CI/CD |
-| 2 | Two Players, One World | v0.2.0 | WebSockets, tick loops, interpolation |
-| 3 | Many Players | v0.3.0 | Prediction, reconciliation, load testing |
-| 4 | Accounts and Characters | v0.4.0 | Auth, sessions, PostgreSQL, backups |
+| 2 | Two Players, One World | v0.2.0 | WebSockets, connection lifecycle, backpressure, tick loops, interpolation |
+| 3 | Many Players | v0.3.0 | Prediction, interest management, bandwidth, load testing, profiling |
+| 4 | Accounts and Characters | v0.4.0 | Auth, sessions, PostgreSQL, login storms, backups |
 | 5 | Chat and Presence | v0.5.0 | Fan-out messaging, rate limiting |
-| 6 | Combat | v0.6.0 | Server-side game logic, AI, cooldowns |
-| 7 | Interest Management | v0.7.0 | Spatial partitioning, bandwidth |
-| 8 | Items and Loot | v0.8.0 | Transactional persistence, data integrity |
+| 6 | Combat | v0.6.0 | Server-side game logic, AI, tick budgets |
+| 7 | Crowds and a Larger World | v0.7.0 | Spatial queries, bandwidth budgets, graceful degradation |
+| 8 | Items and Loot | v0.8.0 | Transactional persistence, data integrity, idempotency |
 | 9 | Quests, NPCs and Progression | v0.9.0 | Data-driven content |
 | 10 | Grouping | v0.10.0 | Cross-entity state, consistency |
-| 11 | Zones | v0.11.0 | Distributed services, handoff |
-| 12 | Operations | v0.12.0 | Observability, zero-downtime deploys |
+| 11 | Zones | v0.11.0 | Ownership boundaries, handoff, failure isolation |
+| 12 | Operations | v0.12.0 | Observability, soak testing, zero-downtime deploys |
 | 13 | Classes and the v1 World | v0.13.0 | Content production, balance tooling |
 | 14 | Audio, UI and Polish | v0.14.0 | Game feel, UX, accessibility |
-| 15 | Distribution and Releases | v0.15.0 | Release engineering, signing |
+| 15 | Distribution and Releases | v0.15.0 | Release engineering, signing, the web build |
 | 16 | Security and Hardening | v0.16.0 | Threat modeling, fuzzing, abuse prevention |
 | 17 | Closed Alpha | v0.17.0 | Playtesting, triage, live tuning |
-| 18 | Open Beta | v0.18.0 | Capacity planning, community operations |
+| 18 | Open Beta | v0.18.0 | Capacity planning at scale, community operations |
 | 19 | Launch | v1.0.0 | Shipping and supporting a live game |
+| 20 | Many Machines | v1.1.0 | Gateways, inter-process handoff, partial failure |
 
 ---
 
@@ -237,7 +240,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] BUILD.md parser in `web/src/lib/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
 - [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
 - [ ] Overall progress XP bar and per-phase progress bars, computed from the boxes.
-- [ ] Quest map: the 20 phase landmarks from Batch 02 along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
+- [ ] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here" (the current server phase, with Phase 1 shown alongside), future ones dimmed.
+- [ ] Hand-draw a 21st landmark for Phase 20 (a far road beyond the castle) to join the 20 from Batch 02.
 - [ ] Phase pages (`/progress/phase-N`) with goal, lesson, sections, checklists and `HUMAN` and `ADR` badges.
 - [ ] Achievement feed: at build time, walk the `git log` of BUILD.md to find when each box was checked, and show the most recent as "quest complete" entries with dates and commit links.
 - [ ] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
@@ -262,8 +266,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 1.7 More pages
 
 - [ ] /world: the setting and mood (mossy forests, lantern-lit towns, old stone ruins) with an art gallery, marked as early and subject to change.
-- [ ] /about: the project's two goals, building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
-- [ ] /faq: is it free, when can I play, which platforms, how many players, how to follow along.
+- [ ] /about: the project's goals (a small world worth being in, an excellent Go MMO server as the showcase, and learning by building it), building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
+- [ ] /faq: is it free, when can I play, which platforms, how many players (the goal of hundreds to thousands, stated as a target, with only measured numbers given as facts), how to follow along.
 - [ ] Custom 404 page with hand-drawn 404 art (redraw `not_found` by hand: the generated one shows the old hero design).
 - [ ] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [ ] No third-party trackers, scripts or fonts on any page.
@@ -305,10 +309,10 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ## Phase 2: Two Players, One World
 
-> **Goal:** Two players on different machines connect to the server at play.lorehallow.com and see each other move smoothly around one shared 30×20 map.
+> **Goal:** Two players on different machines connect to the server at play.lorehallow.com and see each other move smoothly around one shared 30×20 map, on a connection layer that already survives slow and hostile clients and a bot swarm that measures it.
 > **Ships:** v0.2.0
-> **Lesson:** WebSockets, message framing, authoritative simulation, tick loops, interpolation and deploying a Go service behind TLS
-> **Depends on:** Phase 1
+> **Lesson:** WebSockets, message framing, connection lifecycle, backpressure, authoritative simulation, tick loops, interpolation and deploying a Go service behind TLS
+> **Depends on:** Phase 0. Phase 1 runs in parallel; only the deploy in 2.9 needs the host from 1.1.
 
 ### 2.1 Protocol v1
 
@@ -316,8 +320,10 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] `Input`: sequence number, client tick and 8-way movement intent. Never a position.
 - [ ] `Snapshot`: server tick, the last input sequence processed for the receiving player, and entity states (id, position, facing, animation state).
 - [ ] `EntityJoined`, `EntityLeft`, `Ping` and `Pong`.
-- [ ] Framing and limits (one `Envelope` per binary WebSocket message, maximum sizes) documented in `docs/design/protocol.md`.
+- [ ] `Disconnect`: a reason code (protocol mismatch, server full, too slow, kicked, shutting down, timed out, bad message) and readable text, sent before the server closes a connection.
+- [ ] Framing, limits and a byte budget per message (one `Envelope` per binary WebSocket message, maximum sizes per direction) documented in `docs/design/protocol.md`.
 - [ ] Round-trip golden tests for every new message.
+- [ ] Hardened decoding: size checked before decoding, unknown payloads rejected, and fuzz targets for envelope decoding with a committed seed corpus, run by `make fuzz`.
 
 ### 2.2 Shared map format
 
@@ -327,22 +333,40 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Map validator in `make check`: tilesets exist, collision layer present, at least one spawn point.
 - [ ] `make sync` also mirrors `content/` into `client/assets/content/`.
 
-### 2.3 Server simulation
+### 2.3 Connection lifecycle and backpressure
 
-- [ ] `ADR` WebSocket library (coder/websocket recommended); endpoint `/ws` with origin checks and read limits.
-- [ ] Connection lifecycle: handshake timeout, player id assignment, spawn selection, cleanup on close or error.
-- [ ] Fixed 20 Hz tick loop on a monotonic clock, measuring tick duration and warning on overruns.
+- [ ] `ADR` WebSocket library (coder/websocket recommended); endpoint `/ws` with origin checks, read limits and compression off.
+- [ ] Connection lifecycle as an explicit state machine (handshaking, in world, closing, closed): handshake timeout, player id assignment, spawn selection, and one cleanup path for every exit (close, error, timeout, eviction, shutdown).
+- [ ] One reader and one writer goroutine per connection: the reader decodes, validates and forwards to the zone's bounded inbox; the writer drains a send queue bounded by message count and bytes.
+- [ ] Slow-client eviction: a full send queue closes the connection with `Disconnect` ("too slow"), and the tick loop never waits on a socket (tested with a stalled reader).
+- [ ] Heartbeats: the server pings every connection, a read deadline drops silent ones, and round-trip time is recorded per connection.
+- [ ] Limits: maximum connections (beyond it, `Disconnect` "server full"), pending handshakes per IP, message size and inbound message rate, each with a test that proves the limit holds.
+- [ ] Graceful shutdown sends `Disconnect` ("shutting down") to everyone, drains, and leaves no goroutines behind (leak test).
+
+### 2.4 Server simulation
+
+- [ ] One goroutine owns the zone: a fixed 20 Hz tick on a monotonic clock, measuring tick duration and warning on overruns, with no locks around world state.
 - [ ] Per-connection input queues drained each tick; inputs applied in sequence order; stale and duplicate inputs dropped.
 - [ ] Movement: fixed speed in tiles per second, axis-separated collision against the collision layer.
 - [ ] Validation: input floods, impossible speeds and wall-walking have no effect; repeat offenders are disconnected and logged.
-- [ ] Snapshot broadcast every tick to every connected player (interest management comes in Phase 7).
+- [ ] Snapshot broadcast every tick to every connected player, each entity's state encoded once per tick and shared by every recipient (interest management comes in Phase 3).
 - [ ] Disconnects remove the entity for everyone within one second (`EntityLeft` on close, heartbeat timeout for silent drops).
 - [ ] Deterministic tests of the simulation with a fake clock: movement, collision, validation, join and leave.
+- [ ] Benchmarks with `ReportAllocs` for the tick, snapshot encoding and input decoding, and an allocation test that fails `make check` if the steady-state simulation step allocates.
 
-### 2.4 Client networking
+### 2.5 Bots and load generation
 
-- [ ] Connect screen: server choice (default `wss://play.lorehallow.com/ws`, plus local), display name, connect button and clear error states.
-- [ ] `Net` autoload: WebSocketPeer connection, envelope encode and decode, reconnect with backoff, signals per message type.
+- [ ] `server/cmd/lorehallow-bot`: a headless Go client that connects, handshakes and wanders; `-n` runs many from one process cheaply, and it reports its own CPU and memory.
+- [ ] Cheat mode for the bot: input flooding, forged sequence numbers, oversized messages, unknown message types and a handshake that never finishes.
+- [ ] Integration test proving cheat mode never moves a bot faster than allowed or through walls.
+- [ ] Integration test: server plus two bots; each sees the other move, and sees the leave within one second of a disconnect.
+- [ ] `make loadtest SCENARIO=<name>` runs a [scaling.md](docs/design/scaling.md) scenario against a fresh server and writes a draft result to `docs/perf/`; `idle` and `spread` work.
+- [ ] Baseline on `dev-m5`: Case 1 Tier 1 (100 idle connections) and 100 bots in `spread`, recorded in `docs/perf/` with memory per connection, goroutines, tick p99 and bytes per player.
+
+### 2.6 Client networking
+
+- [ ] Connect screen: server choice (default `wss://play.lorehallow.com/ws`, plus local), display name, connect button and clear error states, including each `Disconnect` reason.
+- [ ] `Net` autoload: WebSocketPeer connection, envelope encode and decode, reconnect with jittered exponential backoff, signals per message type.
 - [ ] Input sampled at a fixed rate and sent as `Input` messages with sequence numbers.
 - [ ] Local player drawn at the server's authoritative position (prediction comes in Phase 3).
 - [ ] Remote players drawn about 100 ms behind the latest snapshot, interpolating between buffered snapshots, with capped extrapolation for short gaps.
@@ -350,41 +374,34 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Debug overlay (F3): RTT, snapshot rate, interpolation buffer depth, server tick and entity count.
 - [ ] Dev network simulation: configurable delay, jitter and drops, on the server and in the client.
 
-### 2.5 Art Batch 03: player character and starter tiles
+### 2.7 Art Batch 03: player character and starter tiles
 
 - [ ] Draw Batch 03 by hand (manifest and sources in `art/src/`): the player character sheet (32×48, four directions, idle 2 frames, walk 4 frames) and the extra tiles the starter map needs (trees, rocks, path edges, water edges and a few props).
 - [ ] Run intake, check frame alignment, iterate until accepted, and `make sync`.
 - [ ] Character SpriteFrames and animation setup in the client; placeholder art fully replaced.
 
-### 2.6 Starter map
+### 2.8 Starter map
 
 - [ ] Hand-build a 30×20 map from Batch 01 and 03 tiles, with paths, obstacles worth testing collision against, and at least four spawn points.
 - [ ] Camera follows the local player with pixel-snapped movement and stops at map edges.
 
-### 2.7 Bots and cheat tests
+### 2.9 Deploy the game server
 
-- [ ] `server/cmd/lorehallow-bot`: a headless Go client that connects, handshakes and wanders; `-n` runs many.
-- [ ] Cheat mode for the bot: input flooding, forged sequence numbers, oversized messages and unknown message types.
-- [ ] Integration test proving cheat mode never moves a bot faster than allowed or through walls.
-- [ ] Integration test: server plus two bots; each sees the other move, and sees the leave within one second of a disconnect.
-
-### 2.8 Deploy the game server
-
-- [ ] systemd unit `deploy/server/lorehallow-server.service`: dedicated user, restart on failure, sandboxing options, env file at `/etc/lorehallow/server.env`.
+- [ ] systemd unit `deploy/server/lorehallow-server.service`: dedicated user, restart on failure, sandboxing options, `LimitNOFILE` raised for many connections, env file at `/etc/lorehallow/server.env`.
 - [ ] Caddy site for `play.lorehallow.com` proxying `/ws` WebSocket upgrades to the server on localhost.
 - [ ] `make deploy-server`: cross-compile for the host, upload, switch, restart, check `/healthz`, and roll back automatically on failure.
 - [ ] Public `GET /api/status` (online count, uptime, version, protocol version) at `lorehallow.com/api/status`, cached briefly.
 - [ ] Website /status page and a landing-page indicator showing server state and player count (progressive enhancement).
 - [ ] Logs in journald, and `docs/ops/runbook.md` started with start, stop, logs, deploy and rollback commands.
 
-### 2.9 Playtest builds
+### 2.10 Playtest builds
 
 - [ ] `make export` builds Windows, macOS and Linux clients headless with the pinned export templates.
 - [ ] Publish the v0.2.0 builds as GitHub and Codeberg releases and list them on /downloads as "Prototype".
 
-### 2.10 Walkthrough
+### 2.11 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-02-two-players.md`: the tick loop, the snapshot format, interpolation, authoritative validation and the deploy, with pointers into the code.
+- [ ] `docs/walkthroughs/phase-02-two-players.md`: the tick loop, the snapshot format, interpolation, the connection lifecycle and backpressure, authoritative validation and the deploy, with pointers into the code.
 - [ ] Devlog draft for v0.2.0 with a short clip of two players moving.
 - [ ] Release notes in `docs/releases/v0.2.0.md` and tag `v0.2.0`.
 
@@ -394,15 +411,17 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Each player sees the other moving smoothly with no teleporting or jitter under normal latency, and also with 100 ms simulated latency and 20 ms jitter.
 - [ ] Closing a client removes that player for everyone within one second.
 - [ ] A modified client sending forged or flooded input cannot move faster than allowed (integration test).
-- [ ] The walkthrough explains the tick loop, the snapshot format and interpolation.
+- [ ] A stalled client is evicted without raising anyone else's tick time, and the server shuts down with no goroutines left behind (integration tests).
+- [ ] Case 1 Tier 1 in [scaling.md](docs/design/scaling.md) (100 idle connections) is met on `dev-m5`, with the result in `docs/perf/`.
+- [ ] The walkthrough explains the tick loop, the snapshot format, interpolation and backpressure.
 
 ---
 
 ## Phase 3: Many Players
 
-> **Goal:** 10 or more real players and 100 bots share the world smoothly, and your own movement feels instant thanks to prediction and reconciliation.
+> **Goal:** 1,000 bots and 10 or more real players share the world, your own movement feels instant thanks to prediction and reconciliation, and each player only receives what is near them.
 > **Ships:** v0.3.0
-> **Lesson:** Latency hiding, client prediction, reconciliation, load testing and profiling
+> **Lesson:** Latency hiding, client prediction, reconciliation, interest management, bandwidth, load testing and profiling
 > **Depends on:** Phase 2
 
 ### 3.1 Shared deterministic movement
@@ -418,34 +437,56 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Small errors are smoothed out visually; large errors snap. Corrections are counted in the debug overlay.
 - [ ] Prediction can be toggled from the debug menu for side-by-side comparison.
 
-### 3.3 Bandwidth
+### 3.3 Interest management
 
-- [ ] Measure bytes per snapshot and per client per second, shown in the debug overlay and logged by the server.
+- [ ] `ADR` Spatial index: a uniform grid (recommended) with a cell size chosen by measurement, updated as entities move.
+- [ ] Per-player area of interest with hysteresis (enter radius smaller than leave radius) so entities don't flicker at the edge.
+- [ ] Enter and leave messages driven by area changes; snapshots include only entities in the area.
+- [ ] Tests at cell boundaries and with fast movement, and a benchmark of grid updates and queries with 1,000 entities.
+
+### 3.4 Bandwidth
+
+- [ ] Measure bytes per snapshot and per client per second, shown in the debug overlay and exported by the server.
 - [ ] `ADR` Snapshot optimization: quantization, deltas against the last acknowledged snapshot, or both. Implement it and measure the savings.
+- [ ] Encode once with deltas: per-entity delta fragments built once per tick and shared by every recipient that acknowledged the same base, with a benchmark showing encode cost independent of recipient count.
+- [ ] Per-client bandwidth with 100 bots spread across the map, before and after interest management, in `docs/perf/phase-03.md`.
 
-### 3.4 Load testing
+### 3.5 Metrics and profiling
+
+- [ ] Prometheus text-format metrics on a localhost-only admin port: connections, players per zone, tick duration histogram, inbox and send-queue depth, drops, evictions, messages and bytes in and out, goroutines and GC.
+- [ ] pprof on the same localhost-only admin port; one profiling pass at 1,000 bots completed and any hotspot fixed, with before and after in `docs/perf/`.
+- [ ] `ADR` GC settings: measure `GOGC` and `GOMEMLIMIT` under Case 2 load and record the chosen defaults.
+
+### 3.6 Load testing
 
 - [ ] Bot swarm: `lorehallow-bot -n 100` with wander, follow and idle behaviors and configurable latency.
+- [ ] The bot generator runs 5,000 bots from one process, with its own CPU and memory reported, and can spread bots across several source addresses to get past ephemeral-port limits.
+- [ ] `make loadtest` covers the scaling.md scenarios `idle`, `spread`, `crowd`, `churn`, `slow` and `hostile` (`storm` and `reconnect` join in Phase 4, `burst` in Phase 6).
 - [ ] Load test script reporting tick time p50 and p99, CPU, memory and bandwidth at 10, 50 and 100 bots, with results in `docs/perf/phase-03.md`.
-- [ ] pprof on a localhost-only admin port; one profiling pass completed and any hotspot fixed.
+- [ ] Every Tier 1 target in scaling.md, and Case 1 Tier 2 (1,000 connections), measured on `dev-m5` and recorded in `docs/perf/phase-03.md`.
 - [ ] Race detector clean during a load test run.
+- [ ] One-hour soak (scaling.md short soak) on `dev-m5`.
 
-### 3.5 Art Batch 04: a crowd of people
+### 3.7 Art Batch 04: a crowd of people
 
 - [ ] Draw Batch 04 by hand: three or four player appearance variants and a townsfolk placeholder, so a crowd reads as different people.
 - [ ] Intake and integrate; bots pick random appearances.
 
-### 3.6 Walkthrough
+### 3.8 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-03-many-players.md`: prediction, reconciliation, fixed-point simulation, and measuring and reducing bandwidth.
+- [ ] `docs/walkthroughs/phase-03-many-players.md`: prediction, reconciliation, fixed-point simulation, interest management, and measuring and reducing bandwidth.
 - [ ] Devlog draft, release notes, tag `v0.3.0` and publish builds.
 
 ### Acceptance criteria
 
 - [ ] With 150 ms simulated latency, your own movement responds on the next frame and corrections aren't noticeable in normal play.
+- [ ] With 100 bots spread across the map, per-client bandwidth is at least 70% lower than broadcasting everything.
+- [ ] Case 1 Tier 2 (1,000 connections), Case 2 Tier 1 (100 active players) and Case 3 Tier 1 (100 in one area) in scaling.md are met on `dev-m5`.
+- [ ] With 10% slow clients and 100 hostile bots, healthy players' tick p99 and bandwidth stay within 10% of a clean run (scaling.md).
+- [ ] The one-hour soak passes: no memory growth, flat goroutines, no tick drift.
 - [ ] 100 bots on the production host keep server tick p99 under 12.5 ms (a quarter of the tick budget).
-- [ ] `HUMAN` Playtest: at least 3 real players plus 20 bots on the live server feels smooth.
-- [ ] The walkthrough explains prediction and reconciliation with diagrams.
+- [ ] `HUMAN` Playtest: at least 3 real players plus 200 bots on the live server feels smooth.
+- [ ] The walkthrough explains prediction, reconciliation and interest management with diagrams.
 
 ---
 
@@ -463,6 +504,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Migrations in `server/migrations/`, run by `make migrate` locally and as a deploy step in production.
 - [ ] Local dev database with Docker Compose (`make db-up`, `make db-reset`) and a Postgres service container in CI.
 - [ ] Schema: accounts, sessions and characters (name, appearance, zone, position, facing, timestamps).
+- [ ] A bounded connection pool, a context timeout on every query, and no database call on a zone goroutine: zones hand saves to persistence workers through a bounded queue.
 
 ### 4.2 Authentication
 
@@ -470,6 +512,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] HTTPS endpoints `POST /api/auth/register`, `/login` and `/logout` returning an opaque session token, stored only as a hash.
 - [ ] The WebSocket handshake carries the session token; invalid or expired tokens are rejected; a new login ends any older game session for that account.
 - [ ] Rate limits and lockouts on login and registration per IP and per account, proven by tests.
+- [ ] Password hashing on a bounded worker pool, so a login storm queues instead of starving tick loops; `make loadtest SCENARIO=storm` meets the scaling.md login-storm target on `dev-m5`.
 - [ ] `HUMAN` Decide on account recovery for v1 (no email, or optional email with an SMTP provider). An agent writes the options up as an ADR first.
 
 ### 4.3 Characters
@@ -477,6 +520,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Character creation: name rules (unique, allowed characters, length, reserved and offensive words filtered) and appearance chosen from the Batch 04 variants.
 - [ ] Character select: up to four characters per account, with delete behind a typed confirmation (soft delete).
 - [ ] Position and state saved on logout, on disconnect and every 60 seconds, and restored on login.
+- [ ] A failure in the middle of a save (connection killed, transaction aborted, server killed) leaves the last committed state intact, tested against a real Postgres.
+- [ ] Session resume: a client that reconnects within a grace window with its session token returns to its character without logging in again; `make loadtest SCENARIO=reconnect` meets the scaling.md reconnect-storm target on `dev-m5`.
 - [ ] Client login, registration, character select and creation screens with clear errors; the token lives in memory unless "remember me" is chosen.
 
 ### 4.4 Backups
@@ -503,6 +548,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Brute-force login attempts are rate limited (integration test).
 - [ ] A backup was restored successfully from the off-site copy.
 - [ ] CI runs the database integration tests against a real Postgres.
+- [ ] The login-storm and reconnect-storm targets in scaling.md are met on `dev-m5`, with results in `docs/perf/`.
 
 ---
 
@@ -517,6 +563,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [ ] Channels: say (range-limited), zone, whisper (by character name), emote and system, with server timestamps.
 - [ ] Fan-out by channel with length limits and per-player token-bucket rate limits that reply with a friendly "slow down".
+- [ ] Each chat message encoded once for all its recipients, with a benchmark of zone chat to 1,000 players.
 - [ ] Persisted ignore list and whisper reply.
 - [ ] `/who` listing online characters in the zone.
 - [ ] Text hygiene: Unicode normalization, control characters stripped, combining marks capped.
@@ -569,6 +616,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] One entity model for players and mobs: id, kind, position, health, faction and state.
 - [ ] Stats (health, attack power, armor, movement speed) with derived values computed in one place.
 - [ ] Combat events to clients: damage, heal, death, respawn, cast start and cast stop.
+- [ ] Tick time broken down by system (input, movement, AI, combat, snapshots) in the metrics, with a budget for each.
 
 ### 6.2 Targeting and abilities
 
@@ -584,6 +632,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] AI state machine: idle, wander, aggro on proximity, chase, attack, and leash back with a full reset when pulled too far.
 - [ ] Threat table: damage builds threat and mobs attack whoever is on top.
 - [ ] Player death, a respawn point and a short respawn delay; mob death with a fading corpse.
+- [ ] Deterministic combat: the same inputs and random seed produce the same combat log, tested tick by tick.
+- [ ] `make loadtest SCENARIO=burst`: every player in a zone uses an ability on the same tick, within the scaling.md burst target on `dev-m5`.
 
 ### 6.4 Combat in the client
 
@@ -609,50 +659,58 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] A player can die and respawn at the respawn point.
 - [ ] Abilities can't be used early, out of range or without resources, even by a modified client (tests).
 - [ ] Mobs leash and reset when kited too far.
+- [ ] 100 bots fighting mobs still meet Case 2 Tier 1 in scaling.md on `dev-m5`.
 - [ ] `HUMAN` Playtest: two players fighting the same mob feels good and reads clearly.
 
 ---
 
-## Phase 7: Interest Management
+## Phase 7: Crowds and a Larger World
 
-> **Goal:** A much larger map where each player only receives updates about what's near them, so bandwidth stays flat as the world grows.
+> **Goal:** A town square holds hundreds of players who can all see each other, with each player's bandwidth held to a budget, on a much larger map where spatial queries drive chat, combat and AI.
 > **Ships:** v0.7.0
-> **Lesson:** Spatial partitioning, areas of interest and bandwidth budgets
+> **Lesson:** Spatial queries, bandwidth budgets, priority and update-rate tiers, and graceful degradation under overload
 > **Depends on:** Phase 6
 
-### 7.1 Areas of interest
+### 7.1 Spatial queries everywhere
 
-- [ ] `ADR` Spatial index: a uniform grid (recommended) with a chosen cell size, updated as entities move.
-- [ ] Per-player area of interest with hysteresis (enter radius smaller than leave radius) so entities don't flicker at the edge.
-- [ ] Enter and leave messages driven by area changes; snapshots include only entities in the area.
 - [ ] Say chat range and combat events use the same spatial queries.
-- [ ] Tests at cell boundaries and with fast movement.
+- [ ] Mob aggro, leashing and AI perception use the zone's spatial grid instead of scanning every entity.
+- [ ] Benchmarks of the grid's queries with 1,000 players and 1,000 mobs in one zone.
 
-### 7.2 A larger map
+### 7.2 Bandwidth budgets for crowds
+
+- [ ] Per-player byte budget with a priority accumulator: nearby, moving and targeted entities first, everyone else as the budget allows (scaling.md Case 3).
+- [ ] Update-rate tiers by distance (every tick, every second tick, every fourth tick), and a cap on full-rate entities per player.
+- [ ] Graceful degradation under overload: as a zone's tick nears its budget, the server lowers update rates for distant entities first and logs it; game rules never degrade.
+- [ ] Tests: the budget is never exceeded, every visible entity is updated at least at its tier's minimum rate, and nothing flickers at area edges.
+
+### 7.3 A larger map
 
 - [ ] Build a large map (about 200×150 tiles) with a town, a forest edge and ruins, as the first real zone layout.
 - [ ] `ADR` Measure client rendering and memory on the large map, and decide whether chunked loading is needed.
 - [ ] Minimap showing nearby terrain and other players.
 
-### 7.3 Art Batch 07: zone tiles
+### 7.4 Art Batch 07: zone tiles
 
 - [ ] Draw Batch 07 by hand: forest variants, town building exteriors, lanterns, ruins, water and bridges.
 - [ ] Intake and integrate.
 
-### 7.4 Measurement
+### 7.5 Measurement
 
-- [ ] Per-client bandwidth with 100 bots spread across the map, before and after interest management, in `docs/perf/phase-07.md`.
+- [ ] `make loadtest SCENARIO=crowd` at Case 3 Tier 1 and Tier 2 (100 and 300 players in one area) on `dev-m5`, before and after the budgets, in `docs/perf/phase-07.md`.
+- [ ] Case 3 Tier 3 (1,000 in one area) run as a degradation test: the server stays up, holds its budgets and recovers when the crowd disperses.
+- [ ] Client frame rate with 300 players on screen measured, and fixed if it can't hold 60 FPS on `dev-m5`.
 
-### 7.5 Walkthrough
+### 7.6 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-07-interest-management.md`: spatial partitioning, hysteresis and bandwidth budgets.
+- [ ] `docs/walkthroughs/phase-07-crowds.md`: why fan-out is O(n²), spatial partitioning, hysteresis, priority and bandwidth budgets, and degrading gracefully.
 - [ ] Devlog draft, release notes, tag `v0.7.0` and publish builds.
 
 ### Acceptance criteria
 
-- [ ] With 100 bots spread across the map, per-client bandwidth is at least 70% lower than broadcasting everything.
+- [ ] 300 players in one area meet Case 3 Tier 2 in scaling.md on `dev-m5`: tick p99 under 25 ms, at most 32 KB/s per player, every visible entity updated at least 5 times a second.
 - [ ] Entities don't visibly pop in or out at area edges during normal movement.
-- [ ] Server tick p99 stays under 12.5 ms with 100 bots.
+- [ ] Server tick p99 stays under 12.5 ms with 100 bots spread across the large map.
 
 ---
 
@@ -677,6 +735,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Equipment slots (head, chest, legs, feet, hands, main hand, off hand, trinket) feeding the stat system.
 - [ ] Gold, and vendor NPCs that buy, sell and offer buyback for the session.
 - [ ] Inventory changes persisted immediately in transactions, not on the periodic save.
+- [ ] The client is told about an item change only after it commits, so a crash between the game event and the commit never shows an item the player doesn't have.
+- [ ] Request ids survive reconnects: a command replayed after a reconnect is applied once.
 - [ ] Duplication tests: concurrent requests, disconnects mid-operation and replayed messages never duplicate or lose an item.
 
 ### 8.3 Items in the client
@@ -763,7 +823,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 10.1 Parties on the server
 
-- [ ] Party model: invite, accept, decline, leave, kick, promote and disband, up to five members.
+- [ ] Party model: invite, accept, decline, leave, kick, promote and disband, up to five members, owned by one goroutine outside any zone and changed only by messages.
 - [ ] Party membership survives a brief disconnect (grace period) and stays consistent for every member.
 - [ ] Shared kill credit, experience split by level for members in range, and shared quest objective credit nearby.
 - [ ] Party loot rules that follow the Phase 8 loot model.
@@ -798,18 +858,19 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ## Phase 11: Zones
 
-> **Goal:** The world spans multiple maps with quick transitions, and zones run as separate services.
+> **Goal:** The world spans multiple maps with quick transitions; each zone is an isolated simulation owned by its own goroutine, and handoff is a message protocol ready to cross processes later.
 > **Ships:** v0.11.0
-> **Lesson:** Distributed services, handoff and service boundaries
+> **Lesson:** Ownership boundaries, handoff protocols and failure isolation
 > **Depends on:** Phase 10
 
 ### 11.1 Architecture
 
-- [ ] `ADR` Zone architecture: one process with many zone simulations, or a gateway plus one process per zone (the learning goal favors trying the multi-process design). Write up the tradeoffs.
-- [ ] Zone registry and routing (the gateway keeps the client connection, or clients reconnect with a handoff token).
-- [ ] Handoff protocol: save state, transfer and spawn in the new zone, rolling back to the old zone on failure.
+- [ ] `ADR` Zone architecture: one process with many zone goroutines and a world coordinator (ADR 0005), with the internal messages between them written down in `docs/design/zones.md` so they can run between processes later (Phase 20). Write up the tradeoffs.
+- [ ] Zone registry and routing in the world coordinator; a connection belongs to exactly one zone at a time.
+- [ ] Handoff protocol: save state, transfer and spawn in the new zone, rolling back to the old zone on failure, tested with a failure injected at every step.
+- [ ] Zone isolation: a panic in one zone's tick is recovered and logged and stops only that zone; its players are moved to a safe point or disconnected cleanly.
 - [ ] Zone and world chat, whispers and parties work across zones.
-- [ ] `make server` runs the whole set locally; production gets a systemd unit per service.
+- [ ] Zones start on demand and an empty zone stops ticking.
 
 ### 11.2 The world
 
@@ -818,14 +879,15 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] World map window showing the zones and where you are.
 - [ ] The three v1 zones blocked out (starting town and fields, Mosswood, the Old Ruins; working names), to be filled with content in Phase 13.
 
-### 11.3 Resilience
+### 11.3 Resilience and scale
 
 - [ ] Bots cross zones continuously for an hour with no lost characters or items.
-- [ ] Killing a zone process mid-handoff leaves every player in a safe, recoverable state.
+- [ ] Crashing a zone mid-handoff leaves every player in a safe, recoverable state.
+- [ ] `make loadtest SCENARIO=spread` at Case 2 Tier 2 (1,000 active players across 10 or more zones) on `dev-m5`, with CPU per core and zone tick p99 for every zone, in `docs/perf/phase-11.md`.
 
 ### 11.4 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-11-zones.md`: service boundaries, handoff and failure handling.
+- [ ] `docs/walkthroughs/phase-11-zones.md`: ownership boundaries, handoff and failure handling, and why the boundary is a message protocol.
 - [ ] Devlog draft, release notes, tag `v0.11.0` and publish builds.
 
 ### Acceptance criteria
@@ -833,6 +895,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Players walk between at least three zones with transitions under two seconds.
 - [ ] Parties, whispers and quests work across zones.
 - [ ] A zone crash affects only that zone's players, who can reconnect.
+- [ ] Case 2 Tier 2 in scaling.md (1,000 active players across zones) is met on `dev-m5`.
 
 ---
 
@@ -845,7 +908,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 12.1 Metrics and dashboards
 
-- [ ] Prometheus metrics from every service: connected players, tick duration histogram, messages and bytes in and out, database latency and errors.
+- [ ] Metrics completed for every service (the Phase 3 set plus database latency and errors, persistence queue depth and handoffs), each documented in `docs/ops/metrics.md`.
 - [ ] `ADR` Monitoring stack on the host (Prometheus and Grafana, or something lighter), reachable only through an SSH tunnel or an authenticated proxy.
 - [ ] Dashboards for server health, player activity and performance.
 
@@ -866,14 +929,20 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 12.5 Runbooks
 
-- [ ] Runbooks in `docs/ops/` for: server down, database full, bad deploy, compromised account and restoring from backup.
+- [ ] Runbooks in `docs/ops/` for: server down, database full, bad deploy, compromised account, restoring from backup and the server at capacity.
 - [ ] Game-day exercise: simulate two incidents and follow the runbooks, fixing whatever was wrong in them.
 
 ### 12.6 Status page
 
 - [ ] /status shows 30-day uptime and recent incidents.
 
-### 12.7 Walkthrough
+### 12.7 Soak and capacity
+
+- [ ] 24-hour soak (scaling.md day soak) on `prod`.
+- [ ] Case 1 Tier 3 (5,000 concurrent connections) measured on `dev-m5` and `prod`, including Caddy's memory per connection.
+- [ ] A nightly scheduled job runs the fuzz targets for an hour and a short `spread` load test, and alerts on failure.
+
+### 12.8 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-12-operations.md`: metrics, alerts, deploy strategy and incident response.
 - [ ] Devlog draft, release notes, tag `v0.12.0` and publish builds.
@@ -883,6 +952,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Deploying a server update during a 20-bot session loses no progress.
 - [ ] Each alert type was fired in a test and reached the owner.
 - [ ] Dashboards show live player counts and tick times.
+- [ ] The 24-hour soak passed on `prod`.
 
 ---
 
@@ -1020,7 +1090,13 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [ ] Install guides per platform on the website (including any unsigned-app warnings) and final system requirements.
 
-### 15.6 Walkthrough
+### 15.6 Web build
+
+- [ ] `ADR` Godot web export: a single-threaded build (no SharedArrayBuffer, so no cross-origin isolation headers) of the same client, connecting over `wss://`, with no rewrite of game code.
+- [ ] The release workflow exports the web build, and lorehallow.com/play serves it with correct MIME types, compression and caching.
+- [ ] A browser smoke test in CI loads the web build headless and connects to a local server.
+
+### 15.7 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-15-distribution.md`: the release pipeline, checksums, signing and update checks.
 - [ ] Devlog draft, release notes and tag `v0.15.0` through the new pipeline.
@@ -1030,6 +1106,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Pushing a release tag produces builds for all three platforms, publishes them everywhere and updates /downloads with no manual steps.
 - [ ] `HUMAN` Fresh installs from the downloads page work on Windows, macOS and Linux (owner or friends verify).
 - [ ] An outdated client is told to update.
+- [ ] The web build at lorehallow.com/play connects and plays like the desktop client.
 
 ---
 
@@ -1046,10 +1123,10 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 16.2 Protocol and server
 
-- [ ] Go fuzz tests for envelope decoding and every message handler, run briefly in CI and longer nightly.
+- [ ] Fuzz targets for every message handler (envelope decoding is fuzzed from Phase 2), run briefly in CI and for an hour nightly.
 - [ ] Limits everywhere (connections per IP, messages per second, message size, pending inputs, names, chat length), each with a test.
 - [ ] Authority audit: every client message type reviewed for trust assumptions, with findings fixed.
-- [ ] Slow-client and idle timeouts; origin checks and TLS-only connections in production.
+- [ ] Review the Phase 2 slow-client, idle and handshake timeouts against real traffic; origin checks and TLS-only connections in production.
 - [ ] Server-side anomaly logging (speed, impossible actions, abnormal rates) with an admin report.
 
 ### 16.3 Accounts and data
@@ -1125,8 +1202,9 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 18.1 Capacity
 
-- [ ] 72-hour soak test with 100 bots plus real players: no memory growth and no tick degradation.
-- [ ] Capacity test to find where tick p99 exceeds budget, documented in `docs/perf/phase-18.md`, with the player cap set safely below it.
+- [ ] 72-hour soak test with 1,000 bots plus real players: no memory growth and no tick degradation.
+- [ ] Capacity test for each scaling.md case on `prod`, finding where each target fails, documented in `docs/perf/phase-18.md`, with the player cap set safely below it.
+- [ ] Case 2 Tier 3 (3,000 to 5,000 active players) and Case 3 Tier 3 (1,000 in one area) measured on `prod`; if one process can't meet them after tuning, write the ADR that starts Phase 20.
 - [ ] Login queue when the server is full.
 
 ### 18.2 Community
@@ -1155,6 +1233,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### Acceptance criteria
 
 - [ ] The 72-hour soak test passed.
+- [ ] Every Tier 2 target in scaling.md is met on `prod`.
 - [ ] A peak of 25 or more concurrent real players (or a target the owner sets) was handled without degradation.
 - [ ] No open critical bugs for two weeks.
 
@@ -1172,7 +1251,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Feature freeze and tag `v1.0.0-rc.1`; only fixes from here on.
 - [ ] Full regression checklist in `docs/releases/regression.md` (every system, every class from 1 to 10, every quest, every platform), run and passed.
 - [ ] Final backup and restore drill, and a written rollback plan for the launch build.
-- [ ] Performance and security checks re-run against the release candidate.
+- [ ] Performance and security checks re-run against the release candidate, with every scaling.md tier met so far re-measured on `prod`.
 
 ### 19.2 Launch preparation
 
@@ -1203,9 +1282,54 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ---
 
+## Phase 20: Many Machines
+
+> **Goal:** When measurements show one process is the limit, zones run in separate processes and then on separate machines, behind gateways that hold the client connections.
+> **Ships:** v1.1.0
+> **Lesson:** Distributed systems for games: gateways, service registries, inter-process handoff, partial failure and rolling deploys
+> **Depends on:** Phase 19, and an ADR linking a measured single-process limit (see [scaling.md](docs/design/scaling.md#when-to-split-across-processes))
+
+This is the post-1.0 track. It starts only when a result in `docs/perf/` shows a limit that tuning one process can't fix. If Phase 18 finds that limit before 1.0, this phase moves ahead of the launch with the owner's approval.
+
+### 20.1 The case for splitting
+
+- [ ] `ADR` Record the measured single-process limit that justifies splitting, the options (more tuning, a bigger host, a gateway plus zone processes) and the choice.
+
+### 20.2 Gateway and zone processes
+
+- [ ] `lorehallow-gateway`: terminates client WebSockets, authenticates, and routes each player to a zone process; clients don't reconnect on handoff.
+- [ ] Internal protocol between gateways and zone processes in `proto/` (package `lorehallow.internal.v1`), with golden vectors, over one persistent connection per process pair.
+- [ ] Service registry: which zone runs where, health checks, and draining a zone process before a deploy.
+- [ ] Cross-process handoff using the Phase 11 protocol, rolling back when either side fails.
+- [ ] Chat, whispers and parties across processes.
+- [ ] `make server` runs the whole set locally; production gets a systemd unit per service.
+
+### 20.3 Multiple machines
+
+- [ ] Zone processes on a second machine over a private network, with mutual TLS between processes.
+- [ ] Partial-failure tests: kill a zone process, a gateway, or the network between them; players end up safe and can reconnect.
+- [ ] Rolling deploys: drain and restart one zone process at a time with no lost progress.
+
+### 20.4 Measurement
+
+- [ ] Re-run every scaling.md case against the split deployment, measure the cost of the extra hop, and record before and after in `docs/perf/phase-20.md`.
+
+### 20.5 Walkthrough
+
+- [ ] `docs/walkthroughs/phase-20-many-machines.md`: gateways, inter-process handoff, partial failure, and what splitting did and didn't fix.
+- [ ] Devlog draft, release notes and tag `v1.1.0`.
+
+### Acceptance criteria
+
+- [ ] The limit recorded in 20.1 is gone, with before and after results on named hardware.
+- [ ] A zone process crash affects only its zones' players, who are back in the world within 30 seconds.
+- [ ] A rolling deploy across every zone process loses no progress.
+
+---
+
 ## Deferred
 
-Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled.
+Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled. (The web client moved into Phase 15 as a Godot web export.)
 
 - Visible equipment on character sprites (layered paper-doll art)
 - Guilds
@@ -1215,7 +1339,6 @@ Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled
 - PvP: duels and arenas
 - Mounts
 - Player housing
-- A web client (the WebSocket transport already allows it)
 - A launcher with automatic patching
 - Controller support, if deferred in Phase 14
 - Languages beyond English

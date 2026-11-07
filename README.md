@@ -18,14 +18,21 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 **Phase 0: Foundations. Pre-alpha, nothing to play yet.**
 
-The tooling is in place: the server and client skeletons, the shared protocol pipeline and the art pipeline, all behind one `make check`. The first two art batches are done, and the tiles, characters, logo and icons are being redrawn by hand. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. The first two art batches are done and redrawn by hand. Next, the website at lorehallow.com (waiting on host setup) and the game server's networking core are built side by side, so the build can be followed in public while the backend moves ahead. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 
-Lorehallow is a hobby project with two goals of equal weight:
+Lorehallow is a hobby project with three goals:
 
 1. **Make a small online world that's fun to be in**, even with only a few players.
-2. **Learn real multiplayer and backend engineering by building it**: networking, authoritative servers, persistence, deployment and operations. Every system should teach something, and every phase ends with a written walkthrough in [`docs/walkthroughs/`](docs/walkthroughs/).
+2. **Build an excellent MMO server.** The Go backend and its networking stack are the project's main achievement: fast, scalable, reliable, secure and maintainable. Players see a small, beautiful world; the infrastructure behind it is the showcase.
+3. **Learn real multiplayer and backend engineering by building it**: networking, authoritative servers, persistence, deployment and operations. Every system should teach something, and every phase ends with a written walkthrough in [`docs/walkthroughs/`](docs/walkthroughs/).
+
+### Scale
+
+The goal is **hundreds to thousands of simultaneous, actively connected players.** The server starts as one process with many zones, each zone owned by a single goroutine, and grows to several processes or machines when measurements call for it ([ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md)).
+
+[`docs/design/scaling.md`](docs/design/scaling.md) is the performance contract. It separates three very different problems (many quiet connections, many active players spread across zones, and hundreds of players crowded into one place who can all see each other) and sets measurable targets for each, from about 100 to 1,000 to several thousand. Thousands is a target, not a claim: no player count is stated as fact until it has been measured, and every measurement lives in [`docs/perf/`](docs/perf/) with the hardware it ran on.
 
 ### Design pillars
 
@@ -40,7 +47,8 @@ Lorehallow is a hobby project with two goals of equal weight:
 - No monetization, cash shop or pay-to-win. Ever.
 - No 3D, isometric or mixed art styles.
 - No mobile clients.
-- Not built for thousands of players. Dozens is the real target; hundreds would be a stretch.
+- No game-server framework doing the hard parts. The server is built from the ground up in Go, because that's the point.
+- No microservices, Kubernetes or distributed databases unless a measurement proves they're needed.
 
 ## Roadmap
 
@@ -50,30 +58,31 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 |---|---|---|
 | 0 | Foundations: repo, toolchain, protobuf pipeline, art pipeline, first art | |
 | 1 | lorehallow.com: landing page, live progress tracker, devlog, downloads | |
-| 2 | Two players, one world | v0.2.0 |
-| 3 | Many players: prediction, reconciliation, load testing | v0.3.0 |
+| 2 | Two players, one world: connection lifecycle, backpressure, bot swarm | v0.2.0 |
+| 3 | Many players: prediction, interest management, bandwidth, load testing | v0.3.0 |
 | 4 | Accounts and characters | v0.4.0 |
 | 5 | Chat and presence | v0.5.0 |
 | 6 | Combat | v0.6.0 |
-| 7 | Interest management and a larger world | v0.7.0 |
+| 7 | Crowds and a larger world: bandwidth budgets, graceful degradation | v0.7.0 |
 | 8 | Items and loot | v0.8.0 |
 | 9 | Quests, NPCs and progression | v0.9.0 |
 | 10 | Grouping | v0.10.0 |
-| 11 | Zones | v0.11.0 |
+| 11 | Zones: isolated zone simulations and handoff | v0.11.0 |
 | 12 | Operations | v0.12.0 |
 | 13 | Classes and the v1 world | v0.13.0 |
 | 14 | Audio, UI and polish | v0.14.0 |
-| 15 | Distribution and releases | v0.15.0 |
+| 15 | Distribution and releases, plus a browser build | v0.15.0 |
 | 16 | Security and hardening | v0.16.0 |
 | 17 | Closed alpha | v0.17.0 |
 | 18 | Open beta | v0.18.0 |
 | 19 | Launch | **v1.0.0** |
+| 20 | Many machines: gateways and zone processes, when measurements call for it | v1.1.0 |
 
 ## Technology
 
 | Layer | Choice |
 |---|---|
-| Client | Godot 4 + GDScript (Windows, macOS, Linux) |
+| Client | Godot 4 + GDScript (Windows, macOS, Linux, and later the browser through Godot's web export) |
 | Game server | Go |
 | Transport | WebSocket over TLS (`wss://`) |
 | Protocol | Protobuf, schemas in [`proto/`](proto/) shared by client and server |
@@ -81,7 +90,9 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 | Website | Astro static site |
 | Hosting | Self-hosted behind lorehallow.com (Caddy, systemd) |
 
-**Networking model:** the server is authoritative and simulates at 20 Hz. Clients send inputs, never positions. Remote players are interpolated about 100 ms behind the latest snapshot, your own character is predicted and reconciled, and each player only receives updates about what is near them.
+**Networking model:** the server is authoritative and simulates at 20 Hz. Clients send inputs, never positions. Remote players are interpolated about 100 ms behind the latest snapshot, your own character is predicted and reconciled, and each player only receives updates about what is near them, found through a spatial grid.
+
+**Server model:** one goroutine owns each zone and nothing else touches its state. Connections talk to zones through bounded channels, every connection has a bounded send queue, and a client too slow to keep up is disconnected instead of slowing anyone else down. Each entity's state is encoded once per tick and shared by everyone who can see it. A headless bot swarm (`lorehallow-bot`) drives load tests for every case in the scaling model.
 
 ## Repository layout
 
