@@ -136,7 +136,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 0.8 Art Batch 01: style foundation
 
 - [x] Draft the locked palette (about 32 colors for warm storybook fantasy: moss and leaf greens, lantern ambers, stone greys, dusk blues, earth browns, skin tones, a dark outline color and a near-white) as `art/style/palette.hex`, a swatch PNG and a `.gpl` palette file.
-- [ ] `HUMAN` Approve the palette or ask for changes.
+- [x] `HUMAN` Approve the palette or ask for changes.
 - [x] Write `art/style/STYLE.md`: grid, scale, perspective, light, outlines, shading steps, character proportions, animation rules, and do and don't examples.
 - [x] Write Batch 01 prompts and manifest: a style reference sheet, one character concept (32×48) and a grass, dirt and stone tileset (32×32, including transitions).
 - [x] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.

@@ -1,4 +1,4 @@
-; Lorehallow palette v2 (draft, awaiting owner approval). 33 colors.
+; Lorehallow palette v2, approved by the owner. 33 colors. Changing it now needs an ADR.
 ; v2 retunes the stone, earth and leaf ramps toward the colors the image
 ; generator actually draws for these materials, and adds sand (see STYLE.md).
 ; One color per line, Lospec .hex style. Ramps run dark to light.

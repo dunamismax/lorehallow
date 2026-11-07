@@ -2,7 +2,7 @@
 
 The rules every piece of Lorehallow art follows. If something isn't readable at a glance at 1x, it's wrong (design pillar 3). Prompts in `art/batches/` restate these rules, and `make art-intake` enforces the mechanical ones.
 
-**Status:** draft. The palette (v2) is awaiting the owner's approval (BUILD.md 0.8).
+**Status:** the palette (v2) is approved and locked (BUILD.md 0.8). Changing it needs an ADR.
 
 ## At a glance
 
