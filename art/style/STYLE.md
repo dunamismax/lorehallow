@@ -150,6 +150,10 @@ Website art (Batch 02 and later) uses the same palette, outline and light rules,
 | Whole-number scaling everywhere | Rotating, stretching or 1.5x scaling sprites |
 | `#FF00FF` behind everything that isn't art | `#FF00FF` (or anything near it) inside the art |
 
-## Delivering art (for generated images)
+## Drawing art
 
-Generated images are drawn on a flat `#FF00FF` background at any resolution; intake finds the pixel grid, downsamples, removes the background and snaps to the palette. Prompts ask for complete sheets in strict grids, and the owner drops the results unchanged into `art/inbox/batch-NN/`. See [AGENTS.md section 8](../../AGENTS.md#8-art-pipeline) and [tools/art/README.md](../../tools/art/README.md).
+Lorehallow's art is hand-drawn by agents as text sources: pixel grids (`.pxl.yaml`) and draw scripts in `art/src/` ([ADR 0004](../../docs/decisions/0004-hand-drawn-pixel-art.md)). Every rule above applies exactly, because every pixel is placed on purpose. Colors are named from the palette (`ink`, `moss shadow`, `lantern gold`), so nothing off-palette can slip in. Look at the result before accepting it: at 1x and zoomed, on light and dark, tiles repeated 3×3, animations frame by frame.
+
+## Delivering art (generated images, the exception)
+
+Only large painted web images (key art, parallax layers, banners) are generated. Generated images are drawn on a flat `#FF00FF` background at any resolution; intake finds the pixel grid, downsamples, removes the background and snaps to the palette. Prompts ask for complete sheets in strict grids, and the owner drops the results unchanged into `art/inbox/batch-NN/`. See [AGENTS.md section 8](../../AGENTS.md#8-art-pipeline) and [tools/art/README.md](../../tools/art/README.md).

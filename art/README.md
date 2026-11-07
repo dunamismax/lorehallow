@@ -5,8 +5,9 @@ Everything about Lorehallow's pixel art. The full process is in [AGENTS.md secti
 | Path | What goes there |
 |---|---|
 | `style/` | The locked palette (`palette.hex`), the style guide (`STYLE.md`) and the reference sheet. |
-| `batches/` | One folder per art batch: `prompts.md`, `manifest.yaml`, `report.md` and optional fix scripts. |
-| `inbox/` | Raw generated images, dropped in unchanged by the owner. **Never edit anything here.** |
-| `processed/` | Output of `make art-intake`: grid-snapped, palette-locked, sliced assets. Edited only by scripts. |
+| `src/` | Hand-drawn sources, the default ([ADR 0004](../docs/decisions/0004-hand-drawn-pixel-art.md)): `.pxl.yaml` pixel grids and `.py` draw scripts, one folder per category. Rendered by `make art-draw`. |
+| `batches/` | One folder per art batch: `manifest.yaml`, `report.md`, `preview.png`, and for generated assets `prompts.md` and optional fix scripts. |
+| `inbox/` | Raw generated images (the exception: large painted web art), dropped in unchanged. **Never edit anything here.** |
+| `processed/` | Output of `make art-draw` and `make art-intake`: palette-locked, sliced assets. Edited only by those commands. |
 
 After intake, `make sync` copies `processed/` into the client and the website.

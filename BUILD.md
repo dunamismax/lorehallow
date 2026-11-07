@@ -63,7 +63,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 - [x] Write the foundational docs: README.md, AGENTS.md and BUILD.md.
 - [x] `HUMAN` Choose licenses: one for code (for example MIT or AGPL-3.0) and one for art and written content (for example CC BY-NC 4.0, or all rights reserved).
-- [ ] `HUMAN` Confirm a ChatGPT plan with image generation is available for the art batches.
+- [x] `HUMAN` Confirm a ChatGPT plan with image generation is available for the art batches.
 - [x] Verify `git push origin main` reaches both GitHub and Codeberg and that both repositories are public.
 
 ### 0.2 Repository skeleton
@@ -163,6 +163,23 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 - [x] `docs/walkthroughs/phase-00-foundations.md`: repository tour, the command runner, how protobuf codegen works on both sides, and how the art pipeline turns generated images into true pixel art.
 - [x] Devlog draft for Phase 0 in `docs/devlog-drafts/`.
+
+### 0.12 Hand-drawn art
+
+Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-drawn-pixel-art.md)). Build the tools, then redraw the Phase 0 art that isn't a large painted image.
+
+- [x] `ADR` Hand-drawn pixel art by agents is the default; image generation only for large painted web images.
+- [ ] `art/src/` sources and `make art-draw BATCH=<id>`: `.pxl.yaml` pixel grids (legend by palette name, one grid per frame) and `.py` draw scripts, rendered deterministically into `art/processed/` via a `source:` manifest field, with intake's checks (size, palette, frames, baseline, pivot) and a 4x and 8x contact sheet per batch.
+- [ ] Drawing helpers in `tools/art` for draw scripts: palette by name, seeded random, pixel, line, rect and ellipse, 1 px outline, mirror, wrap-around drawing for seamless tiles, stamping `.pxl` parts, and compositing finished assets.
+- [ ] `make check` fails when a processed file no longer matches its hand-drawn source, and when a source uses an unknown color name or the wrong size.
+- [ ] Redraw the base terrain tileset (16 tiles): every tile seamless with itself and its variants, low contrast, checked repeated 3×3.
+- [ ] Redraw the grass-to-dirt and grass-to-flagstone transition sets so every edge and center tile self-tiles and the 3×3 patch closes.
+- [ ] Redraw the concept hero (32×48, feet on row 45, 28 to 32 px tall to the top of the head).
+- [ ] Draw the props the reference scene needs (a tree, a mossy rock, a lantern post, a cottage corner) and rebuild the style reference vignette (240×160) as a composite of the hand-drawn tiles, hero and props; `art/style/reference.png` follows.
+- [ ] Redraw the logo wordmark (192×64), the 32 and 16 px emblems, the 16 section icons and the 20 progress landmarks, then re-export the favicons and app icon.
+- [ ] Redraw the character lineup with five hand-drawn adventurers at the in-game 32×48 scale.
+- [ ] Keep the generated hero scene, parallax layers, devlog header, social card and 404 art; check they still sit well next to the hand-drawn art, and note any that should be regenerated.
+- [ ] Update the Phase 0 walkthrough and devlog draft to describe hand-drawn art.
 
 ### Acceptance criteria
 
@@ -335,9 +352,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 2.5 Art Batch 03: player character and starter tiles
 
-- [ ] Write Batch 03 prompts and manifest: the player character sheet (32×48, four directions, idle 2 frames, walk 4 frames) and the extra tiles the starter map needs (trees, rocks, path edges, water edges and a few props).
-- [ ] `HUMAN` Generate Batch 03 into `art/inbox/batch-03/`.
-- [ ] Make the Batch 01 transition tiles self-tile: a fix script so each edge and center tile's opposite borders match (generated sheets differ by up to half a tile edge today).
+- [ ] Draw Batch 03 by hand (manifest and sources in `art/src/`): the player character sheet (32×48, four directions, idle 2 frames, walk 4 frames) and the extra tiles the starter map needs (trees, rocks, path edges, water edges and a few props).
 - [ ] Run intake, check frame alignment, iterate until accepted, and `make sync`.
 - [ ] Character SpriteFrames and animation setup in the client; placeholder art fully replaced.
 
@@ -417,8 +432,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 3.5 Art Batch 04: a crowd of people
 
-- [ ] Write Batch 04 prompts: three or four player appearance variants and a townsfolk placeholder, so a crowd reads as different people.
-- [ ] `HUMAN` Generate Batch 04 into `art/inbox/batch-04/`.
+- [ ] Draw Batch 04 by hand: three or four player appearance variants and a townsfolk placeholder, so a crowd reads as different people.
 - [ ] Intake and integrate; bots pick random appearances.
 
 ### 3.6 Walkthrough
@@ -525,8 +539,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 5.4 Art Batch 05: UI kit
 
 - [ ] `ADR` Game UI font: an open-licensed pixel font with full Latin coverage, ideally matching the website.
-- [ ] Write Batch 05 prompts: 9-slice window frames, buttons, chat bubble, nameplate backing, channel icons and emote frames (sit, wave, dance).
-- [ ] `HUMAN` Generate Batch 05 into `art/inbox/batch-05/`.
+- [ ] Draw Batch 05 by hand: 9-slice window frames, buttons, chat bubble, nameplate backing, channel icons and emote frames (sit, wave, dance).
 - [ ] Intake and integrate, with one Godot theme at `client/ui/theme.tres` used by all UI.
 
 ### 5.5 Walkthrough
@@ -582,8 +595,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 6.5 Art Batch 06: combat
 
-- [ ] Write Batch 06 prompts: player attack and cast animations in four directions, hurt and death frames, the first forest mob (idle, walk, attack and death in four directions), hit and ability effects, ability icons and the target ring.
-- [ ] `HUMAN` Generate Batch 06 into `art/inbox/batch-06/`.
+- [ ] Draw Batch 06 by hand: player attack and cast animations in four directions, hurt and death frames, the first forest mob (idle, walk, attack and death in four directions), hit and ability effects, ability icons and the target ring.
 - [ ] Intake and integrate.
 
 ### 6.6 Walkthrough
@@ -624,8 +636,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 7.3 Art Batch 07: zone tiles
 
-- [ ] Write Batch 07 prompts: forest variants, town building exteriors, lanterns, ruins, water and bridges.
-- [ ] `HUMAN` Generate Batch 07 into `art/inbox/batch-07/`.
+- [ ] Draw Batch 07 by hand: forest variants, town building exteriors, lanterns, ruins, water and bridges.
 - [ ] Intake and integrate.
 
 ### 7.4 Measurement
@@ -676,8 +687,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 8.4 Art Batch 08: items
 
-- [ ] Write Batch 08 prompts: 32×32 item icon sheets, quality borders, bag and character window art, coin icons and a vendor NPC.
-- [ ] `HUMAN` Generate Batch 08 into `art/inbox/batch-08/`.
+- [ ] Draw Batch 08 by hand: 32×32 item icon sheets, quality borders, bag and character window art, coin icons and a vendor NPC.
 - [ ] Intake and integrate.
 
 ### 8.5 Walkthrough
@@ -728,8 +738,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 
 ### 9.5 Art Batch 09: NPCs
 
-- [ ] Write Batch 09 prompts: four to six NPCs (innkeeper, guard, smith and quest givers), quest markers, an interaction cursor and a level-up effect.
-- [ ] `HUMAN` Generate Batch 09 into `art/inbox/batch-09/`.
+- [ ] Draw Batch 09 by hand: four to six NPCs (innkeeper, guard, smith and quest givers), quest markers, an interaction cursor and a level-up effect.
 - [ ] Intake and integrate.
 
 ### 9.6 Walkthrough
@@ -770,8 +779,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 10.3 A reason to group
 
 - [ ] An elite camp in the zone, tuned for three players, with a rare drop.
-- [ ] Write Batch 10 prompts for the elite mobs and camp props.
-- [ ] `HUMAN` Generate Batch 10 into `art/inbox/batch-10/`.
+- [ ] Draw Batch 10 by hand: the elite mobs and camp props.
 - [ ] Intake and integrate.
 
 ### 10.4 Walkthrough

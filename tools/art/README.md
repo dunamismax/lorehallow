@@ -1,6 +1,6 @@
 # tools/art
 
-The art intake pipeline: it turns images generated in ChatGPT into true pixel art on the locked palette. Python 3.14, managed by uv (Pillow, numpy, PyYAML; pytest and ruff for development).
+The art tools. Most art is hand-drawn as text sources and rendered by `make art-draw` (being built in BUILD.md 0.12, see [ADR 0004](../../docs/decisions/0004-hand-drawn-pixel-art.md)). This README so far covers the intake pipeline, kept for the few large painted images that are generated: it turns them into true pixel art on the locked palette. Python 3.14, managed by uv (Pillow, numpy, PyYAML; pytest and ruff for development).
 
 ```bash
 make art-intake BATCH=01   # process art/inbox/batch-01 into art/processed

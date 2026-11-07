@@ -18,7 +18,7 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 **Phase 0: Foundations. Pre-alpha, nothing to play yet.**
 
-The tooling is in place: the server and client skeletons, the shared protocol pipeline and the art pipeline, all behind one `make check`. The first art batches are being generated. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline and the art pipeline, all behind one `make check`. The first two art batches are done, and the tiles, characters, logo and icons are being redrawn by hand. The website at lorehallow.com goes up next, before any gameplay code, so the whole build can be followed in public from the start. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 
@@ -98,6 +98,7 @@ lorehallow/
 ├── art/
 │   ├── style/     # Locked palette, style guide, reference sheet
 │   ├── batches/   # Image prompts, manifests and intake reports per batch
+│   ├── src/       # Hand-drawn art sources: pixel grids and draw scripts
 │   ├── inbox/     # Raw generated images, never edited
 │   └── processed/ # Cleaned, grid-snapped, palette-locked assets
 ├── deploy/        # Host setup, Caddy, systemd units, deploy scripts
@@ -123,7 +124,7 @@ Prerequisites: Go, Godot 4, Node.js (LTS), [uv](https://docs.astral.sh/uv/) (whi
 
 ## How it's made
 
-Lorehallow is built in the open, one phase at a time. The project owner sets the direction, chooses what comes next and playtests every build. AI coding agents do most of the design, programming, testing and infrastructure work, following [AGENTS.md](AGENTS.md) and checking off [BUILD.md](BUILD.md) as they go. Art starts as AI-generated pixel art that runs through an intake pipeline: snapped to a true pixel grid, quantized to the locked palette, sliced, checked and then tested in-game.
+Lorehallow is built in the open, one phase at a time. The project owner sets the direction, chooses what comes next and playtests every build. AI coding agents do most of the design, programming, testing and infrastructure work, following [AGENTS.md](AGENTS.md) and checking off [BUILD.md](BUILD.md) as they go. The pixel art is drawn by the agents pixel by pixel, as text files in the repository: grids of named palette colors and small drawing scripts, rendered and checked by the build. A few large painted images for the website are AI-generated and run through an intake pipeline that snaps them to a true pixel grid and the locked palette.
 
 ## Contributing
 
