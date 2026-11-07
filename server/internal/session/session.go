@@ -226,16 +226,20 @@ func Serve(ctx context.Context, conn Conn, cfg Config, deps Deps) pb.DisconnectR
 	return s.reason
 }
 
-// close starts closing with reason. The first call wins; it never blocks.
-// It also cancels the writer's context: a Write blocked on a client that
-// stopped reading returns at once (and the library closes the socket),
-// so eviction never waits on the very client being evicted.
-func (s *Session) close(reason pb.DisconnectReason, text string) {
+// close starts closing with reason. The first call wins and reports
+// true; it never blocks. It also cancels the writer's context: a Write
+// blocked on a client that stopped reading returns at once (and the
+// library closes the socket), so eviction never waits on the very client
+// being evicted.
+func (s *Session) close(reason pb.DisconnectReason, text string) bool {
+	won := false
 	s.closeOnce.Do(func() {
+		won = true
 		s.reason, s.text = reason, text
 		close(s.closing)
 		s.writeCancel()
 	})
+	return won
 }
 
 // Send implements zone.Outbox. A full queue evicts the client.
@@ -243,13 +247,14 @@ func (s *Session) Send(o wire.Outgoing) bool {
 	if s.queue.push(o) {
 		return true
 	}
-	s.deps.Metrics.Evicted.Inc()
-	s.close(pb.DisconnectReason_DISCONNECT_REASON_TOO_SLOW, "Your connection couldn't keep up.")
+	if s.close(pb.DisconnectReason_DISCONNECT_REASON_TOO_SLOW, "Your connection couldn't keep up.") {
+		s.deps.Metrics.Evicted.Inc() // once per connection, not per refused message
+	}
 	return false
 }
 
 // Kick implements zone.Outbox.
-func (s *Session) Kick(reason pb.DisconnectReason, text string) { s.close(reason, text) }
+func (s *Session) Kick(reason pb.DisconnectReason, text string) { _ = s.close(reason, text) }
 
 // ---- Reading -----------------------------------------------------------
 
@@ -445,7 +450,7 @@ func (s *Session) writeLoop() {
 	ticker := time.NewTicker(s.cfg.PingInterval)
 	defer ticker.Stop()
 	var batch []wire.Outgoing
-	buf := make([]byte, 0, 2048)
+	var buf []byte // grows to the largest message actually sent; quiet connections keep it tiny
 	var nonce uint32
 	for {
 		select {
@@ -455,10 +460,17 @@ func (s *Session) writeLoop() {
 		case <-s.queue.notify:
 			batch = s.queue.takeAll(batch[:0])
 			for i, o := range batch {
-				buf = o.AppendTo(buf[:0])
+				// Prebuilt messages are complete, immutable bytes: write them
+				// as they are. Only Snapshots are assembled, into buf.
+				msg := o.Bytes
+				if o.Body != nil {
+					buf = o.AppendTo(buf[:0])
+					msg = buf
+				}
+				err := s.conn.Write(ctx, websocket.MessageBinary, msg)
 				o.Release()
 				batch[i] = wire.Outgoing{}
-				if err := s.conn.Write(ctx, websocket.MessageBinary, buf); err != nil {
+				if err != nil {
 					for _, rest := range batch[i+1:] {
 						rest.Release()
 					}
@@ -467,10 +479,13 @@ func (s *Session) writeLoop() {
 					return
 				}
 				s.deps.Metrics.MessagesOut.Inc()
-				s.deps.Metrics.BytesOut.Add(uint64(len(buf)))
+				s.deps.Metrics.BytesOut.Add(uint64(len(msg)))
 			}
-			if cap(buf) > 64<<10 {
-				buf = make([]byte, 0, 2048) // don't keep a crowd-sized buffer around
+			if cap(buf) > 16<<10 {
+				buf = nil // don't keep a crowd-sized buffer around
+			}
+			if cap(batch) > 64 {
+				batch = nil
 			}
 		case now := <-ticker.C:
 			if idle := now.Sub(time.Unix(0, s.lastRead.Load())); idle > s.cfg.IdleTimeout {

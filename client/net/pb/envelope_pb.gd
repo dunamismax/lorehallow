@@ -722,23 +722,23 @@ class Envelope:
 		service.func_ref = Callable(self, "new_snapshot")
 		data[__snapshot.tag] = service
 		
-		__entity_joined = PBField.new("entity_joined", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
-		service = PBServiceField.new()
-		service.field = __entity_joined
-		service.func_ref = Callable(self, "new_entity_joined")
-		data[__entity_joined.tag] = service
-		
-		__entity_left = PBField.new("entity_left", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
-		service = PBServiceField.new()
-		service.field = __entity_left
-		service.func_ref = Callable(self, "new_entity_left")
-		data[__entity_left.tag] = service
-		
 		__disconnect = PBField.new("disconnect", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 9, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
 		service = PBServiceField.new()
 		service.field = __disconnect
 		service.func_ref = Callable(self, "new_disconnect")
 		data[__disconnect.tag] = service
+		
+		__entities_joined = PBField.new("entities_joined", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 10, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
+		service = PBServiceField.new()
+		service.field = __entities_joined
+		service.func_ref = Callable(self, "new_entities_joined")
+		data[__entities_joined.tag] = service
+		
+		__entities_left = PBField.new("entities_left", PB_DATA_TYPE.MESSAGE, PB_RULE.OPTIONAL, 11, true, DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE])
+		service = PBServiceField.new()
+		service.field = __entities_left
+		service.func_ref = Callable(self, "new_entities_left")
+		data[__entities_left.tag] = service
 		
 	var data = {}
 	
@@ -750,9 +750,9 @@ class Envelope:
 		SERVER_HELLO = 4,
 		INPUT = 5,
 		SNAPSHOT = 6,
-		ENTITY_JOINED = 7,
-		ENTITY_LEFT = 8,
 		DISCONNECT = 9,
+		ENTITIES_JOINED = 10,
+		ENTITIES_LEFT = 11,
 	}
 	var _payload_case: int = 0
 
@@ -777,12 +777,12 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__ping.value = Ping.new()
 		return __ping.value
 	
@@ -807,12 +807,12 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__pong.value = Pong.new()
 		return __pong.value
 	
@@ -837,12 +837,12 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__client_hello.value = ClientHello.new()
 		return __client_hello.value
 	
@@ -867,12 +867,12 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__server_hello.value = ServerHello.new()
 		return __server_hello.value
 	
@@ -897,12 +897,12 @@ class Envelope:
 		_payload_case = 5
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__input.value = PlayerInput.new()
 		return __input.value
 	
@@ -927,74 +927,14 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		data[6].state = PB_SERVICE_STATE.FILLED
 		_payload_case = 6
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = Snapshot.new()
 		return __snapshot.value
-	
-	var __entity_joined: PBField
-	func has_entity_joined() -> bool:
-		return data[7].state == PB_SERVICE_STATE.FILLED
-	func get_entity_joined() -> EntityJoined:
-		return __entity_joined.value
-	func clear_entity_joined() -> void:
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-	func new_entity_joined() -> EntityJoined:
-		__ping.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[1].state = PB_SERVICE_STATE.UNFILLED
-		__pong.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[2].state = PB_SERVICE_STATE.UNFILLED
-		__client_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[3].state = PB_SERVICE_STATE.UNFILLED
-		__server_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[4].state = PB_SERVICE_STATE.UNFILLED
-		__input.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[5].state = PB_SERVICE_STATE.UNFILLED
-		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[6].state = PB_SERVICE_STATE.UNFILLED
-		data[7].state = PB_SERVICE_STATE.FILLED
-		_payload_case = 7
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
-		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[9].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = EntityJoined.new()
-		return __entity_joined.value
-	
-	var __entity_left: PBField
-	func has_entity_left() -> bool:
-		return data[8].state == PB_SERVICE_STATE.FILLED
-	func get_entity_left() -> EntityLeft:
-		return __entity_left.value
-	func clear_entity_left() -> void:
-		data[8].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-	func new_entity_left() -> EntityLeft:
-		__ping.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[1].state = PB_SERVICE_STATE.UNFILLED
-		__pong.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[2].state = PB_SERVICE_STATE.UNFILLED
-		__client_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[3].state = PB_SERVICE_STATE.UNFILLED
-		__server_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[4].state = PB_SERVICE_STATE.UNFILLED
-		__input.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[5].state = PB_SERVICE_STATE.UNFILLED
-		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		data[8].state = PB_SERVICE_STATE.FILLED
-		_payload_case = 8
-		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[9].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = EntityLeft.new()
-		return __entity_left.value
 	
 	var __disconnect: PBField
 	func has_disconnect() -> bool:
@@ -1017,14 +957,74 @@ class Envelope:
 		data[5].state = PB_SERVICE_STATE.UNFILLED
 		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
 		data[6].state = PB_SERVICE_STATE.UNFILLED
-		__entity_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[7].state = PB_SERVICE_STATE.UNFILLED
-		__entity_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
-		data[8].state = PB_SERVICE_STATE.UNFILLED
 		data[9].state = PB_SERVICE_STATE.FILLED
 		_payload_case = 9
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__disconnect.value = Disconnect.new()
 		return __disconnect.value
+	
+	var __entities_joined: PBField
+	func has_entities_joined() -> bool:
+		return data[10].state == PB_SERVICE_STATE.FILLED
+	func get_entities_joined() -> EntitiesJoined:
+		return __entities_joined.value
+	func clear_entities_joined() -> void:
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+	func new_entities_joined() -> EntitiesJoined:
+		__ping.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__pong.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__client_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[3].state = PB_SERVICE_STATE.UNFILLED
+		__server_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[4].state = PB_SERVICE_STATE.UNFILLED
+		__input.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[5].state = PB_SERVICE_STATE.UNFILLED
+		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[6].state = PB_SERVICE_STATE.UNFILLED
+		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[9].state = PB_SERVICE_STATE.UNFILLED
+		data[10].state = PB_SERVICE_STATE.FILLED
+		_payload_case = 10
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[11].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = EntitiesJoined.new()
+		return __entities_joined.value
+	
+	var __entities_left: PBField
+	func has_entities_left() -> bool:
+		return data[11].state == PB_SERVICE_STATE.FILLED
+	func get_entities_left() -> EntitiesLeft:
+		return __entities_left.value
+	func clear_entities_left() -> void:
+		data[11].state = PB_SERVICE_STATE.UNFILLED
+		__entities_left.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+	func new_entities_left() -> EntitiesLeft:
+		__ping.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__pong.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__client_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[3].state = PB_SERVICE_STATE.UNFILLED
+		__server_hello.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[4].state = PB_SERVICE_STATE.UNFILLED
+		__input.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[5].state = PB_SERVICE_STATE.UNFILLED
+		__snapshot.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[6].state = PB_SERVICE_STATE.UNFILLED
+		__disconnect.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__entities_joined.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MESSAGE]
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		data[11].state = PB_SERVICE_STATE.FILLED
+		_payload_case = 11
+		__entities_left.value = EntitiesLeft.new()
+		return __entities_left.value
 	
 	func get_payload_case() -> int:
 		return _payload_case
@@ -1722,7 +1722,7 @@ class Snapshot:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
 	
-class EntityJoined:
+class EntityIntro:
 	func _init():
 		var service
 		
@@ -1787,29 +1787,71 @@ class EntityJoined:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
 	
-class EntityLeft:
+class EntitiesJoined:
 	func _init():
 		var service
 		
-		__id = PBField.new("id", PB_DATA_TYPE.UINT32, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.UINT32])
+		var __entities_default: Array[EntityIntro] = []
+		__entities = PBField.new("entities", PB_DATA_TYPE.MESSAGE, PB_RULE.REPEATED, 1, true, __entities_default)
 		service = PBServiceField.new()
-		service.field = __id
-		data[__id.tag] = service
+		service.field = __entities
+		service.func_ref = Callable(self, "add_entities")
+		data[__entities.tag] = service
 		
 	var data = {}
 	
-	var __id: PBField
-	func has_id() -> bool:
-		if __id.value != null:
-			return true
-		return false
-	func get_id() -> int:
-		return __id.value
-	func clear_id() -> void:
+	var __entities: PBField
+	func get_entities() -> Array[EntityIntro]:
+		return __entities.value
+	func clear_entities() -> void:
 		data[1].state = PB_SERVICE_STATE.UNFILLED
-		__id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.UINT32]
-	func set_id(value : int) -> void:
-		__id.value = value
+		__entities.value.clear()
+	func add_entities() -> EntityIntro:
+		var element = EntityIntro.new()
+		__entities.value.append(element)
+		return element
+	
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class EntitiesLeft:
+	func _init():
+		var service
+		
+		var __ids_default: Array[int] = []
+		__ids = PBField.new("ids", PB_DATA_TYPE.UINT32, PB_RULE.REPEATED, 1, true, __ids_default)
+		service = PBServiceField.new()
+		service.field = __ids
+		data[__ids.tag] = service
+		
+	var data = {}
+	
+	var __ids: PBField
+	func get_ids() -> Array[int]:
+		return __ids.value
+	func clear_ids() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__ids.value.clear()
+	func add_ids(value : int) -> void:
+		__ids.value.append(value)
 	
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)

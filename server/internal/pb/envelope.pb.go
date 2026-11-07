@@ -228,9 +228,9 @@ type Envelope struct {
 	//	*Envelope_ServerHello
 	//	*Envelope_Input
 	//	*Envelope_Snapshot
-	//	*Envelope_EntityJoined
-	//	*Envelope_EntityLeft
 	//	*Envelope_Disconnect
+	//	*Envelope_EntitiesJoined
+	//	*Envelope_EntitiesLeft
 	Payload       isEnvelope_Payload `protobuf_oneof:"payload"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -327,28 +327,28 @@ func (x *Envelope) GetSnapshot() *Snapshot {
 	return nil
 }
 
-func (x *Envelope) GetEntityJoined() *EntityJoined {
-	if x != nil {
-		if x, ok := x.Payload.(*Envelope_EntityJoined); ok {
-			return x.EntityJoined
-		}
-	}
-	return nil
-}
-
-func (x *Envelope) GetEntityLeft() *EntityLeft {
-	if x != nil {
-		if x, ok := x.Payload.(*Envelope_EntityLeft); ok {
-			return x.EntityLeft
-		}
-	}
-	return nil
-}
-
 func (x *Envelope) GetDisconnect() *Disconnect {
 	if x != nil {
 		if x, ok := x.Payload.(*Envelope_Disconnect); ok {
 			return x.Disconnect
+		}
+	}
+	return nil
+}
+
+func (x *Envelope) GetEntitiesJoined() *EntitiesJoined {
+	if x != nil {
+		if x, ok := x.Payload.(*Envelope_EntitiesJoined); ok {
+			return x.EntitiesJoined
+		}
+	}
+	return nil
+}
+
+func (x *Envelope) GetEntitiesLeft() *EntitiesLeft {
+	if x != nil {
+		if x, ok := x.Payload.(*Envelope_EntitiesLeft); ok {
+			return x.EntitiesLeft
 		}
 	}
 	return nil
@@ -382,16 +382,16 @@ type Envelope_Snapshot struct {
 	Snapshot *Snapshot `protobuf:"bytes,6,opt,name=snapshot,proto3,oneof"`
 }
 
-type Envelope_EntityJoined struct {
-	EntityJoined *EntityJoined `protobuf:"bytes,7,opt,name=entity_joined,json=entityJoined,proto3,oneof"`
-}
-
-type Envelope_EntityLeft struct {
-	EntityLeft *EntityLeft `protobuf:"bytes,8,opt,name=entity_left,json=entityLeft,proto3,oneof"`
-}
-
 type Envelope_Disconnect struct {
 	Disconnect *Disconnect `protobuf:"bytes,9,opt,name=disconnect,proto3,oneof"`
+}
+
+type Envelope_EntitiesJoined struct {
+	EntitiesJoined *EntitiesJoined `protobuf:"bytes,10,opt,name=entities_joined,json=entitiesJoined,proto3,oneof"`
+}
+
+type Envelope_EntitiesLeft struct {
+	EntitiesLeft *EntitiesLeft `protobuf:"bytes,11,opt,name=entities_left,json=entitiesLeft,proto3,oneof"`
 }
 
 func (*Envelope_Ping) isEnvelope_Payload() {}
@@ -406,11 +406,11 @@ func (*Envelope_Input) isEnvelope_Payload() {}
 
 func (*Envelope_Snapshot) isEnvelope_Payload() {}
 
-func (*Envelope_EntityJoined) isEnvelope_Payload() {}
-
-func (*Envelope_EntityLeft) isEnvelope_Payload() {}
-
 func (*Envelope_Disconnect) isEnvelope_Payload() {}
+
+func (*Envelope_EntitiesJoined) isEnvelope_Payload() {}
+
+func (*Envelope_EntitiesLeft) isEnvelope_Payload() {}
 
 // Ping asks the other side to answer with a Pong carrying the same nonce.
 // Used for round-trip time measurement and heartbeats.
@@ -851,7 +851,14 @@ func (x *EntityState) GetAnim() Anim {
 	return Anim_ANIM_UNSPECIFIED
 }
 
-// Snapshot is the world as the receiving player sees it on one tick.
+// Snapshot is what changed, for the receiving player, on one tick.
+//
+// The transport is reliable and ordered, so a Snapshot carries only the
+// entities whose state changed since the previous tick (ADR 0008). An
+// entity left out keeps the state the client last heard: from
+// ServerHello (itself), EntityJoined (everyone else) or an earlier
+// Snapshot. A tick where nothing changed for the player sends no Snapshot
+// at all, except a keepalive at least once a second.
 //
 // The server builds it from per-entity bytes encoded once per tick and
 // shared by every recipient, so `entities` must stay the last field.
@@ -862,7 +869,8 @@ type Snapshot struct {
 	// ack_input_seq is the last PlayerInput seq the server applied for the
 	// receiving player. Prediction (Phase 3) replays inputs after it.
 	AckInputSeq uint32 `protobuf:"varint,2,opt,name=ack_input_seq,json=ackInputSeq,proto3" json:"ack_input_seq,omitempty"`
-	// entities are the entities the player can see, including itself.
+	// entities are the visible entities that changed on this tick,
+	// possibly including the player itself. Often empty.
 	Entities      []*EntityState `protobuf:"bytes,3,rep,name=entities,proto3" json:"entities,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -919,8 +927,8 @@ func (x *Snapshot) GetEntities() []*EntityState {
 	return nil
 }
 
-// EntityJoined introduces an entity the player can now see.
-type EntityJoined struct {
+// EntityIntro introduces one entity: its state and its name.
+type EntityIntro struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// state is the entity's state when it appeared.
 	State *EntityState `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
@@ -930,20 +938,20 @@ type EntityJoined struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EntityJoined) Reset() {
-	*x = EntityJoined{}
+func (x *EntityIntro) Reset() {
+	*x = EntityIntro{}
 	mi := &file_lorehallow_v1_envelope_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EntityJoined) String() string {
+func (x *EntityIntro) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EntityJoined) ProtoMessage() {}
+func (*EntityIntro) ProtoMessage() {}
 
-func (x *EntityJoined) ProtoReflect() protoreflect.Message {
+func (x *EntityIntro) ProtoReflect() protoreflect.Message {
 	mi := &file_lorehallow_v1_envelope_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -955,48 +963,52 @@ func (x *EntityJoined) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EntityJoined.ProtoReflect.Descriptor instead.
-func (*EntityJoined) Descriptor() ([]byte, []int) {
+// Deprecated: Use EntityIntro.ProtoReflect.Descriptor instead.
+func (*EntityIntro) Descriptor() ([]byte, []int) {
 	return file_lorehallow_v1_envelope_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *EntityJoined) GetState() *EntityState {
+func (x *EntityIntro) GetState() *EntityState {
 	if x != nil {
 		return x.State
 	}
 	return nil
 }
 
-func (x *EntityJoined) GetDisplayName() string {
+func (x *EntityIntro) GetDisplayName() string {
 	if x != nil {
 		return x.DisplayName
 	}
 	return ""
 }
 
-// EntityLeft says an entity is gone (disconnected, or out of view).
-type EntityLeft struct {
+// EntitiesJoined introduces entities the player can now see. The server
+// batches every arrival of a tick into one message (encoded once for
+// everyone), and gives a newcomer the whole zone in as few messages as
+// fit the size limit. It may include the receiving player itself;
+// clients ignore their own id here.
+type EntitiesJoined struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// id is the entity that left.
-	Id            uint32 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// entities are the arrivals.
+	Entities      []*EntityIntro `protobuf:"bytes,1,rep,name=entities,proto3" json:"entities,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EntityLeft) Reset() {
-	*x = EntityLeft{}
+func (x *EntitiesJoined) Reset() {
+	*x = EntitiesJoined{}
 	mi := &file_lorehallow_v1_envelope_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EntityLeft) String() string {
+func (x *EntitiesJoined) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EntityLeft) ProtoMessage() {}
+func (*EntitiesJoined) ProtoMessage() {}
 
-func (x *EntityLeft) ProtoReflect() protoreflect.Message {
+func (x *EntitiesJoined) ProtoReflect() protoreflect.Message {
 	mi := &file_lorehallow_v1_envelope_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1008,16 +1020,63 @@ func (x *EntityLeft) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EntityLeft.ProtoReflect.Descriptor instead.
-func (*EntityLeft) Descriptor() ([]byte, []int) {
+// Deprecated: Use EntitiesJoined.ProtoReflect.Descriptor instead.
+func (*EntitiesJoined) Descriptor() ([]byte, []int) {
 	return file_lorehallow_v1_envelope_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *EntityLeft) GetId() uint32 {
+func (x *EntitiesJoined) GetEntities() []*EntityIntro {
 	if x != nil {
-		return x.Id
+		return x.Entities
 	}
-	return 0
+	return nil
+}
+
+// EntitiesLeft says entities are gone (disconnected, or out of view),
+// batched per tick.
+type EntitiesLeft struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// ids are the entities that left.
+	Ids           []uint32 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EntitiesLeft) Reset() {
+	*x = EntitiesLeft{}
+	mi := &file_lorehallow_v1_envelope_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EntitiesLeft) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EntitiesLeft) ProtoMessage() {}
+
+func (x *EntitiesLeft) ProtoReflect() protoreflect.Message {
+	mi := &file_lorehallow_v1_envelope_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EntitiesLeft.ProtoReflect.Descriptor instead.
+func (*EntitiesLeft) Descriptor() ([]byte, []int) {
+	return file_lorehallow_v1_envelope_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *EntitiesLeft) GetIds() []uint32 {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
 }
 
 // Disconnect is the last message the server sends before closing.
@@ -1034,7 +1093,7 @@ type Disconnect struct {
 
 func (x *Disconnect) Reset() {
 	*x = Disconnect{}
-	mi := &file_lorehallow_v1_envelope_proto_msgTypes[10]
+	mi := &file_lorehallow_v1_envelope_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1046,7 +1105,7 @@ func (x *Disconnect) String() string {
 func (*Disconnect) ProtoMessage() {}
 
 func (x *Disconnect) ProtoReflect() protoreflect.Message {
-	mi := &file_lorehallow_v1_envelope_proto_msgTypes[10]
+	mi := &file_lorehallow_v1_envelope_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1059,7 +1118,7 @@ func (x *Disconnect) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Disconnect.ProtoReflect.Descriptor instead.
 func (*Disconnect) Descriptor() ([]byte, []int) {
-	return file_lorehallow_v1_envelope_proto_rawDescGZIP(), []int{10}
+	return file_lorehallow_v1_envelope_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *Disconnect) GetReason() DisconnectReason {
@@ -1080,21 +1139,21 @@ var File_lorehallow_v1_envelope_proto protoreflect.FileDescriptor
 
 const file_lorehallow_v1_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x1clorehallow/v1/envelope.proto\x12\rlorehallow.v1\"\x97\x04\n" +
+	"\x1clorehallow/v1/envelope.proto\x12\rlorehallow.v1\"\xaf\x04\n" +
 	"\bEnvelope\x12)\n" +
 	"\x04ping\x18\x01 \x01(\v2\x13.lorehallow.v1.PingH\x00R\x04ping\x12)\n" +
 	"\x04pong\x18\x02 \x01(\v2\x13.lorehallow.v1.PongH\x00R\x04pong\x12?\n" +
 	"\fclient_hello\x18\x03 \x01(\v2\x1a.lorehallow.v1.ClientHelloH\x00R\vclientHello\x12?\n" +
 	"\fserver_hello\x18\x04 \x01(\v2\x1a.lorehallow.v1.ServerHelloH\x00R\vserverHello\x122\n" +
 	"\x05input\x18\x05 \x01(\v2\x1a.lorehallow.v1.PlayerInputH\x00R\x05input\x125\n" +
-	"\bsnapshot\x18\x06 \x01(\v2\x17.lorehallow.v1.SnapshotH\x00R\bsnapshot\x12B\n" +
-	"\rentity_joined\x18\a \x01(\v2\x1b.lorehallow.v1.EntityJoinedH\x00R\fentityJoined\x12<\n" +
-	"\ventity_left\x18\b \x01(\v2\x19.lorehallow.v1.EntityLeftH\x00R\n" +
-	"entityLeft\x12;\n" +
+	"\bsnapshot\x18\x06 \x01(\v2\x17.lorehallow.v1.SnapshotH\x00R\bsnapshot\x12;\n" +
 	"\n" +
 	"disconnect\x18\t \x01(\v2\x19.lorehallow.v1.DisconnectH\x00R\n" +
-	"disconnectB\t\n" +
-	"\apayload\":\n" +
+	"disconnect\x12H\n" +
+	"\x0fentities_joined\x18\n" +
+	" \x01(\v2\x1d.lorehallow.v1.EntitiesJoinedH\x00R\x0eentitiesJoined\x12B\n" +
+	"\rentities_left\x18\v \x01(\v2\x1b.lorehallow.v1.EntitiesLeftH\x00R\fentitiesLeftB\t\n" +
+	"\apayloadJ\x04\b\a\x10\bJ\x04\b\b\x10\t\":\n" +
 	"\x04Ping\x12\x14\n" +
 	"\x05nonce\x18\x01 \x01(\rR\x05nonce\x12\x1c\n" +
 	"\n" +
@@ -1130,13 +1189,14 @@ const file_lorehallow_v1_envelope_proto_rawDesc = "" +
 	"\bSnapshot\x12\x12\n" +
 	"\x04tick\x18\x01 \x01(\rR\x04tick\x12\"\n" +
 	"\rack_input_seq\x18\x02 \x01(\rR\vackInputSeq\x126\n" +
-	"\bentities\x18\x03 \x03(\v2\x1a.lorehallow.v1.EntityStateR\bentities\"c\n" +
-	"\fEntityJoined\x120\n" +
+	"\bentities\x18\x03 \x03(\v2\x1a.lorehallow.v1.EntityStateR\bentities\"b\n" +
+	"\vEntityIntro\x120\n" +
 	"\x05state\x18\x01 \x01(\v2\x1a.lorehallow.v1.EntityStateR\x05state\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"\x1c\n" +
-	"\n" +
-	"EntityLeft\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\rR\x02id\"Y\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"H\n" +
+	"\x0eEntitiesJoined\x126\n" +
+	"\bentities\x18\x01 \x03(\v2\x1a.lorehallow.v1.EntityIntroR\bentities\" \n" +
+	"\fEntitiesLeft\x12\x10\n" +
+	"\x03ids\x18\x01 \x03(\rR\x03ids\"Y\n" +
 	"\n" +
 	"Disconnect\x127\n" +
 	"\x06reason\x18\x01 \x01(\x0e2\x1f.lorehallow.v1.DisconnectReasonR\x06reason\x12\x12\n" +
@@ -1176,22 +1236,23 @@ func file_lorehallow_v1_envelope_proto_rawDescGZIP() []byte {
 }
 
 var file_lorehallow_v1_envelope_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_lorehallow_v1_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_lorehallow_v1_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_lorehallow_v1_envelope_proto_goTypes = []any{
-	(Facing)(0),           // 0: lorehallow.v1.Facing
-	(Anim)(0),             // 1: lorehallow.v1.Anim
-	(DisconnectReason)(0), // 2: lorehallow.v1.DisconnectReason
-	(*Envelope)(nil),      // 3: lorehallow.v1.Envelope
-	(*Ping)(nil),          // 4: lorehallow.v1.Ping
-	(*Pong)(nil),          // 5: lorehallow.v1.Pong
-	(*ClientHello)(nil),   // 6: lorehallow.v1.ClientHello
-	(*ServerHello)(nil),   // 7: lorehallow.v1.ServerHello
-	(*PlayerInput)(nil),   // 8: lorehallow.v1.PlayerInput
-	(*EntityState)(nil),   // 9: lorehallow.v1.EntityState
-	(*Snapshot)(nil),      // 10: lorehallow.v1.Snapshot
-	(*EntityJoined)(nil),  // 11: lorehallow.v1.EntityJoined
-	(*EntityLeft)(nil),    // 12: lorehallow.v1.EntityLeft
-	(*Disconnect)(nil),    // 13: lorehallow.v1.Disconnect
+	(Facing)(0),            // 0: lorehallow.v1.Facing
+	(Anim)(0),              // 1: lorehallow.v1.Anim
+	(DisconnectReason)(0),  // 2: lorehallow.v1.DisconnectReason
+	(*Envelope)(nil),       // 3: lorehallow.v1.Envelope
+	(*Ping)(nil),           // 4: lorehallow.v1.Ping
+	(*Pong)(nil),           // 5: lorehallow.v1.Pong
+	(*ClientHello)(nil),    // 6: lorehallow.v1.ClientHello
+	(*ServerHello)(nil),    // 7: lorehallow.v1.ServerHello
+	(*PlayerInput)(nil),    // 8: lorehallow.v1.PlayerInput
+	(*EntityState)(nil),    // 9: lorehallow.v1.EntityState
+	(*Snapshot)(nil),       // 10: lorehallow.v1.Snapshot
+	(*EntityIntro)(nil),    // 11: lorehallow.v1.EntityIntro
+	(*EntitiesJoined)(nil), // 12: lorehallow.v1.EntitiesJoined
+	(*EntitiesLeft)(nil),   // 13: lorehallow.v1.EntitiesLeft
+	(*Disconnect)(nil),     // 14: lorehallow.v1.Disconnect
 }
 var file_lorehallow_v1_envelope_proto_depIdxs = []int32{
 	4,  // 0: lorehallow.v1.Envelope.ping:type_name -> lorehallow.v1.Ping
@@ -1200,20 +1261,21 @@ var file_lorehallow_v1_envelope_proto_depIdxs = []int32{
 	7,  // 3: lorehallow.v1.Envelope.server_hello:type_name -> lorehallow.v1.ServerHello
 	8,  // 4: lorehallow.v1.Envelope.input:type_name -> lorehallow.v1.PlayerInput
 	10, // 5: lorehallow.v1.Envelope.snapshot:type_name -> lorehallow.v1.Snapshot
-	11, // 6: lorehallow.v1.Envelope.entity_joined:type_name -> lorehallow.v1.EntityJoined
-	12, // 7: lorehallow.v1.Envelope.entity_left:type_name -> lorehallow.v1.EntityLeft
-	13, // 8: lorehallow.v1.Envelope.disconnect:type_name -> lorehallow.v1.Disconnect
+	14, // 6: lorehallow.v1.Envelope.disconnect:type_name -> lorehallow.v1.Disconnect
+	12, // 7: lorehallow.v1.Envelope.entities_joined:type_name -> lorehallow.v1.EntitiesJoined
+	13, // 8: lorehallow.v1.Envelope.entities_left:type_name -> lorehallow.v1.EntitiesLeft
 	9,  // 9: lorehallow.v1.ServerHello.spawn:type_name -> lorehallow.v1.EntityState
 	0,  // 10: lorehallow.v1.EntityState.facing:type_name -> lorehallow.v1.Facing
 	1,  // 11: lorehallow.v1.EntityState.anim:type_name -> lorehallow.v1.Anim
 	9,  // 12: lorehallow.v1.Snapshot.entities:type_name -> lorehallow.v1.EntityState
-	9,  // 13: lorehallow.v1.EntityJoined.state:type_name -> lorehallow.v1.EntityState
-	2,  // 14: lorehallow.v1.Disconnect.reason:type_name -> lorehallow.v1.DisconnectReason
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	9,  // 13: lorehallow.v1.EntityIntro.state:type_name -> lorehallow.v1.EntityState
+	11, // 14: lorehallow.v1.EntitiesJoined.entities:type_name -> lorehallow.v1.EntityIntro
+	2,  // 15: lorehallow.v1.Disconnect.reason:type_name -> lorehallow.v1.DisconnectReason
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_lorehallow_v1_envelope_proto_init() }
@@ -1228,9 +1290,9 @@ func file_lorehallow_v1_envelope_proto_init() {
 		(*Envelope_ServerHello)(nil),
 		(*Envelope_Input)(nil),
 		(*Envelope_Snapshot)(nil),
-		(*Envelope_EntityJoined)(nil),
-		(*Envelope_EntityLeft)(nil),
 		(*Envelope_Disconnect)(nil),
+		(*Envelope_EntitiesJoined)(nil),
+		(*Envelope_EntitiesLeft)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1238,7 +1300,7 @@ func file_lorehallow_v1_envelope_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_lorehallow_v1_envelope_proto_rawDesc), len(file_lorehallow_v1_envelope_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

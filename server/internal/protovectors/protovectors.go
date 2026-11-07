@@ -56,10 +56,16 @@ func All() []Vector {
 			{Id: 2, X: -16, Y: 0, Facing: pb.Facing_FACING_LEFT, Anim: pb.Anim_ANIM_WALK},
 			{Id: math.MaxUint32, X: math.MaxInt32, Y: math.MinInt32, Facing: pb.Facing_FACING_RIGHT, Anim: pb.Anim_ANIM_WALK},
 		}}}}},
-		{"entity_joined_basic", &pb.Envelope{Payload: &pb.Envelope_EntityJoined{EntityJoined: &pb.EntityJoined{
-			State: &pb.EntityState{Id: 3, X: 512, Y: 1024, Facing: pb.Facing_FACING_UP, Anim: pb.Anim_ANIM_WALK}, DisplayName: "Bram",
-		}}}},
-		{"entity_left_basic", &pb.Envelope{Payload: &pb.Envelope_EntityLeft{EntityLeft: &pb.EntityLeft{Id: 3}}}},
+		{"entities_joined_one", &pb.Envelope{Payload: &pb.Envelope_EntitiesJoined{EntitiesJoined: &pb.EntitiesJoined{Entities: []*pb.EntityIntro{
+			{State: &pb.EntityState{Id: 3, X: 512, Y: 1024, Facing: pb.Facing_FACING_UP, Anim: pb.Anim_ANIM_WALK}, DisplayName: "Bram"},
+		}}}}},
+		{"entities_joined_three", &pb.Envelope{Payload: &pb.Envelope_EntitiesJoined{EntitiesJoined: &pb.EntitiesJoined{Entities: []*pb.EntityIntro{
+			{State: &pb.EntityState{Id: 1, X: 2560, Y: 3584, Facing: pb.Facing_FACING_DOWN, Anim: pb.Anim_ANIM_IDLE}, DisplayName: "Ash"},
+			{State: &pb.EntityState{Id: 2}, DisplayName: "Élodie 森"},
+			{State: &pb.EntityState{Id: math.MaxUint32, X: -1, Y: math.MinInt32}},
+		}}}}},
+		{"entities_left_one", &pb.Envelope{Payload: &pb.Envelope_EntitiesLeft{EntitiesLeft: &pb.EntitiesLeft{Ids: []uint32{3}}}}},
+		{"entities_left_many", &pb.Envelope{Payload: &pb.Envelope_EntitiesLeft{EntitiesLeft: &pb.EntitiesLeft{Ids: []uint32{1, 127, 128, 16384, math.MaxUint32}}}}},
 		{"disconnect_too_slow", &pb.Envelope{Payload: &pb.Envelope_Disconnect{Disconnect: &pb.Disconnect{Reason: pb.DisconnectReason_DISCONNECT_REASON_TOO_SLOW, Text: "Your connection couldn't keep up."}}}},
 		{"disconnect_protocol", &pb.Envelope{Payload: &pb.Envelope_Disconnect{Disconnect: &pb.Disconnect{Reason: pb.DisconnectReason_DISCONNECT_REASON_PROTOCOL_MISMATCH, Text: "Update required"}}}},
 	}

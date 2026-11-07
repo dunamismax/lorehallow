@@ -3,4 +3,4 @@ class_name ProtocolVersion
 extends RefCounted
 ## The wire protocol version. See proto/README.md.
 
-const CURRENT: int = 1
+const CURRENT: int = 2

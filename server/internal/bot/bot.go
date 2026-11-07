@@ -206,6 +206,9 @@ func Dial(ctx context.Context, cfg Config) (*Bot, error) {
 		if h := env.GetServerHello(); h != nil {
 			b.ID, b.MapID = h.GetPlayerId(), h.GetMapId()
 			b.Spawn = entityFrom(h.GetSpawn())
+			b.Spawn.Name = cfg.Name
+			self := b.Spawn
+			b.known[b.ID] = &self // snapshots only mention it once it changes
 			b.JoinRTT = time.Since(start)
 			break
 		}
@@ -265,6 +268,9 @@ func (b *Bot) readLoop() {
 	var env pb.Envelope
 	for {
 		if err := b.read(ctx, &env); err != nil {
+			if errors.Is(err, wire.ErrUnknownPayload) {
+				continue // a newer (or older) server's message: skip it
+			}
 			b.mu.Lock()
 			if b.disconnect == nil {
 				b.err = err
@@ -295,17 +301,24 @@ func (b *Bot) handle(ctx context.Context, env *pb.Envelope) {
 		}
 		b.mu.Unlock()
 		b.cfg.Stats.snapshot()
-	case *pb.Envelope_EntityJoined:
-		e := entityFrom(p.EntityJoined.GetState())
-		e.Name = p.EntityJoined.GetDisplayName()
+	case *pb.Envelope_EntitiesJoined:
 		b.mu.Lock()
-		b.known[e.ID] = &e
-		b.joins[e.ID] = now
+		for _, in := range p.EntitiesJoined.GetEntities() {
+			e := entityFrom(in.GetState())
+			if e.ID == b.ID {
+				continue // the whole-zone batch includes us; we know ourselves
+			}
+			e.Name = in.GetDisplayName()
+			b.known[e.ID] = &e
+			b.joins[e.ID] = now
+		}
 		b.mu.Unlock()
-	case *pb.Envelope_EntityLeft:
+	case *pb.Envelope_EntitiesLeft:
 		b.mu.Lock()
-		delete(b.known, p.EntityLeft.GetId())
-		b.leaves[p.EntityLeft.GetId()] = now
+		for _, id := range p.EntitiesLeft.GetIds() {
+			delete(b.known, id)
+			b.leaves[id] = now
+		}
 		b.mu.Unlock()
 	case *pb.Envelope_Ping:
 		b.pong(ctx, p.Ping)

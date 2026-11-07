@@ -10,9 +10,12 @@
 //     never blocks. A full outbox is the connection's problem (it evicts
 //     itself); the tick never waits for a socket.
 //
-// Each tick the zone encodes every entity once into a shared, reference
-// counted wire.Body, and every player's Snapshot is assembled from it by
-// that player's writer goroutine.
+// Each tick the zone encodes every entity that changed, once, into a
+// shared, reference counted wire.Body, and every player's Snapshot is
+// assembled from it by that player's writer goroutine. The transport is
+// reliable and ordered, so unchanged entities are simply left out
+// (ADR 0008), and a player with nothing new gets no Snapshot at all,
+// apart from a keepalive every KeepaliveTicks.
 package zone
 
 import (
@@ -20,6 +23,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	"github.com/dunamismax/lorehallow/server/internal/mapdata"
@@ -70,6 +74,9 @@ type Config struct {
 	// MaxStrikes is how many invalid or flooding inputs a player may send
 	// before it is kicked.
 	MaxStrikes int
+	// KeepaliveTicks is the longest a player goes without a Snapshot when
+	// nothing it can see changes (default: one second of ticks).
+	KeepaliveTicks int
 	// ServerVersion is reported in ServerHello.
 	ServerVersion string
 	Log           *slog.Logger
@@ -84,6 +91,9 @@ type Zone struct {
 	stopped chan struct{}
 	members map[uint32]*member
 	spawn   int
+	// Arrivals and departures since the last tick, announced in batches.
+	arrived  []*member
+	departed []uint32
 
 	m zoneMetrics
 }
@@ -95,12 +105,19 @@ type member struct {
 	inputs  <-chan sim.Input
 	strikes int
 	kicked  bool
+	// What the player last got a Snapshot for.
+	sentTick uint32
+	sentAck  uint32
+	// fresh: joined since the last tick; hasn't been told about the zone.
+	fresh bool
 }
 
 type command struct {
 	join  *JoinRequest
 	leave uint32
 	reply chan joinReply
+	// inspect runs on the zone goroutine (tests only).
+	inspect func(*sim.World)
 }
 
 type joinReply struct {
@@ -117,6 +134,7 @@ type zoneMetrics struct {
 	dropped    *metrics.Counter
 	kicks      *metrics.Counter
 	snapshotSz *metrics.Gauge
+	skipped    *metrics.Counter
 }
 
 // New creates a zone. Call Run to start it.
@@ -129,6 +147,9 @@ func New(cfg Config) *Zone {
 	}
 	if cfg.MaxStrikes == 0 {
 		cfg.MaxStrikes = 40
+	}
+	if cfg.KeepaliveTicks == 0 {
+		cfg.KeepaliveTicks = cfg.TickRate
 	}
 	if cfg.Log == nil {
 		cfg.Log = slog.New(slog.DiscardHandler)
@@ -152,7 +173,8 @@ func New(cfg Config) *Zone {
 		inputs:     r.NewCounter("lorehallow_zone_inputs_total", "Inputs accepted by the simulation."),
 		dropped:    r.NewCounter("lorehallow_zone_inputs_dropped_total", "Inputs rejected as stale, duplicate, flooding or invalid."),
 		kicks:      r.NewCounter("lorehallow_zone_kicks_total", "Players kicked for repeated invalid or flooding input."),
-		snapshotSz: r.NewGauge("lorehallow_zone_snapshot_body_bytes", "Size of the shared entity bytes in the last snapshot."),
+		snapshotSz: r.NewGauge("lorehallow_zone_snapshot_body_bytes", "Size of the shared entity bytes (changed entities only) in the last tick."),
+		skipped:    r.NewCounter("lorehallow_zone_snapshots_skipped_total", "Per-player Snapshots not sent because nothing the player can see changed."),
 	}
 	return z
 }
@@ -160,10 +182,10 @@ func New(cfg Config) *Zone {
 // Map returns the zone's map.
 func (z *Zone) Map() *mapdata.Map { return z.cfg.Map }
 
-// Join adds a player. On success the zone has already queued the
-// ServerHello and the EntityJoined messages for everyone else in the
-// zone on req.Out, in that order, and the player gets a Snapshot every
-// tick until Leave.
+// Join adds a player. On success the zone has queued the ServerHello on
+// req.Out; at the start of the next tick the player gets EntitiesJoined
+// with everyone in the zone (and everyone hears about it), then Snapshots
+// until Leave.
 func (z *Zone) Join(ctx context.Context, req JoinRequest) (JoinResult, error) {
 	reply := make(chan joinReply, 1)
 	select {
@@ -221,6 +243,10 @@ func (z *Zone) Run(ctx context.Context) {
 }
 
 func (z *Zone) handle(c command) {
+	if c.inspect != nil {
+		c.inspect(z.world)
+		return
+	}
 	if c.join != nil {
 		res, err := z.join(c.join)
 		c.reply <- joinReply{res, err}
@@ -243,9 +269,8 @@ func (z *Zone) join(req *JoinRequest) (JoinResult, error) {
 	if p == nil {
 		return JoinResult{}, fmt.Errorf("zone: player %d already in the world", req.ID)
 	}
-	m := &member{id: req.ID, name: req.Name, out: req.Out, inputs: req.Inputs}
+	m := &member{id: req.ID, name: req.Name, out: req.Out, inputs: req.Inputs, sentTick: z.world.Tick, fresh: true}
 	self := entity(p)
-
 	hello := encode(&pb.Envelope{Payload: &pb.Envelope_ServerHello{ServerHello: &pb.ServerHello{
 		PlayerId: req.ID, TickRate: uint32(z.cfg.TickRate), ServerTick: z.world.Tick,
 		Spawn: entityPB(self), MapId: z.cfg.Map.ID, ServerVersion: z.cfg.ServerVersion,
@@ -255,31 +280,106 @@ func (z *Zone) join(req *JoinRequest) (JoinResult, error) {
 		z.m.sendFull.Inc()
 		return JoinResult{}, errors.New("zone: new player's queue is full")
 	}
-	// Tell the newcomer about everyone, and everyone about the newcomer
-	// (encoded once, shared by every recipient).
-	joined := encode(joinedEnvelope(self, req.Name))
-	for _, other := range z.members {
-		if q := z.world.Player(other.id); q != nil {
-			z.send(m, wire.Outgoing{Bytes: encode(joinedEnvelope(entity(q), other.name))})
-		}
-		z.send(other, wire.Outgoing{Bytes: joined})
-	}
+	// Everyone hears about the newcomer, and the newcomer about everyone,
+	// at the start of the next tick, in batches (flushArrivals).
 	z.members[req.ID] = m
+	z.arrived = append(z.arrived, m)
 	z.m.players.Set(int64(len(z.members)))
 	return JoinResult{Spawn: self, Tick: z.world.Tick}, nil
 }
 
 func (z *Zone) leave(id uint32) {
-	if _, ok := z.members[id]; !ok {
+	m, ok := z.members[id]
+	if !ok {
 		return
 	}
 	delete(z.members, id)
 	z.world.Remove(id)
 	z.m.players.Set(int64(len(z.members)))
-	left := encode(&pb.Envelope{Payload: &pb.Envelope_EntityLeft{EntityLeft: &pb.EntityLeft{Id: id}}})
-	for _, m := range z.members {
-		z.send(m, wire.Outgoing{Bytes: left})
+	if m.fresh {
+		// Left before anyone heard it arrived: nobody needs to hear it left.
+		z.arrived = slices.DeleteFunc(z.arrived, func(a *member) bool { return a == m })
+		return
 	}
+	z.departed = append(z.departed, id)
+}
+
+// Batch limits: every message stays far under wire.MaxServerMessage
+// (an EntityIntro is at most about 90 bytes with a 16-rune name).
+const (
+	maxIntrosPerMessage = 400
+	maxIdsPerMessage    = 4000
+)
+
+// flushArrivals tells everyone about the tick's arrivals and departures,
+// in as few messages as possible, each encoded once and shared:
+//
+//   - players already here get one EntitiesJoined with the newcomers and
+//     one EntitiesLeft with who left;
+//   - each newcomer gets the whole zone (itself included, which clients
+//     ignore), shared by every newcomer of the tick.
+//
+// Coalescing per tick bounds the messages a player receives per tick,
+// however fast players join: a login storm is a few messages a tick, not
+// one per arrival (measured: per-arrival messages evicted newcomers once
+// a zone passed 256 players).
+func (z *Zone) flushArrivals() {
+	if len(z.departed) > 0 {
+		for _, chunk := range chunks(z.departed, maxIdsPerMessage) {
+			b := encode(&pb.Envelope{Payload: &pb.Envelope_EntitiesLeft{EntitiesLeft: &pb.EntitiesLeft{Ids: chunk}}})
+			for _, m := range z.members {
+				if !m.fresh { // newcomers never heard of them
+					z.send(m, wire.Outgoing{Bytes: b})
+				}
+			}
+		}
+		z.departed = z.departed[:0]
+	}
+	if len(z.arrived) == 0 {
+		return
+	}
+	newcomers := make([]*pb.EntityIntro, 0, len(z.arrived))
+	for _, m := range z.arrived {
+		newcomers = append(newcomers, z.intro(m))
+	}
+	var news [][]byte
+	for _, chunk := range chunks(newcomers, maxIntrosPerMessage) {
+		news = append(news, encode(&pb.Envelope{Payload: &pb.Envelope_EntitiesJoined{EntitiesJoined: &pb.EntitiesJoined{Entities: chunk}}}))
+	}
+	everyone := make([]*pb.EntityIntro, 0, len(z.members))
+	for _, p := range z.world.Players() {
+		everyone = append(everyone, z.intro(z.members[p.ID]))
+	}
+	var all [][]byte
+	for _, chunk := range chunks(everyone, maxIntrosPerMessage) {
+		all = append(all, encode(&pb.Envelope{Payload: &pb.Envelope_EntitiesJoined{EntitiesJoined: &pb.EntitiesJoined{Entities: chunk}}}))
+	}
+	for _, m := range z.members {
+		msgs := news
+		if m.fresh {
+			msgs = all
+		}
+		for _, b := range msgs {
+			z.send(m, wire.Outgoing{Bytes: b})
+		}
+	}
+	for _, m := range z.arrived {
+		m.fresh = false
+	}
+	z.arrived = z.arrived[:0]
+}
+
+func (z *Zone) intro(m *member) *pb.EntityIntro {
+	return &pb.EntityIntro{State: entityPB(entity(z.world.Player(m.id))), DisplayName: m.name}
+}
+
+func chunks[T any](s []T, n int) [][]T {
+	var out [][]T
+	for len(s) > n {
+		out = append(out, s[:n:n])
+		s = s[n:]
+	}
+	return append(out, s)
 }
 
 // send enqueues without blocking; a full queue is counted, and the
@@ -291,6 +391,11 @@ func (z *Zone) send(m *member, o wire.Outgoing) {
 }
 
 func (z *Zone) tick() {
+	// 0. Announce the arrivals and departures since the last tick, with
+	// everyone's state before this tick's movement (which follows as the
+	// tick's Snapshot).
+	z.flushArrivals()
+
 	// 1. Drain each player's inputs into the simulation, at most a
 	// channel's worth, so a flooding reader can't keep the tick here.
 	for _, m := range z.members {
@@ -323,17 +428,27 @@ func (z *Zone) tick() {
 	// 2. Advance the rules one tick.
 	z.world.Step()
 
-	// 3. Encode every entity once, then hand the shared bytes to every
-	// player with its own acknowledged input.
+	// 3. Encode every entity that changed, once, then hand the shared
+	// bytes to every player with its own acknowledged input. A player
+	// with nothing new (no changes, same ack) gets nothing, apart from a
+	// keepalive Snapshot every KeepaliveTicks.
 	body := wire.NewBody()
 	for _, p := range z.world.Players() {
-		body.B = wire.AppendEntity(body.B, entity(p))
+		if p.Changed {
+			body.B = wire.AppendEntity(body.B, entity(p))
+		}
 	}
 	z.m.snapshotSz.Set(int64(len(body.B)))
+	tick := z.world.Tick
 	for _, m := range z.members {
 		p := z.world.Player(m.id)
+		if len(body.B) == 0 && p.LastSeq == m.sentAck && int(tick-m.sentTick) < z.cfg.KeepaliveTicks {
+			z.m.skipped.Inc()
+			continue
+		}
+		m.sentTick, m.sentAck = tick, p.LastSeq
 		body.Retain() // this reference now belongs to the Outbox
-		if !m.out.Send(wire.Outgoing{Body: body, Tick: z.world.Tick, Ack: p.LastSeq}) {
+		if !m.out.Send(wire.Outgoing{Body: body, Tick: tick, Ack: p.LastSeq}) {
 			z.m.sendFull.Inc()
 		}
 	}
@@ -346,10 +461,6 @@ func entity(p *sim.Player) wire.Entity {
 
 func entityPB(e wire.Entity) *pb.EntityState {
 	return &pb.EntityState{Id: e.ID, X: e.X, Y: e.Y, Facing: e.Facing, Anim: e.Anim}
-}
-
-func joinedEnvelope(e wire.Entity, name string) *pb.Envelope {
-	return &pb.Envelope{Payload: &pb.Envelope_EntityJoined{EntityJoined: &pb.EntityJoined{State: entityPB(e), DisplayName: name}}}
 }
 
 func encode(env *pb.Envelope) []byte {

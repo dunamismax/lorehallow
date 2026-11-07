@@ -4,4 +4,4 @@ package pb
 
 // ProtocolVersion is the wire protocol version. Clients and servers with
 // different versions refuse to talk. See proto/README.md.
-const ProtocolVersion = 1
+const ProtocolVersion = 2

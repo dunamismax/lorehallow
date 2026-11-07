@@ -12,19 +12,39 @@ import (
 //
 // A push that would exceed either limit fails: the client is reading too
 // slowly, and the session evicts it. The queue never grows past its
-// limits, so a stalled client costs a fixed amount of memory.
+// limits, so a stalled client costs a bounded amount of memory.
+//
+// The ring starts small and doubles up to maxMessages only when a burst
+// needs it, so a quiet connection holds a few hundred bytes of queue, not
+// the worst case (measured: preallocating 256 slots was ~10 KiB per idle
+// connection).
 type sendQueue struct {
 	mu       sync.Mutex
 	ring     []wire.Outgoing
 	head, n  int
 	bytes    int
+	maxMsgs  int
 	maxBytes int
 	closed   bool
 	notify   chan struct{} // capacity 1: "something was queued"
 }
 
+const initialQueueSlots = 8
+
 func newSendQueue(maxMessages, maxBytes int) *sendQueue {
-	return &sendQueue{ring: make([]wire.Outgoing, maxMessages), maxBytes: maxBytes, notify: make(chan struct{}, 1)}
+	return &sendQueue{
+		ring:    make([]wire.Outgoing, min(initialQueueSlots, maxMessages)),
+		maxMsgs: maxMessages, maxBytes: maxBytes, notify: make(chan struct{}, 1),
+	}
+}
+
+// grow doubles the ring (up to maxMsgs), keeping the queued order.
+func (q *sendQueue) grow() {
+	bigger := make([]wire.Outgoing, min(len(q.ring)*2, q.maxMsgs))
+	for i := range q.n {
+		bigger[i] = q.ring[(q.head+i)%len(q.ring)]
+	}
+	q.ring, q.head = bigger, 0
 }
 
 // push queues o, taking ownership of it. It returns false, and releases
@@ -32,6 +52,9 @@ func newSendQueue(maxMessages, maxBytes int) *sendQueue {
 func (q *sendQueue) push(o wire.Outgoing) bool {
 	size := o.Size()
 	q.mu.Lock()
+	if q.n == len(q.ring) && len(q.ring) < q.maxMsgs && !q.closed {
+		q.grow()
+	}
 	if q.closed || q.n == len(q.ring) || q.bytes+size > q.maxBytes {
 		closed := q.closed
 		q.mu.Unlock()
@@ -60,6 +83,9 @@ func (q *sendQueue) takeAll(dst []wire.Outgoing) []wire.Outgoing {
 		q.n--
 	}
 	q.bytes = 0
+	if len(q.ring) > 4*initialQueueSlots {
+		q.ring, q.head = make([]wire.Outgoing, initialQueueSlots), 0 // shrink back after a burst
+	}
 	return dst
 }
 

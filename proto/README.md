@@ -16,7 +16,7 @@ Protobuf schemas shared by the server and the client, managed with [buf](https:/
 - Never reuse or renumber a field number. Removed fields become `reserved`.
 - Every Envelope payload needs at least one golden vector (`server/internal/protovectors`). A test fails until it has one.
 - Hot messages (`PlayerInput`, `Snapshot`) keep field numbers 1 to 15 (one-byte tags), use `sint32` for values that can be negative, and integers instead of floats. Byte budgets per message are in [docs/design/protocol.md](../docs/design/protocol.md).
-- Names godobuf can't handle: a field called `message`, and a message named like a Godot class (`Input`, `Node`, `Object`, `Resource`, ...).
+- Names godobuf can't handle: a field called `message`, a message named like a Godot class (`Input`, `Node`, `Object`, `Resource`, ...), and `reserved` statements at all, so `gen-proto.sh` strips them from the copy godobuf compiles (they generate no code; buf still enforces them). Reserve numbers only.
 - Golden JSON descriptions use protojson with proto field names and enum numbers, so the GDScript test can compare enums directly.
 
 ## PROTOCOL_VERSION

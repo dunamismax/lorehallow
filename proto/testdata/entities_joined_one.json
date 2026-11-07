@@ -1,0 +1,16 @@
+{
+  "entities_joined": {
+    "entities": [
+      {
+        "state": {
+          "id": 3,
+          "x": 512,
+          "y": 1024,
+          "facing": 2,
+          "anim": 2
+        },
+        "display_name": "Bram"
+      }
+    ]
+  }
+}

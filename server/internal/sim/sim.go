@@ -92,6 +92,9 @@ type Player struct {
 	Facing  Facing
 	Anim    Anim
 	LastSeq uint32 // last input seq applied (acknowledged in snapshots)
+	// Changed reports whether the last Step changed the player's visible
+	// state (position, facing or animation). Snapshots send only these.
+	Changed bool
 
 	credit  int
 	pending []Input // sorted by Seq, at most MaxPending
@@ -193,6 +196,7 @@ func (p *Player) Pending() int { return len(p.pending) }
 func (w *World) Step() {
 	w.Tick++
 	for _, p := range w.players {
+		x, y, facing, anim := p.X, p.Y, p.Facing, p.Anim
 		p.credit = min(p.credit+1, MaxCredit)
 		moving := false
 		applied := 0
@@ -212,6 +216,7 @@ func (w *World) Step() {
 		} else {
 			p.Anim = AnimIdle
 		}
+		p.Changed = p.X != x || p.Y != y || p.Facing != facing || p.Anim != anim
 	}
 }
 

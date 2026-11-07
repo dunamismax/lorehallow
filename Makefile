@@ -97,6 +97,19 @@ server-lint: ## gofmt check, go vet, golangci-lint and govulncheck
 server-test: ## go test -race ./... (includes fuzz seed corpora and allocation tests)
 	cd $(ROOT)/server && go test -race -count=1 ./...
 
+.PHONY: loadtest
+loadtest: server-build ## Run a scaling.md scenario, write a draft to docs/perf/: SCENARIO=idle|spread N=100 DURATION=2m
+	cd $(ROOT) && $(BIN)/lorehallow-loadtest -scenario $(or $(SCENARIO),idle) -n $(or $(N),100) \
+		-duration $(or $(DURATION),2m) $(if $(WARMUP),-warmup $(WARMUP)) -commit $(COMMIT)
+
+.PHONY: deploy-server
+deploy-server: ## Build for the host, upload, switch, restart, check /healthz, roll back on failure
+	@$(ROOT)/deploy/server/deploy.sh deploy
+
+.PHONY: rollback-server
+rollback-server: ## Switch the host back to the previous server release
+	@$(ROOT)/deploy/server/deploy.sh rollback
+
 .PHONY: content-lint
 content-lint: ## Validate game content (maps and tilesets) in content/
 	cd $(ROOT)/server && go run ./cmd/lorehallow-content validate -root $(ROOT)

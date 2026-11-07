@@ -350,6 +350,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Movement: fixed speed in tiles per second, axis-separated collision against the collision layer.
 - [x] Validation: input floods, impossible speeds and wall-walking have no effect; repeat offenders are disconnected and logged.
 - [x] Snapshot broadcast every tick to every connected player, each entity's state encoded once per tick and shared by every recipient (interest management comes in Phase 3).
+- [x] `ADR` Snapshots carry only the entities that changed, and a player with nothing new gets no Snapshot but a keepalive each second (TCP is reliable, so no acknowledged baselines), measured before and after with `make loadtest`.
 - [x] Disconnects remove the entity for everyone within one second (`EntityLeft` on close, heartbeat timeout for silent drops).
 - [x] Deterministic tests of the simulation with a fake clock: movement, collision, validation, join and leave.
 - [x] Benchmarks with `ReportAllocs` for the tick, snapshot encoding and input decoding, and an allocation test that fails `make check` if the steady-state simulation step allocates.
@@ -360,8 +361,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Cheat mode for the bot: input flooding, forged sequence numbers, oversized messages, unknown message types and a handshake that never finishes.
 - [x] Integration test proving cheat mode never moves a bot faster than allowed or through walls.
 - [x] Integration test: server plus two bots; each sees the other move, and sees the leave within one second of a disconnect.
-- [ ] `make loadtest SCENARIO=<name>` runs a [scaling.md](docs/design/scaling.md) scenario against a fresh server and writes a draft result to `docs/perf/`; `idle` and `spread` work.
-- [ ] Baseline on `dev-m5`: Case 1 Tier 1 (100 idle connections) and 100 bots in `spread`, recorded in `docs/perf/` with memory per connection, goroutines, tick p99 and bytes per player.
+- [x] `make loadtest SCENARIO=<name>` runs a [scaling.md](docs/design/scaling.md) scenario against a fresh server and writes a draft result to `docs/perf/`; `idle` and `spread` work.
+- [x] Baseline on `dev-m5`: Case 1 Tier 1 (100 idle connections) and 100 bots in `spread`, recorded in `docs/perf/` with memory per connection, goroutines, tick p99 and bytes per player.
 
 ### 2.6 Client networking
 
@@ -447,8 +448,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 3.4 Bandwidth
 
 - [ ] Measure bytes per snapshot and per client per second, shown in the debug overlay and exported by the server.
-- [ ] `ADR` Snapshot optimization: quantization, deltas against the last acknowledged snapshot, or both. Implement it and measure the savings.
-- [ ] Encode once with deltas: per-entity delta fragments built once per tick and shared by every recipient that acknowledged the same base, with a benchmark showing encode cost independent of recipient count.
+- [ ] `ADR` Snapshot optimization on top of ADR 0008's changed-only snapshots: quantization and smaller encodings of changed entities (for example position deltas). Implement it and measure the savings.
+- [ ] Encode once with interest management: each changed entity encoded once per tick and shared by every recipient that can see it, with a benchmark showing encode cost independent of recipient count.
 - [ ] Per-client bandwidth with 100 bots spread across the map, before and after interest management, in `docs/perf/phase-03.md`.
 
 ### 3.5 Metrics and profiling

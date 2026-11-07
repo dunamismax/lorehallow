@@ -13,6 +13,12 @@ option go_package = "github.com/dunamismax/lorehallow/server/internal/pb";
 // Field numbers 1 to 15 encode their tag in one byte; the hot messages
 // (PlayerInput, Snapshot) must stay in that range.
 message Envelope {
+  // Protocol 1's single-entity EntityJoined (7) and EntityLeft (8),
+  // replaced in protocol 2 by the batched EntitiesJoined and
+  // EntitiesLeft. (Reserved names aren't listed; tools/scripts/gen-proto.sh
+  // strips reserved lines for godobuf, which can't parse them.)
+  reserved 7, 8;
+
   // payload is the one message this envelope carries.
   oneof payload {
     Ping ping = 1;
@@ -21,9 +27,9 @@ message Envelope {
     ServerHello server_hello = 4;
     PlayerInput input = 5;
     Snapshot snapshot = 6;
-    EntityJoined entity_joined = 7;
-    EntityLeft entity_left = 8;
     Disconnect disconnect = 9;
+    EntitiesJoined entities_joined = 10;
+    EntitiesLeft entities_left = 11;
   }
 }
 
@@ -123,7 +129,14 @@ message EntityState {
   Anim anim = 5;
 }
 
-// Snapshot is the world as the receiving player sees it on one tick.
+// Snapshot is what changed, for the receiving player, on one tick.
+//
+// The transport is reliable and ordered, so a Snapshot carries only the
+// entities whose state changed since the previous tick (ADR 0008). An
+// entity left out keeps the state the client last heard: from
+// ServerHello (itself), EntityJoined (everyone else) or an earlier
+// Snapshot. A tick where nothing changed for the player sends no Snapshot
+// at all, except a keepalive at least once a second.
 //
 // The server builds it from per-entity bytes encoded once per tick and
 // shared by every recipient, so `entities` must stay the last field.
@@ -133,22 +146,34 @@ message Snapshot {
   // ack_input_seq is the last PlayerInput seq the server applied for the
   // receiving player. Prediction (Phase 3) replays inputs after it.
   uint32 ack_input_seq = 2;
-  // entities are the entities the player can see, including itself.
+  // entities are the visible entities that changed on this tick,
+  // possibly including the player itself. Often empty.
   repeated EntityState entities = 3;
 }
 
-// EntityJoined introduces an entity the player can now see.
-message EntityJoined {
+// EntityIntro introduces one entity: its state and its name.
+message EntityIntro {
   // state is the entity's state when it appeared.
   EntityState state = 1;
   // display_name is shown above the entity.
   string display_name = 2;
 }
 
-// EntityLeft says an entity is gone (disconnected, or out of view).
-message EntityLeft {
-  // id is the entity that left.
-  uint32 id = 1;
+// EntitiesJoined introduces entities the player can now see. The server
+// batches every arrival of a tick into one message (encoded once for
+// everyone), and gives a newcomer the whole zone in as few messages as
+// fit the size limit. It may include the receiving player itself;
+// clients ignore their own id here.
+message EntitiesJoined {
+  // entities are the arrivals.
+  repeated EntityIntro entities = 1;
+}
+
+// EntitiesLeft says entities are gone (disconnected, or out of view),
+// batched per tick.
+message EntitiesLeft {
+  // ids are the entities that left.
+  repeated uint32 ids = 1;
 }
 
 // DisconnectReason says why the server is closing the connection.

@@ -1,0 +1,29 @@
+{
+  "entities_joined": {
+    "entities": [
+      {
+        "state": {
+          "id": 1,
+          "x": 2560,
+          "y": 3584,
+          "facing": 1,
+          "anim": 1
+        },
+        "display_name": "Ash"
+      },
+      {
+        "state": {
+          "id": 2
+        },
+        "display_name": "Élodie 森"
+      },
+      {
+        "state": {
+          "id": 4294967295,
+          "x": -1,
+          "y": -2147483648
+        }
+      }
+    ]
+  }
+}

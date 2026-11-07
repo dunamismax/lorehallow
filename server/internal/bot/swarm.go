@@ -32,6 +32,9 @@ type SwarmConfig struct {
 	// HTTPClient dials (nil: a client with no connection limits).
 	HTTPClient *http.Client
 	Stats      *Stats
+	// ProtocolVersion overrides the version bots announce (measuring an
+	// older server build).
+	ProtocolVersion uint32
 }
 
 // Swarm is a running group of bots.
@@ -107,6 +110,7 @@ connect:
 			bc := Config{
 				URL: cfg.URL, Name: fmt.Sprintf("bot%d", i), Behavior: cfg.Behavior,
 				Seed: cfg.Seed + uint64(i), HTTPClient: cfg.HTTPClient, Stats: cfg.Stats,
+				ProtocolVersion: cfg.ProtocolVersion,
 			}
 			if i-cfg.Silent < cfg.CheatN {
 				bc.Cheat = cfg.Cheat

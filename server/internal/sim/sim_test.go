@@ -166,6 +166,28 @@ func TestMapEdgeIsAWall(t *testing.T) {
 	}
 }
 
+func TestChangedTracksVisibleState(t *testing.T) {
+	w := NewWorld(open(t, 10, 10))
+	w.Add(1, center(5, 5))
+	w.Add(2, center(2, 2))
+	walk(w, 1, 1, 1, 0)
+	if !w.Player(1).Changed || w.Player(2).Changed {
+		t.Fatalf("after moving 1: changed %v %v", w.Player(1).Changed, w.Player(2).Changed)
+	}
+	walk(w, 1, 1, 1, 0)
+	if !w.Player(1).Changed {
+		t.Fatal("still walking is a change")
+	}
+	walk(w, 1, 1, 0, 0) // stops: walk to idle is a change
+	if p := w.Player(1); !p.Changed || p.Anim != AnimIdle {
+		t.Fatalf("stopping: changed %v anim %d", p.Changed, p.Anim)
+	}
+	walk(w, 1, 1, 0, 0) // standing still: nothing to send
+	if w.Player(1).Changed {
+		t.Fatal("standing still is not a change")
+	}
+}
+
 func TestQueueRejections(t *testing.T) {
 	w := NewWorld(open(t, 5, 5))
 	w.Add(1, center(2, 2))

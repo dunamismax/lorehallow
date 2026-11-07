@@ -48,8 +48,12 @@ trap 'rm -rf "$tmp"' EXIT
 while IFS= read -r src; do
   name="$(basename "$src" .proto)"
   out="client/net/pb/${name}_pb.gd"
+  # godobuf can't parse `reserved` statements. They generate no code (they
+  # only constrain schema changes, which buf enforces), so feed godobuf a
+  # copy without them.
+  sed -E '/^[[:space:]]*reserved[[:space:]]/d' "$src" >"$tmp/${name}.proto"
   log="$("$GODOT" --headless --path client -s addons/godobuf/godobuf_cmdln.gd \
-    --input="$ROOT/$src" --output="$tmp/${name}.gd" 2>&1)" || true
+    --input="$tmp/${name}.proto" --output="$tmp/${name}.gd" 2>&1)" || true
   if [[ ! -s "$tmp/${name}.gd" ]]; then
     echo "$log" >&2; echo "godobuf failed for $src" >&2; exit 1
   fi

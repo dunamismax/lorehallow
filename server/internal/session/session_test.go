@@ -153,6 +153,18 @@ func count[T any](msgs []*pb.Envelope, get func(*pb.Envelope) *T) int {
 	return n
 }
 
+// heard reports whether msgs introduced entity id.
+func heard(msgs []*pb.Envelope, id uint32) bool {
+	for _, m := range msgs {
+		for _, e := range m.GetEntitiesJoined().GetEntities() {
+			if e.GetState().GetId() == id {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func hello(name string) *pb.Envelope {
 	return &pb.Envelope{Payload: &pb.Envelope_ClientHello{ClientHello: &pb.ClientHello{ProtocolVersion: pb.ProtocolVersion, ClientVersion: "test", DisplayName: name}}}
 }
@@ -225,6 +237,8 @@ func (w *world) join(t *testing.T, name string) (*fakeConn, <-chan pb.Disconnect
 	if msgs := c.received(t); len(msgs) == 0 || msgs[0].GetServerHello() == nil {
 		t.Fatalf("%s: no ServerHello, got %v", name, msgs)
 	}
+	time.Sleep(50 * time.Millisecond) // the next tick announces the arrival
+	synctest.Wait()
 	return c, res
 }
 
@@ -240,7 +254,7 @@ func TestHandshakeAndSnapshots(t *testing.T) {
 		}
 		synctest.Wait()
 		am, bm := a.received(t), b.received(t)
-		if count(bm, (*pb.Envelope).GetEntityJoined) != 1 || count(am, (*pb.Envelope).GetEntityJoined) != 1 {
+		if !heard(am, 2) || !heard(bm, 1) {
 			t.Fatal("players didn't hear about each other")
 		}
 		var last *pb.Snapshot
@@ -249,7 +263,8 @@ func TestHandshakeAndSnapshots(t *testing.T) {
 				last = s
 			}
 		}
-		if last == nil || last.GetAckInputSeq() != 10 || len(last.GetEntities()) != 2 {
+		// Only a moved, so a snapshot carries only a (ADR 0008).
+		if last == nil || last.GetAckInputSeq() != 10 || len(last.GetEntities()) != 1 || last.GetEntities()[0].GetId() != 1 {
 			t.Fatalf("last snapshot for a: %v", last)
 		}
 		if n := count(bm, (*pb.Envelope).GetSnapshot); n < 9 || n > 11 {
@@ -347,8 +362,9 @@ func TestSilentClientTimesOutAndLeaves(t *testing.T) {
 		if waited := time.Since(start); waited < DefaultIdleTimeout || waited > DefaultIdleTimeout+DefaultPingInterval {
 			t.Fatalf("timed out after %v, want %v to %v", waited, DefaultIdleTimeout, DefaultIdleTimeout+DefaultPingInterval)
 		}
+		time.Sleep(50 * time.Millisecond) // departures are announced at the next tick
 		synctest.Wait()
-		if count(other.received(t), (*pb.Envelope).GetEntityLeft) != 1 {
+		if count(other.received(t), (*pb.Envelope).GetEntitiesLeft) != 1 {
 			t.Fatal("others didn't see the silent player leave")
 		}
 		if count(quiet.received(t), (*pb.Envelope).GetPing) < 5 {
@@ -391,6 +407,21 @@ func TestSlowClientIsEvictedWithoutHurtingOthers(t *testing.T) {
 		defer w.stop()
 		slow, res := w.join(t, "Slow")
 		fast, _ := w.join(t, "Fast")
+		// fast walks back and forth, so every tick has a change to send.
+		stopWalking := make(chan struct{})
+		walking := make(chan struct{})
+		go func() {
+			defer close(walking)
+			for seq := uint32(1); ; seq++ {
+				select {
+				case <-stopWalking:
+					return
+				case <-time.After(50 * time.Millisecond):
+					fast.send(t, input(seq, 1-int32(seq%2)*2, 0))
+				}
+			}
+		}()
+		defer func() { close(stopWalking); <-walking }()
 		slow.mu.Lock()
 		slow.stalled = true // stops reading: every write blocks
 		slow.mu.Unlock()
@@ -500,8 +531,9 @@ func TestPeerCloseCleansUp(t *testing.T) {
 		if got := <-res; got != pb.DisconnectReason_DISCONNECT_REASON_UNSPECIFIED {
 			t.Fatalf("peer close: %v", got)
 		}
+		time.Sleep(50 * time.Millisecond)
 		synctest.Wait()
-		if count(b.received(t), (*pb.Envelope).GetEntityLeft) != 1 {
+		if count(b.received(t), (*pb.Envelope).GetEntitiesLeft) != 1 {
 			t.Fatal("other player didn't see the leave")
 		}
 	})
@@ -539,6 +571,34 @@ func TestSendQueueLimits(t *testing.T) {
 		t.Fatal("a closed queue reports full")
 	}
 	body.Release() // the caller's own reference; the pushes were released by the queue
+}
+
+func TestSendQueueGrowsAndKeepsOrder(t *testing.T) {
+	q := newSendQueue(100, 1<<20)
+	if len(q.ring) != initialQueueSlots {
+		t.Fatalf("starts with %d slots", len(q.ring))
+	}
+	for i := range 5 { // wrap the ring before it grows
+		q.push(wire.Outgoing{Bytes: []byte{byte(i)}})
+	}
+	q.takeAll(nil)
+	for i := range 100 {
+		if !q.push(wire.Outgoing{Bytes: []byte{byte(i)}}) {
+			t.Fatalf("push %d refused under the limit", i)
+		}
+	}
+	if q.push(wire.Outgoing{Bytes: []byte{0}}) {
+		t.Fatal("grew past maxMessages")
+	}
+	got := q.takeAll(nil)
+	for i, o := range got {
+		if o.Bytes[0] != byte(i) {
+			t.Fatalf("message %d is %d: order lost while growing", i, o.Bytes[0])
+		}
+	}
+	if len(q.ring) != initialQueueSlots {
+		t.Fatalf("didn't shrink back: %d slots", len(q.ring))
+	}
 }
 
 func TestEveryReasonHasACounter(t *testing.T) {
