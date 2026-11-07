@@ -9,16 +9,16 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 | | |
 |---|---|
-| **Website** | [lorehallow.com](https://lorehallow.com) (launches in Phase 1) |
+| **Website** | [lorehallow.com](https://lorehallow.com) |
 | **Progress** | [BUILD.md](BUILD.md), tracked live at [lorehallow.com/progress](https://lorehallow.com/progress) |
 | **Devlog** | [lorehallow.com/devlog](https://lorehallow.com/devlog) |
 | **Source** | [GitHub](https://github.com/dunamismax/lorehallow) · [Codeberg](https://codeberg.org/dunamismax/lorehallow) |
 
 ## Status
 
-**Phase 0: Foundations. Pre-alpha, nothing to play yet.**
+**Phase 1: lorehallow.com. Pre-alpha, nothing to play yet.**
 
-The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. The first two art batches are done and redrawn by hand. Next, the website at lorehallow.com (waiting on host setup) and the game server's networking core are built side by side, so the build can be followed in public while the backend moves ahead. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built by a Go program in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. What's left of Phase 1 is switching on automatic deploys from CI and the owner's review. Then work returns to the game server's networking core (Phase 2), which is already partly built. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 

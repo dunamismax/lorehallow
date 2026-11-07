@@ -225,7 +225,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.3 Landing page
 
-- [ ] Hero: key art with gentle CSS-only parallax layers, the wordmark, a one-line pitch and calls to action (Follow the build, Read the devlog, View the source).
+- [x] Hero: key art with gentle CSS-only parallax layers, the wordmark, a one-line pitch and calls to action (Follow the build, Read the devlog, View the source).
 - [x] "A world that's already there": what Lorehallow is and the feeling it's going for, in plain language.
 - [x] Design pillars with pixel icons.
 - [x] "What you'll do" teaser: explore, quest, group up and fight with other people around you, clearly marked as planned.
@@ -233,7 +233,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Latest three devlog posts.
 - [x] Art showcase strip built from processed art.
 - [x] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
-- [ ] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
+- [x] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
 - [x] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
 
 ### 1.4 Progress tracker (/progress)
@@ -284,29 +284,29 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.9 Deploy automation
 
-- [ ] `deploy/web/deploy.sh`: build, upload to a new timestamped release directory, switch the `current` symlink atomically, keep the last five releases.
-- [ ] `make deploy-web` and `make rollback-web` for manual use.
+- [x] `deploy/web/deploy.sh`: build, upload to a new timestamped release directory, switch the `current` symlink atomically, keep the last five releases.
+- [x] `make deploy-web` and `make rollback-web` for manual use.
 - [ ] GitHub Actions workflow that deploys on every push to `main` touching `BUILD.md`, `web/`, `art/processed/web/` or `docs/walkthroughs/`, with full git history checked out for the achievement feed.
 - [ ] `HUMAN` Add the CI deploy key and host details as GitHub Actions secrets.
 - [ ] Nightly scheduled rebuild so date-based content stays fresh with no pushes.
-- [ ] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
+- [x] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
 - [ ] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
 
 ### 1.10 Launch
 
-- [ ] `docs/walkthroughs/phase-01-website.md`: DNS, TLS and Caddy, static builds, the deploy pipeline, and how BUILD.md becomes the progress page.
-- [ ] Devlog draft announcing the website.
+- [x] `docs/walkthroughs/phase-01-website.md`: DNS, TLS and Caddy, static builds, the deploy pipeline, and how BUILD.md becomes the progress page.
+- [x] Devlog draft announcing the website.
 - [ ] `HUMAN` Review the live site on desktop and phone and approve it.
 
 ### Acceptance criteria
 
-- [ ] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
+- [x] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
 - [ ] Checking a box in BUILD.md and pushing to `main` updates /progress within 10 minutes with no manual steps.
-- [ ] Every page links to the GitHub and Codeberg repositories.
+- [x] Every page links to the GitHub and Codeberg repositories.
 - [ ] The devlog has at least one published post and a valid RSS feed.
-- [ ] /downloads exists and accurately says no builds are available yet.
+- [x] /downloads exists and accurately says no builds are available yet.
 - [ ] Lighthouse budgets pass and no page ships any JavaScript.
-- [ ] A deliberately bad deploy was rolled back with one command.
+- [x] A deliberately bad deploy was rolled back with one command.
 
 ---
 
