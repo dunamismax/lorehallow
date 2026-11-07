@@ -114,6 +114,10 @@ deploy-server: ## Build for the host, upload, switch, restart, check /healthz, r
 rollback-server: ## Switch the host back to the previous server release
 	@$(ROOT)/deploy/server/deploy.sh rollback
 
+.PHONY: rehearse-rollback-server
+rehearse-rollback-server: ## Deploy a release that can't start and check the automatic rollback (game down ~20 s)
+	@$(ROOT)/deploy/server/deploy.sh rehearse-rollback
+
 .PHONY: content-lint
 content-lint: ## Validate game content (maps and tilesets) in content/
 	cd $(ROOT)/server && go run ./cmd/lorehallow-content validate -root $(ROOT)
