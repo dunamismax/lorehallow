@@ -101,7 +101,7 @@ No text, no letters, no numbers, no signature, no watermark, no border or frame.
 
 - Target: art/processed/tiles/terrain_grass_dirt.png
 - Logical size: 4 columns × 4 rows of 32×32 tiles (128×128 total, square)
-- Attach: nothing
+- Attach: art/batches/batch-01-style/guides/terrain_grass_dirt.png (layout guide), then art/style/reference.png
 
 ```text
 Create a pixel-art transition tileset for a cozy fantasy online game called Lorehallow: a patch of packed dirt inside a grass field.
@@ -113,6 +113,10 @@ True pixel art: every art pixel is a solid square block of one color. No anti-al
 Palette: use only these {{PALETTE_COUNT}} colors and no others: {{PALETTE}}.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
+
+Two images are attached. The first is a layout guide in two flat colors: green is where grass goes, brown is where dirt goes. Follow its shapes and positions exactly, tile by tile, but draw real textured ground in place of the flat colors and make the borders organic instead of straight. The second is the style reference: match its grass, ground colors, pixel size and mood.
+
+The 16 tiles form one continuous image. Do not draw any lines, gaps, outlines, shadows or color changes along the tile boundaries; a viewer should not be able to see where one tile ends and the next begins, except where the layout itself changes.
 
 Layout, in reading order:
 - The 3×3 block in the top-left (columns 1 to 3, rows 1 to 3) is one complete dirt patch surrounded by grass when the nine tiles sit together: top-left corner, top edge, top-right corner; left edge, full dirt center, right edge; bottom-left corner, bottom edge, bottom-right corner. Grass is on the outside, dirt on the inside.
@@ -128,7 +132,7 @@ No text, no letters, no numbers, no signature, no watermark, no border or frame.
 
 - Target: art/processed/tiles/terrain_grass_stone.png
 - Logical size: 4 columns × 4 rows of 32×32 tiles (128×128 total, square)
-- Attach: nothing
+- Attach: art/batches/batch-01-style/guides/terrain_grass_stone.png (layout guide), then art/style/reference.png
 
 ```text
 Create a pixel-art transition tileset for a cozy fantasy online game called Lorehallow: an area of old grey flagstones inside a grass field, like the floor of a ruin being reclaimed by nature.
@@ -140,6 +144,10 @@ True pixel art: every art pixel is a solid square block of one color. No anti-al
 Palette: use only these {{PALETTE_COUNT}} colors and no others: {{PALETTE}}.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
+
+Two images are attached. The first is a layout guide in two flat colors: green is where grass goes, grey is where flagstone goes. Follow its shapes and positions exactly, tile by tile, but draw real textured ground in place of the flat colors and make the borders organic instead of straight. The second is the style reference: match its grass, ground colors, pixel size and mood.
+
+The 16 tiles form one continuous image. Do not draw any lines, gaps, outlines, shadows or color changes along the tile boundaries; a viewer should not be able to see where one tile ends and the next begins, except where the layout itself changes.
 
 Layout, in reading order:
 - The 3×3 block in the top-left (columns 1 to 3, rows 1 to 3) is one complete flagstone area surrounded by grass when the nine tiles sit together: top-left corner, top edge, top-right corner; left edge, full flagstone center, right edge; bottom-left corner, bottom edge, bottom-right corner. Grass is on the outside, flagstones on the inside.

@@ -46,6 +46,7 @@ assets:
               edge_l, center, edge_r, inner_tr,
               edge_bl, edge_b, edge_br, inner_bl,
               edge_t_b, center_b, edge_b_b, inner_br]
+    guide: {outer: "#7a8e3c", inner: "#965a3a"}
     notes: Dirt patch (inner) in grass (outer). Layout in STYLE.md "Transition sets".
 
   - id: terrain_grass_stone
@@ -55,4 +56,5 @@ assets:
     size: [128, 128]
     grid: {cell: [32, 32], columns: 4, rows: 4}
     frames: *transition_frames
+    guide: {outer: "#7a8e3c", inner: "#a8979a"}
     notes: Old flagstone (inner) in grass (outer). Layout in STYLE.md "Transition sets".

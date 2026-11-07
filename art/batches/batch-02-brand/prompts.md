@@ -47,7 +47,7 @@ Background: flat solid #FF00FF everywhere that is not art. Never use #FF00FF ins
 ```text
 Create pixel art for a cozy fantasy online game called Lorehallow. Attached is the style reference; match it.
 
-Canvas: square. The art is exactly 32 art pixels wide and 32 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. The art fills the whole canvas edge to edge.
+Canvas: square. The emblem is exactly 32 art pixels wide and 32 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. Draw it in the middle of the canvas, about 40 percent of the canvas width, with big chunky art pixels that are clearly visible; everything around it is background.
 
 A square emblem for the game, readable as a tiny favicon: a warm glowing lantern hanging from a curled branch with two moss-green leaves, in front of a round dusk-blue disc. The disc touches the edges of the 32×32 square; the corners outside the disc are background. Strong silhouette, high contrast, 1-pixel #1A1420 outline around the disc and the lantern. No letters.
 
@@ -71,7 +71,7 @@ Background: flat solid #FF00FF everywhere that is not art. Never use #FF00FF ins
 ```text
 Create pixel art for a cozy fantasy online game called Lorehallow. Attached is the style reference; match it.
 
-Canvas: square. The art is exactly 16 art pixels wide and 16 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. The art fills the whole canvas edge to edge.
+Canvas: square. The emblem is exactly 16 art pixels wide and 16 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. Draw it in the middle of the canvas, about 30 percent of the canvas width, with very big chunky art pixels: only 16 across; everything around it is background.
 
 The same emblem as the previous image, redrawn by hand for 16×16 art pixels: a round dusk-blue disc with a glowing lantern in front and one leaf. Only the essential shapes; every pixel counts. 1-pixel #1A1420 outline around the disc. The corners outside the disc are background. No letters.
 
@@ -97,7 +97,7 @@ Create pixel art for a cozy fantasy online game called Lorehallow. Attached is t
 
 Canvas: landscape 3:2. The art is exactly 240 art pixels wide and 160 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. The art fills the whole canvas edge to edge.
 
-The key art for the game's website. A lantern-lit fantasy village at the edge of a mossy forest at dusk, seen in top-down 3/4 view. A cobbled path winds from the bottom left toward a small square with a well. Timber-and-stone cottages with warm glowing windows, a tall old tree, fireflies, distant hills under a violet and gold dusk sky in the upper third. Four small adventurers (each about 30 art pixels tall, the same scale as the reference character) are on the path: one waving, one carrying a lantern, one with a shield on their back, one sitting on the well's edge. The feeling: you just arrived and other people are already here. Leave the top-left quarter calm and uncluttered (sky and hills) so a title can sit over it.
+The key art for the game's website. A lantern-lit fantasy village at the edge of a mossy forest at dusk, seen in top-down 3/4 view. A cobbled path winds from the bottom left toward a small square with a well. Timber-and-stone cottages with warm glowing windows, a tall old tree, fireflies, distant hills under a violet and gold dusk sky in the upper third. Four small adventurers (each about 30 art pixels tall, about one fifth of the image height, the same scale as the reference character) are on the path: one waving, one carrying a lantern, one with a shield on their back, one sitting on the well's edge. The feeling: you just arrived and other people are already here. Leave the top-left quarter calm and uncluttered (sky and hills) so a title can sit over it.
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
@@ -189,7 +189,7 @@ Create pixel art for a cozy fantasy online game called Lorehallow. Attached is t
 
 Canvas: landscape 3:2. The art is exactly 192 art pixels wide and 128 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. The art fills the whole canvas edge to edge.
 
-Five adventurers standing side by side on a short strip of grass and dirt along the bottom, facing the viewer, in top-down 3/4 view, each at exactly the same scale as the character in the reference (about 30 art pixels from feet to top of head, 2½ heads tall), all feet on the same row near the bottom. Evenly spaced across the width. From left to right: a knight in slate armor with a banner-red tabard and round shield; a ranger in a moss-green hood with a bow; a scholar-mage in arcane violet robes with a glowing staff; a cheerful bard in amber with a lute; a healer in mist and parchment white with a teal glass lantern. Varied skin tones and hair. Each has a strong, distinct silhouette. Above them is background.
+Five adventurers standing side by side on a short strip of grass and dirt along the bottom, facing the viewer, in top-down 3/4 view, each at exactly the same scale as the character in the reference (about 30 art pixels from feet to top of head, about one quarter of the image height, 2½ heads tall), all feet on the same row near the bottom. Evenly spaced across the width. From left to right: a knight in slate armor with a banner-red tabard and round shield; a ranger in a moss-green hood with a bow; a scholar-mage in arcane violet robes with a glowing staff; a cheerful bard in amber with a lute; a healer in mist and parchment white with a teal glass lantern. Varied skin tones and hair. Each has a strong, distinct silhouette. Above them is background.
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 
@@ -318,7 +318,7 @@ Create pixel art for a cozy fantasy online game called Lorehallow. Attached is t
 
 Canvas: landscape 3:2. The art is exactly 160 art pixels wide and 120 art pixels tall, every art pixel drawn as one solid square block of a single color, all blocks the same size. Center the art; anything outside it is background.
 
-A lost adventurer (same scale and style as the reference character) standing in a misty forest clearing, scratching their head and holding a map upside down, beside a broken wooden signpost whose arrows point in different directions. A curious little fox peeks from behind a mossy rock. Top-down 3/4 view, gentle humor, warm storybook mood. The art fills the whole 160×120 area.
+A lost adventurer (same scale and style as the reference character: about 30 art pixels tall, one quarter of the image height) standing in a misty forest clearing, scratching their head and holding a map upside down, beside a broken wooden signpost whose arrows point in different directions. A curious little fox peeks from behind a mossy rock. Top-down 3/4 view, gentle humor, warm storybook mood. The art fills the whole 160×120 area.
 
 True pixel art: every art pixel is a solid square block of one color, all blocks the same size, aligned to one grid. No anti-aliasing, no gradients, no blur, no texture noise, no dithering, no soft brushes.
 

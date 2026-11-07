@@ -62,7 +62,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 0.1 Owner kickoff
 
 - [x] Write the foundational docs: README.md, AGENTS.md and BUILD.md.
-- [ ] `HUMAN` Choose licenses: one for code (for example MIT or AGPL-3.0) and one for art and written content (for example CC BY-NC 4.0, or all rights reserved).
+- [x] `HUMAN` Choose licenses: one for code (for example MIT or AGPL-3.0) and one for art and written content (for example CC BY-NC 4.0, or all rights reserved).
 - [ ] `HUMAN` Confirm a ChatGPT plan with image generation is available for the art batches.
 - [x] Verify `git push origin main` reaches both GitHub and Codeberg and that both repositories are public.
 
@@ -72,7 +72,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] Create the directory layout from AGENTS.md section 7, each top-level directory with a short README saying what belongs there.
 - [x] Add `.gitignore` covering Go build output, Godot `.godot/` and export output, `node_modules/` and `dist/`, Python `.venv/` and caches, `.env*` (except `.env.example`), and OS cruft.
 - [x] Add `.editorconfig` and `.gitattributes` (LF line endings, images and other binaries marked binary).
-- [ ] Add LICENSE files for the licenses chosen in 0.1 and fill in the license section of README.md.
+- [x] Add LICENSE files for the licenses chosen in 0.1 and fill in the license section of README.md.
 - [x] Add `docs/decisions/0000-template.md` and ADR 0001 recording the stack decisions already in the AGENTS.md decision log.
 
 ### 0.3 Toolchain and command runner

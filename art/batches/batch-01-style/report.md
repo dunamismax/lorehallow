@@ -35,7 +35,7 @@ address the problems above, then regenerate into the same inbox folder.
 
 - Target: art/processed/tiles/terrain_grass_dirt.png
 - Logical size: 4 columns × 4 rows of 32×32 tiles (128×128 total, square)
-- Attach: nothing
+- Attach: art/batches/batch-01-style/guides/terrain_grass_dirt.png (layout guide), then art/style/reference.png
 
 ```text
 Create a pixel-art transition tileset for a cozy fantasy online game called Lorehallow: a patch of packed dirt inside a grass field.
@@ -47,6 +47,10 @@ True pixel art: every art pixel is a solid square block of one color. No anti-al
 Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
+
+Two images are attached. The first is a layout guide in two flat colors: green is where grass goes, brown is where dirt goes. Follow its shapes and positions exactly, tile by tile, but draw real textured ground in place of the flat colors and make the borders organic instead of straight. The second is the style reference: match its grass, ground colors, pixel size and mood.
+
+The 16 tiles form one continuous image. Do not draw any lines, gaps, outlines, shadows or color changes along the tile boundaries; a viewer should not be able to see where one tile ends and the next begins, except where the layout itself changes.
 
 Layout, in reading order:
 - The 3×3 block in the top-left (columns 1 to 3, rows 1 to 3) is one complete dirt patch surrounded by grass when the nine tiles sit together: top-left corner, top edge, top-right corner; left edge, full dirt center, right edge; bottom-left corner, bottom edge, bottom-right corner. Grass is on the outside, dirt on the inside.
@@ -77,7 +81,7 @@ address the problems above, then regenerate into the same inbox folder.
 
 - Target: art/processed/tiles/terrain_grass_stone.png
 - Logical size: 4 columns × 4 rows of 32×32 tiles (128×128 total, square)
-- Attach: nothing
+- Attach: art/batches/batch-01-style/guides/terrain_grass_stone.png (layout guide), then art/style/reference.png
 
 ```text
 Create a pixel-art transition tileset for a cozy fantasy online game called Lorehallow: an area of old grey flagstones inside a grass field, like the floor of a ruin being reclaimed by nature.
@@ -89,6 +93,10 @@ True pixel art: every art pixel is a solid square block of one color. No anti-al
 Palette: use only these 33 colors and no others: #1A1420, #2E2433, #4A3D4D, #615A68, #857882, #A8979A, #3B2A24, #74402E, #965A3A, #C08256, #D4B48A, #B8642A, #E09A3C, #F2C45A, #FBE39B, #1F3326, #2F4F2F, #577139, #7A8E3C, #ABB84E, #1F2A44, #2F4466, #4A6A8F, #7A9CBF, #B4CDE0, #9E5A4F, #CC8A6C, #EFC4A0, #8F2F2F, #C94A3A, #5E4A86, #3F8F86, #F4ECD8.
 
 View and light: top-down 3/4 view of the ground. Light from the top-left. No outlines.
+
+Two images are attached. The first is a layout guide in two flat colors: green is where grass goes, grey is where flagstone goes. Follow its shapes and positions exactly, tile by tile, but draw real textured ground in place of the flat colors and make the borders organic instead of straight. The second is the style reference: match its grass, ground colors, pixel size and mood.
+
+The 16 tiles form one continuous image. Do not draw any lines, gaps, outlines, shadows or color changes along the tile boundaries; a viewer should not be able to see where one tile ends and the next begins, except where the layout itself changes.
 
 Layout, in reading order:
 - The 3×3 block in the top-left (columns 1 to 3, rows 1 to 3) is one complete flagstone area surrounded by grass when the nine tiles sit together: top-left corner, top edge, top-right corner; left edge, full flagstone center, right edge; bottom-left corner, bottom edge, bottom-right corner. Grass is on the outside, flagstones on the inside.

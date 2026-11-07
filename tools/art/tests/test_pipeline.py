@@ -189,3 +189,17 @@ def test_fixed_grid_mode_takes_the_canvas_as_the_layout(rng, palette):
     res = process_image(Image.fromarray(img), asset, palette, grid_mode="fixed")
     assert res.status == "accepted", res.problems
     assert np.array_equal(res.image, expected_rgba(art))
+
+
+def test_tiny_emblem_far_smaller_than_its_canvas(rng, palette):
+    """A 16x16 emblem drawn at ~19 px per art pixel in the middle of a
+    canvas big enough for 64 px blocks."""
+    emblem = random_art(rng, 16, 16, TEST_COLORS)
+    emblem[0, :] = emblem[-1, :] = emblem[:, 0] = emblem[:, -1] = TEST_COLORS[0]
+    canvas = np.zeros((54, 54, 3), dtype=np.uint8)
+    canvas[:] = KEY
+    canvas[19:35, 19:35] = emblem
+    img = render(canvas, 18.96, rng=rng, blur=0.4, noise=2)  # ~1024 px wide
+    res = process_image(Image.fromarray(img), make_asset("web", (16, 16)), palette)
+    assert res.status == "accepted", res.problems
+    assert np.array_equal(res.image, expected_rgba(emblem))

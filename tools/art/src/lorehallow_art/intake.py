@@ -77,6 +77,11 @@ def load_fixes(batch_dir: Path) -> FixFn | None:
     return fn
 
 
+# A drawn sprite usually fills most of its logical frame: the block size is
+# about the content size over the frame size, times this.
+CONTENT_FILL = 1.15
+
+
 def block_hint(img: np.ndarray, asset: Asset) -> float:
     """The expected size of one art pixel, in screen pixels.
 
@@ -84,8 +89,9 @@ def block_hint(img: np.ndarray, asset: Asset) -> float:
     limiting dimension gives an upper bound. Generators often draw a small
     sprite in the middle of a large key-colored canvas; then the drawn
     content, which is at most the logical size, gives a lower bound. When
-    the content is clearly smaller than the canvas, the geometric mean of
-    the two sits close to the truth; otherwise the upper bound does.
+    the content is clearly smaller than the canvas, the truth sits just
+    above the lower bound (sprites leave a little of their frame empty);
+    otherwise the upper bound is the better guess.
     """
     h, w = img.shape[:2]
     upper = min(w / asset.size[0], h / asset.size[1])
@@ -103,7 +109,7 @@ def block_hint(img: np.ndarray, asset: Asset) -> float:
     lower = max((x1 - x0) / asset.size[0], (y1 - y0) / asset.size[1])
     if lower >= upper * 0.6:
         return upper
-    return float(np.sqrt(lower * upper))
+    return float(min(upper, lower * CONTENT_FILL))
 
 
 # Art pixels are square: axes whose periods differ by more than this are

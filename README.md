@@ -131,4 +131,14 @@ This is a personal learning project, so outside code contributions are not being
 
 ## License
 
-To be decided in Phase 0. Until a license is added, all rights are reserved.
+Lorehallow uses two licenses, one for code and one for art and writing.
+
+**Code: [GNU Affero General Public License v3.0](LICENSE)** (AGPL-3.0-only). Anyone can study, change and fork it. If you run a modified version of the server for other people to play on, you must publish your changes under the same license. This covers the game client, the server, the protocol, tools, scripts, build and deploy files, and the website's code.
+
+**Art and writing: [Creative Commons Attribution-NonCommercial 4.0](LICENSE-ART)** (CC BY-NC 4.0). You can share and remix it with credit, but not sell it. This covers:
+
+- everything in `art/`, and the synced copies in `client/assets/art/` and `web/src/assets/art/`
+- the game's written content in `content/`: lore, quest and dialogue text, item, creature and place names and descriptions
+- the devlog (`docs/devlog-drafts/` and the website's devlog posts)
+
+Credit it as "Lorehallow (lorehallow.com)" with a link to this repository. Game data in `content/` that isn't prose (map layouts, numbers, IDs) is part of the code and under the AGPL. Releases of the game bundle both, so a build is free to share but its art and writing can't be sold.

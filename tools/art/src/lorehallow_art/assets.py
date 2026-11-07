@@ -5,6 +5,7 @@
 - art/batches/<batch>/prompts.md from prompts.template.md, with the
   palette and key color filled in, so every prompt always carries the
   current palette.
+- art/batches/<batch>/guides/<asset>.png layout guides (guides.py).
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import numpy as np
 from PIL import Image
 
 from .color import rgb_to_hex, srgb_to_oklab
+from .guides import guide_outputs
 from .palette import Palette
 
 SWATCH = 16
@@ -97,15 +99,20 @@ def prompt_outputs(root: Path) -> dict[Path, bytes]:
     return out
 
 
+def generated_outputs(root: Path) -> dict[Path, bytes]:
+    return {**palette_outputs(root), **prompt_outputs(root), **guide_outputs(root)}
+
+
 def write_generated(root: Path) -> list[Path]:
     written = []
-    for path, data in {**palette_outputs(root), **prompt_outputs(root)}.items():
+    for path, data in generated_outputs(root).items():
         if not path.exists() or path.read_bytes() != data:
+            path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
             written.append(path)
     return written
 
 
 def stale_generated(root: Path) -> list[Path]:
-    files = {**palette_outputs(root), **prompt_outputs(root)}
+    files = generated_outputs(root)
     return [p for p, data in files.items() if not p.exists() or p.read_bytes() != data]

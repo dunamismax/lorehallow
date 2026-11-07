@@ -28,6 +28,7 @@ Manifest shape::
         palette: art/style/palette.hex # optional per-asset override
         key_color: "#FF00FF"           # optional per-asset override
         prompt: 03-01                  # optional: prompts.md section for this asset
+        guide: {outer: "#7a8e3c", inner: "#965a3a"}  # optional: transition layout guide
         notes: free text
 
 Map shape::
@@ -95,6 +96,7 @@ class Asset:
     key_tolerance: float = DEFAULT_TOLERANCE
     prompt: str | None = None
     notes: str = ""
+    guide: tuple[str, str] | None = None  # (outer, inner) colors, see guides.py
 
     def frame_names(self) -> list[str]:
         """Names of each frame (or tile) in reading order."""
@@ -159,7 +161,7 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
 
     known = {
         "id", "target", "kind", "size", "grid", "frames", "pivot", "downsample",
-        "key_tolerance", "palette", "key_color", "prompt", "notes",
+        "key_tolerance", "palette", "key_color", "prompt", "notes", "guide",
     }  # fmt: skip
     unknown = set(raw) - known
     if unknown:
@@ -241,6 +243,18 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
         key = hex_to_rgb(str(raw.get("key_color", defaults["key_color"])))
     except ValueError as e:
         raise err(str(e)) from e
+    guide = None
+    if "guide" in raw:
+        g = raw["guide"]
+        if not (isinstance(g, dict) and set(g) == {"outer", "inner"}):
+            raise err("guide must be {outer: '#rrggbb', inner: '#rrggbb'}")
+        try:
+            hex_to_rgb(str(g["outer"])), hex_to_rgb(str(g["inner"]))
+        except ValueError as e:
+            raise err(f"guide: {e}") from e
+        if not grid:
+            raise err("guide needs a grid")
+        guide = (str(g["outer"]), str(g["inner"]))
     return Asset(
         id=aid,
         target=target,
@@ -250,6 +264,7 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
         key_color=key,
         grid=grid,
         frames=frames,
+        guide=guide,
         pivot=pivot,
         downsample=downsample,
         key_tolerance=float(tol),
