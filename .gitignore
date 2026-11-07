@@ -54,3 +54,4 @@ __pycache__/
 /client/addons/godobuf/
 # Build info written by `make client` / exports
 /client/override.cfg
+deploy/host.env

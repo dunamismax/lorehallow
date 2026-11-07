@@ -1,0 +1,91 @@
+# Caddy configuration for lorehallow.com (BUILD.md 1.1, 1.7, 2.9).
+# Installed to /etc/caddy/Caddyfile by deploy/bootstrap/host.sh. Caddy
+# gets and renews the certificates itself (automatic HTTPS) and redirects
+# HTTP to HTTPS.
+#
+# Check before reloading:  caddy validate --config /etc/caddy/Caddyfile
+# Reload:                  sudo systemctl reload caddy
+
+{
+	# The owner's address for the ACME account (certificate expiry notices).
+	# Filled in by host.sh from LOREHALLOW_ACME_EMAIL.
+	email {$LOREHALLOW_ACME_EMAIL}
+	servers {
+		# Game WebSockets carry a heartbeat every 2 s, well inside Caddy's
+		# default idle read and write timeouts (1m). The game server runs its
+		# own heartbeats and evictions; Caddy only bounds slow headers.
+		timeouts {
+			read_header 10s
+			idle 2m
+		}
+	}
+}
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+		X-Frame-Options "DENY"
+		-Server
+	}
+}
+
+www.lorehallow.com {
+	import security_headers
+	redir https://lorehallow.com{uri} permanent
+}
+
+lorehallow.com {
+	import security_headers
+	encode zstd gzip
+
+	# No third-party anything: everything is served from here.
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self' wss://play.lorehallow.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+	# Public game-server status (BUILD.md 2.9), proxied to the game server
+	# on loopback. The server caches it briefly.
+	handle /api/status {
+		reverse_proxy 127.0.0.1:7420
+	}
+
+	# The static website (BUILD.md 1.2, 1.9): /srv/lorehallow/web/current.
+	handle {
+		root * /srv/lorehallow/web/current
+		# Fingerprinted build assets never change: cache them for a year.
+		@immutable path /_astro/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	handle_errors {
+		root * /srv/lorehallow/web/current
+		rewrite * /404.html
+		file_server
+	}
+}
+
+play.lorehallow.com {
+	import security_headers
+
+	# Game WebSocket traffic only. Caddy proxies the upgrade and passes the
+	# client address in X-Forwarded-For (the server trusts it only from
+	# loopback: LOREHALLOW_TRUST_PROXY=true).
+	handle /ws {
+		reverse_proxy 127.0.0.1:7420 {
+			# Don't buffer: snapshots must leave as soon as they're written.
+			flush_interval -1
+			# A config reload would otherwise close every open WebSocket:
+			# keep them up to 5 minutes (players reconnect by then anyway
+			# if the game server itself restarts).
+			stream_close_delay 5m
+		}
+	}
+	handle /healthz {
+		reverse_proxy 127.0.0.1:7420
+	}
+	handle {
+		respond "Lorehallow game server. Play with the client from https://lorehallow.com/downloads" 404
+	}
+}
