@@ -86,4 +86,7 @@ jobs:
           # Tailscale SSH authenticates the runner by its tailnet identity;
           # the host key is new on every run.
           printf 'Host *\n  StrictHostKeyChecking accept-new\n' >> ~/.ssh/config
-          make deploy-web
+          # The runner's DNS doesn't know short tailnet names; ask Tailscale.
+          user="${LOREHALLOW_DEPLOY_HOST%@*}"; host="${LOREHALLOW_DEPLOY_HOST#*@}"
+          if [[ "$host" != *.* ]]; then host="$(tailscale ip -4 "$host")"; fi
+          LOREHALLOW_DEPLOY_HOST="$user@$host" make deploy-web
