@@ -18,23 +18,12 @@ from PIL import Image
 
 from .color import rgb_to_hex, srgb_to_oklab
 from .guides import guide_outputs
-from .palette import Palette
+from .palette import Palette, palette_names
 
 SWATCH = 16
 PER_ROW = 8
 KEY_HEX = "#FF00FF"
 MIN_KEY_DISTANCE = 0.25
-
-
-def palette_names(text: str) -> list[str]:
-    """The comment after each color line (up to a colon) is its name."""
-    names = []
-    for raw in text.splitlines():
-        line, _, comment = raw.partition(";")
-        line = line.strip()
-        if line and not line.startswith("//"):
-            names.append(comment.strip().split(":")[0] or line.lstrip("#").upper())
-    return names
 
 
 def swatch_image(palette: Palette) -> Image.Image:

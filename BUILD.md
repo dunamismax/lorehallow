@@ -169,9 +169,9 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-drawn-pixel-art.md)). Build the tools, then redraw the Phase 0 art that isn't a large painted image.
 
 - [x] `ADR` Hand-drawn pixel art by agents is the default; image generation only for large painted web images.
-- [ ] `art/src/` sources and `make art-draw BATCH=<id>`: `.pxl.yaml` pixel grids (legend by palette name, one grid per frame) and `.py` draw scripts, rendered deterministically into `art/processed/` via a `source:` manifest field, with intake's checks (size, palette, frames, baseline, pivot) and a 4x and 8x contact sheet per batch.
-- [ ] Drawing helpers in `tools/art` for draw scripts: palette by name, seeded random, pixel, line, rect and ellipse, 1 px outline, mirror, wrap-around drawing for seamless tiles, stamping `.pxl` parts, and compositing finished assets.
-- [ ] `make check` fails when a processed file no longer matches its hand-drawn source, and when a source uses an unknown color name or the wrong size.
+- [x] `art/src/` sources and `make art-draw BATCH=<id>`: `.pxl.yaml` pixel grids (legend by palette name, one grid per frame) and `.py` draw scripts, rendered deterministically into `art/processed/` via a `source:` manifest field, with intake's checks (size, palette, frames, baseline, pivot) and a 4x and 8x contact sheet per batch.
+- [x] Drawing helpers in `tools/art` for draw scripts: palette by name, seeded random, pixel, line, rect and ellipse, 1 px outline, mirror, wrap-around drawing for seamless tiles, stamping `.pxl` parts, and compositing finished assets.
+- [x] `make check` fails when a processed file no longer matches its hand-drawn source, and when a source uses an unknown color name or the wrong size.
 - [ ] Redraw the base terrain tileset (16 tiles): every tile seamless with itself and its variants, low contrast, checked repeated 3×3.
 - [ ] Redraw the grass-to-dirt and grass-to-flagstone transition sets so every edge and center tile self-tiles and the 3×3 patch closes.
 - [ ] Redraw the concept hero (32×48, feet on row 45, 28 to 32 px tall to the top of the head).

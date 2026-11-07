@@ -29,6 +29,8 @@ Manifest shape::
         key_color: "#FF00FF"           # optional per-asset override
         prompt: 03-01                  # optional: prompts.md section for this asset
         guide: {outer: "#7a8e3c", inner: "#965a3a"}  # optional: transition layout guide
+        source: chars/player_base.py   # hand-drawn source under art/src/ (.pxl.yaml or .py);
+                                       # rendered by `make art-draw`, skipped by intake
         notes: free text
 
 Map shape::
@@ -55,6 +57,7 @@ from .color import RGB, hex_to_rgb
 KINDS = ("tile", "tileset", "sprite", "sheet", "ui", "web")
 GRID_KINDS = ("tileset", "sheet")
 ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+SOURCE_RE = re.compile(r"^[a-z]+/[a-z0-9_]+\.(pxl\.yaml|py)$")
 TARGET_RE = re.compile(r"^(tiles|chars|mobs|npcs|items|ui|vfx|icons|web|style)/[a-z0-9_]+\.png$")
 DEFAULT_KEY = "#FF00FF"
 DEFAULT_PALETTE = "art/style/palette.hex"
@@ -97,6 +100,7 @@ class Asset:
     prompt: str | None = None
     notes: str = ""
     guide: tuple[str, str] | None = None  # (outer, inner) colors, see guides.py
+    source: str | None = None  # hand-drawn source, relative to art/src/
 
     def frame_names(self) -> list[str]:
         """Names of each frame (or tile) in reading order."""
@@ -161,7 +165,7 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
 
     known = {
         "id", "target", "kind", "size", "grid", "frames", "pivot", "downsample",
-        "key_tolerance", "palette", "key_color", "prompt", "notes", "guide",
+        "key_tolerance", "palette", "key_color", "prompt", "notes", "guide", "source",
     }  # fmt: skip
     unknown = set(raw) - known
     if unknown:
@@ -255,8 +259,12 @@ def _parse_asset(raw: dict[str, Any], defaults: dict[str, Any]) -> Asset:
         if not grid:
             raise err("guide needs a grid")
         guide = (str(g["outer"]), str(g["inner"]))
+    source = raw.get("source")
+    if source is not None and not (isinstance(source, str) and SOURCE_RE.match(source)):
+        raise err(f"source must look like <category>/<snake_case>.pxl.yaml or .py, got {source!r}")
     return Asset(
         id=aid,
+        source=source,
         target=target,
         kind=kind,
         size=size,
@@ -332,6 +340,10 @@ def parse_map(data: Any, manifest: Manifest) -> InboxMap:
             raise ManifestError(f"map.yaml: entry for {file!r} must be an asset id or a mapping")
         if asset not in ids:
             raise ManifestError(f"map.yaml: {file!r} maps to unknown asset {asset!r}")
+        if manifest.asset(asset).source:
+            raise ManifestError(
+                f"map.yaml: {file!r} maps to {asset!r}, which is hand-drawn (it has a source)"
+            )
         entries.append(MapEntry(file=str(file), asset=asset, crop=crop, grid=grid))  # type: ignore[arg-type]
     return InboxMap(tuple(entries))
 

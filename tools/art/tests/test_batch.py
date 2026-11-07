@@ -92,11 +92,11 @@ def test_run_batch_writes_outputs_sidecar_and_report(tmp_path, rng):
         and sidecar["batch"] == "07"
     )
 
-    report = (root / "art/batches/batch-07-test/report.md").read_text()
+    report = (root / "art/batches/batch-07-test/intake-report.md").read_text()
     assert "| `rock` | accepted |" in report
     assert "`never_made` (missing)" in report
     assert "stray.png" in report
-    preview = Image.open(root / "art/batches/batch-07-test/preview.png")
+    preview = Image.open(root / "art/batches/batch-07-test/intake-preview.png")
     assert preview.width >= 16 * 4
 
 
@@ -107,8 +107,8 @@ def test_rerun_is_byte_identical(tmp_path, rng):
         "art/processed/tiles/rock.png",
         "art/processed/chars/walker.png",
         "art/processed/chars/walker.json",
-        "art/batches/batch-07-test/report.md",
-        "art/batches/batch-07-test/preview.png",
+        "art/batches/batch-07-test/intake-report.md",
+        "art/batches/batch-07-test/intake-preview.png",
     ]
     first = {p: (root / p).read_bytes() for p in paths}
     run_batch(root, "07")
@@ -131,7 +131,7 @@ def test_fix_script_is_applied_and_reported(tmp_path, rng):
     result = run_batch(root, "07")
     rock = next(r for r in result.results if r.asset.id == "rock")
     assert rock.status == "fixed"
-    assert "| `rock` | fixed |" in (root / "art/batches/batch-07-test/report.md").read_text()
+    assert "| `rock` | fixed |" in (root / "art/batches/batch-07-test/intake-report.md").read_text()
 
 
 def test_misaligned_sheet_gets_corrected_prompt(tmp_path, rng):
@@ -147,7 +147,7 @@ def test_misaligned_sheet_gets_corrected_prompt(tmp_path, rng):
     walker = next(r for r in result.results if r.asset.id == "walker")
     assert walker.status == "regenerate"
     assert not (root / "art/processed/chars/walker.png").exists()
-    report = (root / "art/batches/batch-07-test/report.md").read_text()
+    report = (root / "art/batches/batch-07-test/intake-report.md").read_text()
     assert "lowest foot pixel sits on exactly the same row (10 of 12)" in report
 
 

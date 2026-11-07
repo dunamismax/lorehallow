@@ -93,3 +93,21 @@ def frame_records(frames: list[Frame], asset: Asset) -> list[dict[str, object]]:
         {"index": f.index, "name": f.name, "x": f.x, "y": f.y, "w": f.w, "h": f.h}
         for f in frames[:expected]
     ]
+
+
+def sidecar(asset: Asset, rgba: np.ndarray, source: str, batch: str) -> dict[str, object]:
+    """The sidecar JSON written next to a processed tileset or sheet."""
+    assert asset.grid is not None
+    return {
+        "id": asset.id,
+        "kind": asset.kind,
+        "size": list(asset.size),
+        "frame_size": list(asset.grid.cell),
+        "columns": asset.grid.columns,
+        "rows": asset.grid.rows,
+        "frames": frame_records(slice_frames(rgba, asset), asset),
+        "pivot": list(asset.pivot) if asset.pivot else None,
+        "baseline": asset.frames.baseline if asset.frames else None,
+        "source": source,
+        "batch": batch,
+    }

@@ -147,6 +147,10 @@ art-lint: ## ruff check, format check and art manifest validation
 art-test: ## pytest for tools/art
 	cd $(ROOT)/tools/art && uv run --frozen pytest -q
 
+.PHONY: art-draw
+art-draw: ## Render hand-drawn art from art/src: make art-draw [BATCH=01] [REVIEW=dir]
+	cd $(ROOT)/tools/art && uv run --frozen lorehallow-art draw --root $(ROOT) $(if $(BATCH),--batch $(BATCH)) $(if $(REVIEW),--review $(abspath $(REVIEW)))
+
 .PHONY: art-intake
 art-intake: ## Process one art batch: make art-intake BATCH=01
 	@if [ -z "$(BATCH)" ]; then echo "usage: make art-intake BATCH=01"; exit 2; fi
