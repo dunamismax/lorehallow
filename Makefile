@@ -216,6 +216,14 @@ sync: ## Mirror art/processed into client/ and web/, and content/ into client/as
 
 # --- Website and BUILD.md ----------------------------------------------------------
 
+.PHONY: web-dev
+web-dev: ## Preview lorehallow.com at http://127.0.0.1:4321 with drafts, rebuilt on change
+	cd $(ROOT)/web && go run ./cmd/lorehallow-web serve -addr $(or $(WEB_ADDR),127.0.0.1:4321)
+
+.PHONY: web-build
+web-build: ## Build lorehallow.com into web/dist/ (no drafts)
+	cd $(ROOT)/web && go run ./cmd/lorehallow-web build
+
 .PHONY: web-lint
 web-lint: ## Website (Go): gofmt check, go vet, golangci-lint and govulncheck
 	@cd $(ROOT)/web && out="$$(gofmt -l .)" && if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi

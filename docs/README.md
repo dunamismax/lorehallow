@@ -8,6 +8,5 @@
 | `ops/` | Runbooks, backups and incident notes. |
 | `perf/` | Performance measurements. |
 | `releases/` | Release notes, `vX.Y.Z.md`. |
-| `devlog-drafts/` | Devlog drafts for the owner to edit and publish (until the website exists). |
 
 Plain language, short sentences. Docs explain; the landing page sells.

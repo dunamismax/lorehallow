@@ -1,0 +1,76 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.FullTitle}}</title>
+<meta name="description" content="{{.Description}}">
+<link rel="canonical" href="{{.Canonical}}">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="{{.Site.Theme.Hex "ink"}}">
+<link rel="preload" href="{{index .Site.Fonts "pixel"}}" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="{{index .Site.Fonts "regular"}}" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="{{.Site.CSS}}">
+<link rel="icon" href="{{index .Site.Icons "32"}}" sizes="32x32" type="image/png">
+<link rel="icon" href="{{index .Site.Icons "16"}}" sizes="16x16" type="image/png">
+<link rel="icon" href="{{index .Site.Icons "192"}}" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="{{index .Site.Icons "180"}}">
+<link rel="alternate" type="application/rss+xml" title="Lorehallow devlog (RSS)" href="/devlog/rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Lorehallow devlog (Atom)" href="/devlog/atom.xml">
+<meta property="og:site_name" content="Lorehallow">
+<meta property="og:type" content="{{.Type}}">
+<meta property="og:title" content="{{if .Title}}{{.Title}}{{else}}Lorehallow{{end}}">
+<meta property="og:description" content="{{.Description}}">
+<meta property="og:url" content="{{.Canonical}}">
+<meta property="og:image" content="{{.OG}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{.OGAlt}}">
+{{if not .Published.IsZero}}<meta property="article:published_time" content="{{isodate .Published}}">
+{{end}}<meta name="twitter:card" content="summary_large_image">
+<meta name="generator" content="lorehallow-web {{.Site.CommitShort}}">
+</head>
+<body class="page-{{if .Section}}{{.Section}}{{else}}plain{{end}}">
+<a class="skip" href="#main">Skip to content</a>
+{{if .Site.Drafts}}<p class="draft-banner">Local preview: draft posts are shown. <code>make web-build</code> leaves them out.</p>{{end}}
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="/" aria-label="Lorehallow home">{{img "icons/emblem.png" "decorative" "k=2" "eager"}}<span>Lorehallow</span></a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        {{- range .Site.Nav}}
+        <li><a href="{{.URL}}"{{if eq .Section $.Section}} aria-current="page"{{end}}>{{.Name}}</a></li>
+        {{- end}}
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main">
+{{template "content" .}}
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      {{img "icons/emblem.png" "decorative" "k=2"}}
+      <p><strong>Lorehallow</strong> is a small pixel-art MMO about a shared world, built in the open.</p>
+    </div>
+    <nav aria-label="Elsewhere" class="footer-links">
+      <ul>
+        <li><a href="{{.Site.RepoURL}}">Source on GitHub</a></li>
+        <li><a href="{{.Site.CodebergURL}}">Mirror on Codeberg</a></li>
+        <li><a href="{{.Site.BuildMDURL}}">The build plan</a></li>
+        <li><a href="/devlog/rss.xml">RSS feed</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+      </ul>
+      <ul>
+        <li><a href="{{.Site.RepoURL}}/blob/main/LICENSE">Code: AGPL-3.0</a></li>
+        <li><a href="{{.Site.RepoURL}}/blob/main/LICENSE-ART">Art and writing: CC BY-NC 4.0</a></li>
+        <li><a href="/about/#how-its-made">How it's made</a></li>
+      </ul>
+    </nav>
+    <p class="footer-note">No trackers, no cookies, no scripts. Built from <a href="{{.Site.RepoURL}}/commit/{{.Site.Commit}}"><code>{{.Site.CommitShort}}</code></a> on {{date .Site.Built}}.</p>
+  </div>
+</footer>
+</body>
+</html>
+{{end}}

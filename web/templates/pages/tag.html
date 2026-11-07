@@ -1,0 +1,12 @@
+{{define "content"}}
+<section class="page-head">
+  <div class="wrap">
+    <p class="crumbs"><a href="/devlog/">Devlog</a> / Tags</p>
+    <h1>#{{.Data.Tag}}</h1>
+  </div>
+</section>
+<div class="wrap content">
+  <div class="post-list post-list-3">{{range .Data.Posts}}{{template "postcard" .}}{{end}}</div>
+  <p><a href="/devlog/">All posts</a></p>
+</div>
+{{end}}

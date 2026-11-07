@@ -1,0 +1,59 @@
+{{define "content"}}
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="kicker">Builds</p>
+      <h1>Downloads</h1>
+      <p class="lede">{{if .Site.Releases}}Builds of the Lorehallow client for Windows, macOS and Linux.{{else}}There's nothing to download yet. The first playable build ships with Phase 2, when two players can walk around the same small world. <a href="/progress/">Follow the progress</a> to see how close it is.{{end}}</p>
+    </div>
+    {{img "icons/section_icons.png#downloads" "decorative" "k=4"}}
+  </div>
+</section>
+<div class="wrap content">
+  <ul class="platforms">
+    {{- range .Site.PlatformList}}
+    {{$name := "Linux"}}{{if eq . "windows"}}{{$name = "Windows"}}{{else if eq . "macos"}}{{$name = "macOS"}}{{end}}
+    {{with $.Site.Latest .}}
+    <li class="platform">
+      <h2>{{$name}}</h2>
+      <p class="status">{{.Release.Version}} · {{.Release.Channel}}</p>
+      <p>Released {{.Release.Date}}. {{human .File.Size}}.{{with .Release.Notes}} <a href="{{.}}">Release notes</a>.{{end}}</p>
+      <p><a class="button" href="{{.File.URL}}">Download for {{$name}}</a></p>
+      <p class="sha">SHA-256 {{.File.SHA256}}</p>
+    </li>
+    {{else}}
+    <li class="platform unavailable">
+      <h2>{{$name}}</h2>
+      <p class="status">Not available yet</p>
+      <p>No {{$name}} build exists yet. <a href="/progress/">Follow the progress</a>.</p>
+    </li>
+    {{end}}
+    {{- end}}
+  </ul>
+  {{if .Site.Releases}}
+  <div class="prose">
+    <h2 id="requirements">System requirements</h2>
+    <ul class="stack-list">
+      <li>Windows 10 or later, 64-bit; macOS 12 or later (Apple silicon or Intel); or a 64-bit Linux desktop with OpenGL 3.3.</li>
+      <li>Any graphics card from the last ten years. Lorehallow is 2D pixel art and runs on integrated graphics.</li>
+      <li>An internet connection: the world lives on the server.</li>
+    </ul>
+    <h2 id="verify">Verify your download</h2>
+    <p>Each file's SHA-256 checksum is listed with it. Compare it with the file you downloaded:</p>
+    <ul class="stack-list">
+      <li>Windows (PowerShell): <code>Get-FileHash .\file.zip -Algorithm SHA256</code></li>
+      <li>macOS: <code>shasum -a 256 file.zip</code></li>
+      <li>Linux: <code>sha256sum file.tar.gz</code></li>
+    </ul>
+    <h2 id="history">All releases</h2>
+    <ul class="stack-list">{{range .Site.Releases}}<li>{{.Version}} ({{.Channel}}), {{.Date}}{{with .Notes}}: <a href="{{.}}">notes</a>{{end}}</li>{{end}}</ul>
+  </div>
+  {{else}}
+  <div class="prose">
+    <h2 id="when">When will there be something?</h2>
+    <p>Phase 2 of <a href="{{.Site.BuildMDURL}}">the plan</a> ends with the first build anyone can download: two players in one small world, moving around and seeing each other. After that, every phase ships a new version here. Pre-1.0 versions are numbered after their phase, so Phase 2 is v0.2.0.</p>
+    <p>Builds will be free, for Windows, macOS and Linux, with a checksum for every file. A browser version comes later, in Phase 15.</p>
+  </div>
+  {{end}}
+</div>
+{{end}}

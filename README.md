@@ -5,7 +5,7 @@
 Lorehallow draws on the early days of World of Warcraft: a persistent world, zones, quests, grouping, and the sense that the world goes on without you. It is drawn in a warm, readable, top-down pixel-art style: mossy forests, lantern-lit towns and old stone ruins.
 
 [![CI](https://github.com/dunamismax/lorehallow/actions/workflows/ci.yml/badge.svg)](https://github.com/dunamismax/lorehallow/actions/workflows/ci.yml)
-<!-- Phase 1 adds a live progress badge here: https://lorehallow.com/progress.svg -->
+[![Lorehallow progress](https://lorehallow.com/progress.svg)](https://lorehallow.com/progress/)
 
 | | |
 |---|---|
@@ -151,6 +151,6 @@ Lorehallow uses two licenses, one for code and one for art and writing.
 
 - everything in `art/`, and the synced copies in `client/assets/art/` and `web/assets/art/`
 - the game's written content in `content/`: lore, quest and dialogue text, item, creature and place names and descriptions
-- the devlog (`docs/devlog-drafts/` and the website's devlog posts)
+- the devlog (the website's posts in `web/content/devlog/`)
 
 Credit it as "Lorehallow (lorehallow.com)" with a link to this repository. Game data in `content/` that isn't prose (map layouts, numbers, IDs) is part of the code and under the AGPL. Releases of the game bundle both, so a build is free to share but its art and writing can't be sold.

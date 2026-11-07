@@ -5,6 +5,11 @@ go 1.27.3
 tool golang.org/x/vuln/cmd/govulncheck
 
 require (
+	github.com/yuin/goldmark/v2 v2.1.15
+	golang.org/x/net v0.62.0
+)
+
+require (
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect

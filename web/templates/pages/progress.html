@@ -1,0 +1,80 @@
+{{define "content"}}{{$pr := .Site.Progress}}
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="kicker">Live from BUILD.md</p>
+      <h1>The road to 1.0</h1>
+      <p class="lede">Every step from an empty repository to launch is a checkbox in <a href="{{.Site.BuildMDURL}}">BUILD.md</a>. This page is rebuilt from it on every push, so it's never more than a few minutes behind.</p>
+    </div>
+    {{img "icons/section_icons.png#progress" "decorative" "k=4"}}
+  </div>
+</section>
+
+<div class="wrap content">
+  {{template "xpbar" (dict "Done" $pr.Done "Total" $pr.Total "Percent" $pr.Percent "Label" "Overall progress" "Big" true)}}
+  {{with $pr.Current}}<p>Now on <a href="{{.URL}}">Phase {{.Number}}: {{.Title}}</a>, {{.Done}} of {{.Total}} steps done. {{.Meta.Goal}}</p>{{end}}
+
+  <h2 id="map">The quest map</h2>
+  <ul class="legend" aria-label="Map key">
+    <li>Lit: finished</li><li>Gold border: you are here</li><li>Dimmed, dashed: still ahead</li>
+  </ul>
+  <nav class="quest-map" aria-label="Phases">
+    <ol>
+      {{- range $i, $p := $pr.Phases}}
+      <li class="qm-{{$i}} is-{{$p.State}}">
+        <a class="qm-node" href="{{$p.URL}}"{{if eq $p.State "current"}} aria-current="step"{{end}}>
+          <span class="qm-art">{{if eq $p.State "current"}}<span class="you-are-here">You are here</span>{{end}}{{img (printf "web/progress_landmarks.png#%s" $p.Landmark) "decorative" "k=2"}}</span>
+          <span class="qm-plaque">
+            <span class="pixel">Phase {{$p.Number}}{{if eq $p.State "current"}}<span class="qm-here"> · You are here</span>{{end}}</span>
+            <span class="qm-title">{{$p.Title}}</span>
+            <span class="qm-count">{{if eq $p.State "done"}}Complete{{else}}{{$p.Done}} of {{$p.Total}} done{{end}}{{with $p.Version}} · {{.}}{{end}}</span>
+          </span>
+        </a>
+      </li>
+      {{- end}}
+    </ol>
+  </nav>
+
+  <div class="two-col">
+    <section aria-labelledby="feed">
+      <h2 id="feed">Quests complete</h2>
+      {{with firstAch 12 $pr.Achievements}}
+      <ol class="feed">
+        {{- range .}}
+        <li>
+          <span class="meta"><time datetime="{{isodate .Date}}">{{date .Date}}</time>{{with .Phase}} · <a href="{{.URL}}">Phase {{.Number}}</a>{{end}} · <a href="{{.URL}}" aria-label="Commit {{.Commit}}"><code>{{.Commit}}</code></a></span>
+          {{.HTML}}
+        </li>
+        {{- end}}
+      </ol>
+      {{else}}
+      <p class="empty">No history to show in this build.</p>
+      {{end}}
+    </section>
+    <aside aria-labelledby="waiting">
+      <h2 id="waiting">Waiting on the owner</h2>
+      {{with $pr.Waiting}}
+      <div class="waiting">
+        <p>Steps in the current phase that need a person: money, accounts, credentials, approvals or a playtest. Everything else carries on around them.</p>
+        <ul>{{range .}}<li>{{.HTML}}</li>{{end}}</ul>
+      </div>
+      {{else}}
+      <p class="empty">Nothing. The current phase isn't waiting on anyone.</p>
+      {{end}}
+      <h2 id="data">Data</h2>
+      <p><a href="/progress.json">progress.json</a> has these numbers for scripts, and there's a badge for READMEs:</p>
+      <p><img src="/progress.svg" alt="Lorehallow progress badge" width="{{.Data}}" height="20"></p>
+    </aside>
+  </div>
+
+  <h2 id="phases">Every phase</h2>
+  <table class="phase-table">
+    <thead><tr><th scope="col">Phase</th><th scope="col">Ships</th><th scope="col">Progress</th></tr></thead>
+    <tbody>
+      {{- range $pr.Phases}}
+      <tr><td><a href="{{.URL}}">{{.Number}}. {{.Title}}</a></td><td>{{if .Version}}{{.Version}}{{else}}·{{end}}</td><td class="num">{{.Done}} / {{.Total}}{{if eq .State "done"}} ✓{{end}}</td></tr>
+      {{- end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

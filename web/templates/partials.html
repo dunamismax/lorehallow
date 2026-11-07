@@ -1,0 +1,36 @@
+{{/* Shared pieces. */}}
+
+{{define "xpbar"}}{{/* dict "Done" "Total" "Percent" "Label" "Big" */}}
+<div class="xp{{if .Big}} xp-big{{end}}">
+  <div class="xp-label"><span>{{.Label}}</span><span class="xp-num">{{.Done}} / {{.Total}} · {{.Percent}}%</span></div>
+  <div class="xp-track" role="progressbar" aria-label="{{.Label}}" aria-valuemin="0" aria-valuemax="{{.Total}}" aria-valuenow="{{.Done}}" aria-valuetext="{{.Done}} of {{.Total}} done, {{.Percent}} percent">
+    <span class="xp-fill xp-{{.Percent}}"></span>
+  </div>
+</div>
+{{end}}
+
+{{define "postcard"}}
+<article class="post-card">
+  {{if .Cover}}<a href="{{.URL}}" class="post-card-art" tabindex="-1" aria-hidden="true">{{img .Cover "decorative" "k=1"}}</a>{{end}}
+  <div class="post-card-body">
+    <p class="meta"><time datetime="{{isodate .Date}}">{{date .Date}}</time> · {{.Minutes}} min read{{if .Draft}} · <span class="badge badge-draft">Draft</span>{{end}}</p>
+    <h3><a href="{{.URL}}">{{.Title}}</a></h3>
+    <p>{{.Summary}}</p>
+    {{if .Tags}}<ul class="tags" aria-label="Tags">{{range .Tags}}<li><a href="/devlog/tags/{{.}}/">#{{.}}</a></li>{{end}}</ul>{{end}}
+  </div>
+</article>
+{{end}}
+
+{{define "tagbadge"}}{{if eq . "HUMAN"}}<span class="badge badge-human" title="Needs the owner: money, accounts, approvals, playtests">Owner</span>{{else if eq . "ADR"}}<span class="badge badge-adr" title="A decision recorded in docs/decisions/">Decision</span>{{end}}{{end}}
+
+{{define "checkmark"}}{{if .}}<span class="check check-done" aria-label="Done"></span>{{else}}<span class="check" aria-label="Not done yet"></span>{{end}}{{end}}
+
+{{define "sectionhead"}}{{/* dict "Icon" "Title" "ID" "Kicker" */}}
+<div class="section-head">
+  {{img (printf "icons/section_icons.png#%s" .Icon) "decorative" "k=3"}}
+  <div>
+    {{if .Kicker}}<p class="kicker">{{.Kicker}}</p>{{end}}
+    <h2 id="{{.ID}}">{{.Title}}</h2>
+  </div>
+</div>
+{{end}}

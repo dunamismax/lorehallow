@@ -1,0 +1,36 @@
+{{define "content"}}{{$p := .Data}}
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="crumbs"><a href="/progress/">Progress</a> / Phase {{$p.Number}}</p>
+      <h1>Phase {{$p.Number}}: {{$p.Title}}</h1>
+      <p class="lede">{{md (index $p.Meta "Goal")}}</p>
+    </div>
+    {{img (printf "web/progress_landmarks.png#%s" $p.Landmark) "decorative" "k=4" "eager"}}
+  </div>
+</section>
+<div class="wrap content">
+  {{template "xpbar" (dict "Done" $p.Done "Total" $p.Total "Percent" $p.Percent "Label" (printf "Phase %d" $p.Number) "Big" true)}}
+  <p>{{if eq $p.State "done"}}This phase is complete.{{else if eq $p.State "current"}}<strong>You are here.</strong> This is the phase being built now.{{else}}This phase is still ahead.{{end}}{{with $p.Walkthrough}} Read <a href="{{.}}">the walkthrough</a> for how it was built and what it teaches.{{end}}</p>
+  <dl class="meta-list">
+    <dt>Ships</dt><dd>{{md (index $p.Meta "Ships")}}</dd>
+    <dt>Lesson</dt><dd>{{md (index $p.Meta "Lesson")}}</dd>
+    <dt>Depends on</dt><dd>{{md (index $p.Meta "Depends on")}}</dd>
+  </dl>
+  {{range $p.Sections}}
+  <div class="section-title">
+    <h2 id="s-{{if .Acceptance}}acceptance{{else}}{{.ID}}{{end}}">{{if .Acceptance}}Acceptance criteria{{else}}{{.ID}} {{.Title}}{{end}}</h2>
+    <span>{{.Done}} of {{len .Items}} done</span>
+  </div>
+  <ul class="checklist">
+    {{- range .Items}}
+    <li{{if .Checked}} class="done"{{end}}>{{template "checkmark" .Checked}}<span>{{template "tagbadge" .Tag}} {{.HTML}}</span></li>
+    {{- end}}
+  </ul>
+  {{end}}
+  <nav class="pager" aria-label="Phases">
+    {{with $p.Prev}}<a href="{{.URL}}">← Phase {{.Number}}: {{.Title}}</a>{{else}}<span></span>{{end}}
+    {{with $p.Next}}<a href="{{.URL}}">Phase {{.Number}}: {{.Title}} →</a>{{end}}
+  </nav>
+</div>
+{{end}}

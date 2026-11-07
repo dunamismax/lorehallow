@@ -1,0 +1,16 @@
+{{define "content"}}{{$post := index .Data "Post"}}
+<div class="wrap content">
+  <article class="page-sheet">
+    <p class="crumbs"><a href="/devlog/">Devlog</a></p>
+    {{if $post.Cover}}<div class="post-cover">{{img $post.Cover "decorative" "max=600" "eager"}}</div>{{end}}
+    <h1>{{$post.Title}}</h1>
+    <p class="meta"><time datetime="{{isodate $post.Date}}">{{date $post.Date}}</time> · {{$post.Minutes}} min read{{if $post.Draft}} · <span class="badge badge-draft">Draft</span>{{end}}</p>
+    {{$post.Body}}
+    {{if $post.Tags}}<ul class="tags" aria-label="Tags">{{range $post.Tags}}<li><a href="/devlog/tags/{{.}}/">#{{.}}</a></li>{{end}}</ul>{{end}}
+  </article>
+  <nav class="post-nav" aria-label="More posts">
+    {{with index .Data "Newer"}}<a class="newer" href="{{.URL}}">← Newer: {{.Title}}</a>{{else}}<span></span>{{end}}
+    {{with index .Data "Older"}}<a class="older" href="{{.URL}}">Older: {{.Title}} →</a>{{end}}
+  </nav>
+</div>
+{{end}}

@@ -501,7 +501,7 @@ Runbooks live in `docs/ops/`. Every new operational procedure gets written down 
 - **Operations:** `docs/ops/` for runbooks, backups and incidents.
 - **Performance:** `docs/perf/` for measured results only, one file per run, with hardware and commit ([template](docs/perf/README.md)).
 - **Releases:** `docs/releases/vX.Y.Z.md`, which become patch notes on the website.
-- **Devlog drafts:** before the website exists, `docs/devlog-drafts/`; afterwards, `web/content/devlog/` with `draft: true`. The owner edits and publishes.
+- **Devlog drafts:** `web/content/devlog/` with `draft: true` ([format](web/content/devlog/README.md)). They show only in `make web-dev`. The owner edits and publishes them.
 - **Directory READMEs:** every top-level directory has a short README saying what belongs there and how to work in it.
 - **Style:** plain language and short sentences. The landing page can sell; docs explain.
 
@@ -574,3 +574,4 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 37 | Case 1 memory per connection is the marginal cost, (RSS at N − RSS at N/2) / (N/2), with the fixed runtime overhead and the old metric still recorded in every result | Decided | The old metric spread Go's fixed 2 to 3 MB of minimum-heap slack over N, about 30 KiB per connection at 100 | Owner, [ADR 0010](docs/decisions/0010-per-connection-memory.md), [scaling.md](docs/design/scaling.md) |
 | 38 | Website first: Phase 1 is finished, live and polished before more server-phase work; the server phases resume after it | Decided | The owner wants a live, beautiful lorehallow.com before the game goes much further; the host, DNS and Caddy are already set up | Owner, [section 3](#3-session-workflow) |
 | 39 | The website is a Go static site generator in `web/` (its own module: `html/template`, goldmark, `go:embed`) with no JavaScript on any page; the BUILD.md parser and linter are Go; Node, npm and TypeScript leave the toolchain | Decided | The owner is moving every project to Go; the site is static and needs no Node or browser scripts | Owner, [ADR 0011](docs/decisions/0011-go-website.md) |
+| 40 | Website fonts: a hand-drawn pixel font for headings, compiled to TrueType and WOFF by the generator, and the Go fonts (BSD) for body text, all self-hosted with licenses committed | Decided | Matches the hand-drawn art, pixel-exact at 2x to 4x, no downloads outside the Go module proxy | [ADR 0012](docs/decisions/0012-website-fonts.md) |

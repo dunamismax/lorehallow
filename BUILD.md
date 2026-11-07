@@ -216,71 +216,71 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 1.2 Site scaffold
 
 - [x] `ADR` Website stack: a Go static site generator in `web/` (its own module) with no JavaScript on any page ([ADR 0011](docs/decisions/0011-go-website.md)).
-- [ ] `cmd/lorehallow-web` with `build` (writes the site to `web/dist/`) and `serve` (local preview that rebuilds on change, drafts included); templates (`html/template`), CSS and fonts embedded with `go:embed`.
-- [ ] Design tokens generated from `art/style/palette.hex` into CSS custom properties, so the site and the game share one palette.
-- [ ] `ADR` Fonts: an open-licensed pixel font for headings and a readable body font, both self-hosted with license files committed.
-- [ ] Base layout: header with logo and navigation (Home, World, Progress, Devlog, Downloads, About), footer linking GitHub, Codeberg, RSS and the licenses.
-- [ ] Pixel image component: integer scaling, `image-rendering: pixelated`, explicit dimensions, lazy loading below the fold.
-- [ ] Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (gofmt, go vet, golangci-lint, govulncheck), with the tests and linters included in `make check`.
+- [x] `cmd/lorehallow-web` with `build` (writes the site to `web/dist/`) and `serve` (local preview that rebuilds on change, drafts included); templates (`html/template`), CSS and fonts embedded with `go:embed`.
+- [x] Design tokens generated from `art/style/palette.hex` into CSS custom properties, so the site and the game share one palette.
+- [x] `ADR` Fonts: an open-licensed pixel font for headings and a readable body font, both self-hosted with license files committed.
+- [x] Base layout: header with logo and navigation (Home, World, Progress, Devlog, Downloads, About), footer linking GitHub, Codeberg, RSS and the licenses.
+- [x] Pixel image component: integer scaling, `image-rendering: pixelated`, explicit dimensions, lazy loading below the fold.
+- [x] Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (gofmt, go vet, golangci-lint, govulncheck), with the tests and linters included in `make check`.
 
 ### 1.3 Landing page
 
 - [ ] Hero: key art with gentle CSS-only parallax layers, the wordmark, a one-line pitch and calls to action (Follow the build, Read the devlog, View the source).
-- [ ] "A world that's already there": what Lorehallow is and the feeling it's going for, in plain language.
-- [ ] Design pillars with pixel icons.
-- [ ] "What you'll do" teaser: explore, quest, group up and fight with other people around you, clearly marked as planned.
-- [ ] Live progress widget: overall progress as an XP bar, the current phase, and a link to /progress.
-- [ ] Latest three devlog posts.
-- [ ] Art showcase strip built from processed art.
-- [ ] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
+- [x] "A world that's already there": what Lorehallow is and the feeling it's going for, in plain language.
+- [x] Design pillars with pixel icons.
+- [x] "What you'll do" teaser: explore, quest, group up and fight with other people around you, clearly marked as planned.
+- [x] Live progress widget: overall progress as an XP bar, the current phase, and a link to /progress.
+- [x] Latest three devlog posts.
+- [x] Art showcase strip built from processed art.
+- [x] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
 - [ ] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
-- [ ] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
+- [x] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
 
 ### 1.4 Progress tracker (/progress)
 
 - [x] BUILD.md parser in `web/internal/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
 - [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
-- [ ] Overall progress XP bar and per-phase progress bars, computed from the boxes.
-- [ ] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
+- [x] Overall progress XP bar and per-phase progress bars, computed from the boxes.
+- [x] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
 - [x] Hand-draw a 21st landmark for Phase 20 (a far road beyond the castle) to join the 20 from Batch 02.
-- [ ] Phase pages (`/progress/phase-N`) with goal, lesson, sections, checklists and `HUMAN` and `ADR` badges.
-- [ ] Achievement feed: at build time, walk the `git log` of BUILD.md to find when each box was checked, and show the most recent as "quest complete" entries with dates and commit links.
-- [ ] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
-- [ ] Machine-readable `/progress.json` and a `/progress.svg` badge, with the badge added to README.md.
-- [ ] Each phase links to its walkthrough on GitHub once it exists.
+- [x] Phase pages (`/progress/phase-N`) with goal, lesson, sections, checklists and `HUMAN` and `ADR` badges.
+- [x] Achievement feed: at build time, walk the `git log` of BUILD.md to find when each box was checked, and show the most recent as "quest complete" entries with dates and commit links.
+- [x] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
+- [x] Machine-readable `/progress.json` and a `/progress.svg` badge, with the badge added to README.md.
+- [x] Each phase links to its walkthrough on GitHub once it exists.
 
 ### 1.5 Devlog (/devlog)
 
-- [ ] Devlog posts as Markdown files with front matter in `web/content/devlog/`, rendered with goldmark and validated at build time (title, date, summary, tags, cover image, draft).
-- [ ] Posts with `draft: true` show only in `serve` and are never written by `build`.
-- [ ] Index, tag pages and post pages with pixel-art styling and comfortable reading typography.
-- [ ] RSS and Atom feeds.
-- [ ] Move the Phase 0 devlog draft into the collection.
+- [x] Devlog posts as Markdown files with front matter in `web/content/devlog/`, rendered with goldmark and validated at build time (title, date, summary, tags, cover image, draft).
+- [x] Posts with `draft: true` show only in `serve` and are never written by `build`.
+- [x] Index, tag pages and post pages with pixel-art styling and comfortable reading typography.
+- [x] RSS and Atom feeds.
+- [x] Move the Phase 0 devlog draft into the collection.
 - [ ] `HUMAN` Edit and publish the first devlog post.
 
 ### 1.6 Downloads (/downloads)
 
-- [ ] Platform cards for Windows, macOS and Linux with an honest "Not available yet. Follow the progress." state.
-- [ ] Page driven by `web/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
-- [ ] System requirements and "verify your download" sections that appear once releases exist.
+- [x] Platform cards for Windows, macOS and Linux with an honest "Not available yet. Follow the progress." state.
+- [x] Page driven by `web/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
+- [x] System requirements and "verify your download" sections that appear once releases exist.
 
 ### 1.7 More pages
 
-- [ ] /world: the setting and mood (mossy forests, lantern-lit towns, old stone ruins) with an art gallery, marked as early and subject to change.
-- [ ] /about: the project's goals (a small world worth being in, an excellent Go MMO server as the showcase, and learning by building it), building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
-- [ ] /faq: is it free, when can I play, which platforms, how many players (the goal of hundreds to thousands, stated as a target, with only measured numbers given as facts), how to follow along.
-- [ ] Custom 404 page with the hand-drawn 404 art (`web/not_found.png`: the hero lost at a broken signpost).
-- [ ] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
-- [ ] No third-party trackers, scripts or fonts on any page.
+- [x] /world: the setting and mood (mossy forests, lantern-lit towns, old stone ruins) with an art gallery, marked as early and subject to change.
+- [x] /about: the project's goals (a small world worth being in, an excellent Go MMO server as the showcase, and learning by building it), building in the open, how it's made (the owner's direction, AI agents writing the code and hand-drawing the pixel art, a few large painted images generated and run through the processing pipeline) and the tech stack.
+- [x] /faq: is it free, when can I play, which platforms, how many players (the goal of hundreds to thousands, stated as a target, with only measured numbers given as facts), how to follow along.
+- [x] Custom 404 page with the hand-drawn 404 art (`web/not_found.png`: the hero lost at a broken signpost).
+- [x] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
+- [x] No third-party trackers, scripts or fonts on any page.
 
 ### 1.8 Quality gates
 
 - [ ] Lighthouse audit from Chrome DevTools on the live landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/` (Lighthouse is a Node tool, so it isn't in CI; ADR 0011).
-- [ ] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
-- [ ] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
-- [ ] Responsive from 360 px phones to 4K screens, with art always scaled by whole numbers.
-- [ ] Internal link checker in `make check`.
-- [ ] Landing page transfers under 1 MB, enforced by a test on the built output.
+- [x] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
+- [x] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
+- [x] Responsive from 360 px phones to 4K screens, with art always scaled by whole numbers.
+- [x] Internal link checker in `make check`.
+- [x] Landing page transfers under 1 MB, enforced by a test on the built output.
 
 ### 1.9 Deploy automation
 
