@@ -286,11 +286,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [x] `deploy/web/deploy.sh`: build, upload to a new timestamped release directory, switch the `current` symlink atomically, keep the last five releases.
 - [x] `make deploy-web` and `make rollback-web` for manual use.
-- [ ] GitHub Actions workflow that deploys on every push to `main` touching `BUILD.md`, `web/`, `art/processed/web/` or `docs/walkthroughs/`, with full git history checked out for the achievement feed.
-- [ ] `HUMAN` Add the CI deploy key and host details as GitHub Actions secrets.
-- [ ] Nightly scheduled rebuild so date-based content stays fresh with no pushes.
 - [x] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
-- [ ] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
+- [x] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
 
 ### 1.10 Launch
 
@@ -301,7 +298,6 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### Acceptance criteria
 
 - [x] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
-- [ ] Checking a box in BUILD.md and pushing to `main` updates /progress within 10 minutes with no manual steps.
 - [x] Every page links to the GitHub and Codeberg repositories.
 - [ ] The devlog has at least one published post and a valid RSS feed.
 - [x] /downloads exists and accurately says no builds are available yet.
@@ -1347,3 +1343,4 @@ Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled
 - Controller support, if deferred in Phase 14
 - Languages beyond English
 - More zones and a higher level cap
+- Automatic website deploys from CI on every push and nightly (cut from Phase 1 by the owner: no CI runner logs in to the owner's server; deploys are `make deploy-web` by hand, and /progress updates at each deploy)

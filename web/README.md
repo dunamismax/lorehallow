@@ -34,7 +34,7 @@ make buildmd-lint  # lint BUILD.md
 - **Assets.** Everything under `/assets/` has a content hash in its name, so Caddy caches it forever. That covers the stylesheet, the fonts, every image and the share cards.
 - **Pixel art.** Templates draw art with `{{img "web/hero_scene.png" "alt text" ...}}`. `k=3` fixes the scale, and `max=960` makes the image responsive: the generator writes a class that steps it up through whole-number scales as the viewport grows. `sheet.png#frame` crops a named frame from a sheet's sidecar JSON, and `file.png#mirror` adds a mirrored copy so a layer tiles edge to edge. An image without alt text fails the build; pass `"decorative"` for decorative art.
 - **Colors.** The generator turns `palette.hex` into `--c-<name>` custom properties, then defines the roles in `internal/site/theme.go` (`--text`, `--bg`, `--text-link`, ...). The stylesheet sets `color` and `background-color` only through roles, and every text-on-background pair it uses is listed in `Pairs` and checked for WCAG AA.
-- **Progress.** `/progress/`, the phase pages, `/progress.json` and `/progress.svg` come from BUILD.md. The achievement feed walks `git log -p BUILD.md` to find the commit that checked each box, so builds need full history (`fetch-depth: 0` in CI).
+- **Progress.** `/progress/`, the phase pages, `/progress.json` and `/progress.svg` come from BUILD.md. The achievement feed walks `git log -p BUILD.md` to find the commit that checked each box, so builds need full history (a full clone, not a shallow one).
 - **Share images.** Every page gets a 1200×630 Open Graph card: `og_card` at exactly 5x with the page title drawn in the pixel font.
 
 ## Output tests

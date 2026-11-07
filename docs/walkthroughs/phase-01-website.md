@@ -10,7 +10,7 @@ Phase 1 puts the project in public: a website at https://lorehallow.com that exp
 - **A hand-drawn heading font**, compiled into a real web font by the generator, with the Go fonts for body text ([ADR 0012](../decisions/0012-website-fonts.md)).
 - **No JavaScript at all.** The fireflies, the flickering lantern and the parallax are CSS. Caddy's Content-Security-Policy refuses scripts outright, and a test fails the build if one appears.
 - **Output tests** that check the built site: no scripts, alt text and whole-number image sizes, working internal links, no third-party requests, contrast, metadata, and a 1 MB budget for the landing page.
-- **Deploys** with timestamped release directories, an atomic switch, a health check through the host's own Caddy, automatic rollback, and `make rollback-web`. A GitHub Actions workflow runs the same script on every push and nightly.
+- **Deploys** with timestamped release directories, an atomic switch, a health check through the host's own Caddy, automatic rollback, and `make rollback-web`, run by hand over SSH.
 - **Uptime monitoring** from GitHub's runners, with one ntfy alert per outage ([ADR 0013](../decisions/0013-uptime-monitoring.md)).
 
 ## How to try it
@@ -67,7 +67,7 @@ BUILD.md's format contract (phases, metadata, sections, single-line checkboxes) 
 
 The quest map is an ordered list placed on a CSS grid. On phones it's one column; on wider screens the rows snake back and forth (4, then 7 across), with the road segments generated per breakpoint.
 
-The achievement feed is the interesting part. `git log -p -U0 -- BUILD.md` lists every change to the file. Within each commit, a line that went from `- [ ]` to `- [x]` is a box being checked. A checked line that was removed and re-added with different text is a reword, not news, and so is a line moved verbatim. The result is a list of "quest complete" entries, each with the date and the commit that did it. This is why the deploy workflow checks out the full history (`fetch-depth: 0`).
+The achievement feed is the interesting part. `git log -p -U0 -- BUILD.md` lists every change to the file. Within each commit, a line that went from `- [ ]` to `- [x]` is a box being checked. A checked line that was removed and re-added with different text is a reword, not news, and so is a line moved verbatim. The result is a list of "quest complete" entries, each with the date and the commit that did it. This is why the site must be built from a full clone, not a shallow one.
 
 ### The deploy pipeline
 
@@ -80,7 +80,7 @@ The achievement feed is the interesting part. `git log -p -U0 -- BUILD.md` lists
 
 Rollback is the same switch in the other direction. `make rehearse-rollback-web` deploys a release with its stylesheet deleted and checks that the health check catches it and the previous release comes back on its own.
 
-CI runs the same script, once the owner has added its secrets (docs/ops/website.md). GitHub's runner joins the owner's tailnet with a tagged, ephemeral identity and logs in over Tailscale SSH as `lorehallow-deploy`, a user that owns the website and nothing else. The workflow runs on every push that touches the site's inputs and again every night, so dates stay current without pushes.
+Deploys are run by hand. A CI workflow that logged in to the server over Tailscale worked once and was then removed: the owner doesn't want any CI runner logging in to their server.
 
 ## The key concept: static sites and atomic releases
 
@@ -111,9 +111,9 @@ The same pattern is in the game server's deploy (Phase 2), and it comes back at 
 6. `web/internal/pixelfont/ttf.go`: `contours` traces pixels into font outlines; `TTF` writes the tables.
 7. `web/internal/site/site_test.go`: the output tests.
 8. `web/static/css/site.css`: the hero, the fireflies and the parallax, all in CSS.
-9. `deploy/web/deploy.sh` and `.github/workflows/deploy-web.yml`.
+9. `deploy/web/deploy.sh`.
 10. `deploy/caddy/lorehallow.caddy`: headers and caching.
 
 ## What's next
 
-Phase 2 is already partly built: two players in one world, with a real connection lifecycle, backpressure, a tick loop and interpolation. Once CI deploys are switched on, every checkbox it closes shows up on https://lorehallow.com/progress within minutes of the push.
+Phase 2 is already partly built: two players in one world, with a real connection lifecycle, backpressure, a tick loop and interpolation. Every checkbox it closes shows up on https://lorehallow.com/progress at the next deploy.

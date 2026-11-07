@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Deploys lorehallow.com (BUILD.md 1.9). Called by `make deploy-web`,
-# `make rollback-web` and the deploy-web GitHub Actions workflow.
+# Deploys lorehallow.com (BUILD.md 1.9). Called by `make deploy-web` and
+# `make rollback-web`, by hand: nothing in CI logs in to the server.
 #
 #   deploy/web/deploy.sh deploy     build, upload a new release, switch, check, roll back on failure
 #   deploy/web/deploy.sh rollback   switch back to the release before the current one
@@ -101,8 +101,7 @@ deploy)
   # mktemp directories are private (0700) and tar keeps that mode; Caddy
   # must be able to read the release.
   remote "chmod -R u=rwX,go=rX $BASE/releases/$stamp"
-  # Releases belong to the website deploy user, so CI (which deploys as
-  # that user) can clean up releases an agent deployed as root.
+  # Releases belong to the website deploy user that owns /srv/lorehallow/web.
   remote "if [ \"\$(id -u)\" = 0 ] && id lorehallow-deploy >/dev/null 2>&1; then chown -R lorehallow-deploy:lorehallow-deploy $BASE/releases/$stamp; fi"
   switch_to "$stamp"
   if check_live "$short"; then

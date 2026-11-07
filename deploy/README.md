@@ -10,7 +10,7 @@ Everything needed to run Lorehallow on the owner's host behind lorehallow.com.
 | `caddy/lorehallow.caddy` | Site file: apex, `www` redirect, `play.lorehallow.com/ws` with `stream_close_delay` so reloads don't drop players | Installed on ubuntu-vm |
 | `server/lorehallow-server.service` | systemd unit: dedicated user, sandboxing, `LimitNOFILE=65536` | Installed on ubuntu-vm |
 | `server/deploy.sh` | `make deploy-server` / `make rollback-server`: cross-compile, upload, atomic switch, restart, health check, automatic rollback | |
-| `web/deploy.sh` | `make deploy-web` / `make rollback-web` / `make rehearse-rollback-web`: build the site, upload a timestamped release, switch `current` atomically, check it through the host's Caddy, roll back on failure, keep five releases | |
+| `web/deploy.sh` | Run by hand, never from CI: `make deploy-web` / `make rollback-web` / `make rehearse-rollback-web`: build the site, upload a timestamped release, switch `current` atomically, check it through the host's Caddy, roll back on failure, keep five releases | |
 | `uptime.sh` | The Uptime workflow's check: home page, `/progress.json` and `play.lorehallow.com/healthz`, one ntfy alert per outage ([ADR 0013](../docs/decisions/0013-uptime-monitoring.md)) | |
 | `host.env` | Your local deploy target (gitignored) | |
 

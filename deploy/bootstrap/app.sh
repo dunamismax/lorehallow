@@ -43,7 +43,7 @@ run() { if [[ "$DRY" == 1 ]]; then printf '    would run: %s\n' "$*"; else print
 say "service user"
 id lorehallow-server >/dev/null 2>&1 || run useradd --system --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin lorehallow-server
 
-say "website deploy user (owns the site's releases; CI deploys as it over Tailscale SSH)"
+say "website deploy user (owns the site's releases)"
 id lorehallow-deploy >/dev/null 2>&1 || run useradd --system --create-home --home-dir /var/lib/lorehallow-deploy --shell /bin/bash lorehallow-deploy
 
 say "directories"
