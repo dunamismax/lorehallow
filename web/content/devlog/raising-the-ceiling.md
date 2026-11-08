@@ -4,10 +4,8 @@ date: 2026-11-07
 summary: "Lorehallow's world stays small and handcrafted, but the server behind it is now aiming for hundreds to thousands of players at once. Here's what that means, and how I'll know if it's true."
 tags: [server, networking, scaling]
 cover: null
-draft: true
+draft: false
 ---
-
-<!-- DRAFT for the owner to edit and publish. Written in the owner's voice; change anything. -->
 
 When I started Lorehallow, the plan said "dozens of players is the real target; hundreds is a stretch goal." That was a sensible, modest line for a hobby MMO. I've changed my mind about it.
 
@@ -17,7 +15,7 @@ The world will stay small: a few handcrafted zones, warm pixel art, a town that 
 
 "Thousands of players" is a phrase that gets thrown around a lot. I don't want to be one more project saying it without proof. So there's a rule now: Lorehallow never claims a player count it hasn't measured. Every number comes from a load test, run on named hardware, with the result written down in the repository.
 
-There's nothing to measure yet, which means the honest answer to "how many players can it handle?" today is: none. Ask again in a few weeks.
+The first load tests have already run, and their results are written up in [docs/perf](https://github.com/dunamismax/lorehallow/tree/main/docs/perf). They measure early pieces of the server, not the game, so I'm not turning them into a headline yet. When there's a number worth saying out loud, it'll come with the test that produced it.
 
 ## Three different problems
 
@@ -40,6 +38,6 @@ The design is deliberately simple, and it's one I've wanted to build properly fo
 
 ## What changes in the plan
 
-The build plan grew a lot of backend detail: connection lifecycles and backpressure in the very first multiplayer phase, interest management and profiling much earlier than before, measurable performance targets on almost every phase, and a new Phase 20 for running across several machines. The website keeps going in parallel, since it's waiting on server setup anyway.
+The build plan grew a lot of backend detail: connection lifecycles and backpressure in the very first multiplayer phase, interest management and profiling much earlier than before, measurable performance targets on almost every phase, and a new Phase 20 for running across several machines. The website comes first, though: it gets finished and polished before the server phases go much further.
 
 The game itself doesn't get bigger. It gets a much better engine room.

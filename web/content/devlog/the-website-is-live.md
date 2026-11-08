@@ -4,10 +4,8 @@ date: 2026-11-07
 summary: "Lorehallow has a home on the web: a small, hand-drawn site with no JavaScript, a live map of the build plan, and this devlog."
 tags: [website, phase-1]
 cover: web/devlog_header.png
-draft: true
+draft: false
 ---
-
-<!-- DRAFT for the owner to edit and publish. Written in the owner's voice; change anything. -->
 
 Lorehallow has a front door. lorehallow.com is the place to see what this project is, how far along it is, and what's being built next.
 
@@ -33,4 +31,4 @@ The site runs on my own server at home, next to the game server. Part of the poi
 
 ## What's next
 
-With the website done, work goes back to the game server: Phase 2, two players in one small world. You can watch it happen on the [progress page](/progress/), and posts like this one will turn up here and in the [RSS feed](/devlog/rss.xml).
+Two changes come next. The site is being rebuilt with Astro, a tool made for exactly this kind of site. It will look the same, keep every address, and still ship no JavaScript; the Go version stays live until the new one matches it page for page. Then the game itself becomes a browser game: when Phase 2 lands, playing will mean opening play.lorehallow.com, with nothing to download or install. You can watch it happen on the [progress page](/progress/), and posts like this one will turn up here and in the [RSS feed](/devlog/rss.xml).

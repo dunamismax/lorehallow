@@ -4,10 +4,8 @@ date: 2026-11-06
 summary: "Before there is a world to walk around in, there has to be a workshop. Phase 0 builds the tools Lorehallow will be made with, including a way to draw its pixel art by hand, in text."
 tags: [phase-0, tooling, art]
 cover: null
-draft: true
+draft: false
 ---
-
-<!-- DRAFT for the owner to edit and publish. Written in the owner's voice; change anything. -->
 
 Lorehallow is a small pixel-art MMO built around one feeling: you log in, and other people are already there. There's nothing to play yet. This first stretch of work, Phase 0, is about building the workshop before building the world.
 
