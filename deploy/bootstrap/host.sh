@@ -95,7 +95,7 @@ if [[ -n "$admin" && "$admin" != root ]]; then
   admin_keys="$admin_home/.ssh/authorized_keys"
 fi
 if [[ ! -s /home/deploy/.ssh/authorized_keys ]]; then
-  echo "    SKIPPED: /home/deploy/.ssh/authorized_keys is empty. Add the agent and CI public keys, then run this again."
+  echo "    SKIPPED: /home/deploy/.ssh/authorized_keys is empty. Add the public keys for agent deploy sessions (never a CI key), then run this again."
 elif [[ -z "$admin_keys" || ! -s "$admin_keys" ]]; then
   echo "    SKIPPED: the user running sudo (${admin:-unknown}) has no ~/.ssh/authorized_keys. Turning off passwords now could lock you out."
 else

@@ -7,8 +7,8 @@ Read [AGENTS.md](AGENTS.md) before changing this file.
 ## How this file works
 
 - **Phases run in order.** The current phase is the lowest-numbered phase with an unchecked box. Within a phase, sections run roughly top to bottom, but independent items can be done in any order or in parallel.
-- **Website first.** Phase 1 is finished, live and polished before any more work on the server phases (the owner's call, AGENTS.md decision 38). Until then, server work is limited to keeping `make check` green and the live server healthy.
-- **Two frontend migrations** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). Phase 1 moves lorehallow.com from the Go site generator to Astro; its first item is the parity inventory in 1.2. Phase 2 replaces the Godot client with a Phaser browser game; its first client item is the Phaser scaffold in 2.6. While Phase 1 waits only on an owner approval, the Phaser work in `client/` (2.6, the client map import in 2.2, 2.7, 2.8 and the Godot retirement in 2.10) may go ahead, because none of it changes lorehallow.com. Deploying the game waits until Phase 1 is done. Superseded checked work is kept as history in [Superseded work](#superseded-work).
+- **Website first.** Phase 1 was finished, live and polished before any more work on the server phases (the owner's call, AGENTS.md decision 38). It's done: lorehallow.com is the Astro build.
+- **Two frontend migrations** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). Phase 1 moved lorehallow.com from the Go site generator to Astro. Phase 2 replaces the Godot client with a Phaser browser game; its first client item is the Phaser scaffold in 2.6. Superseded checked work is kept as history in [Superseded work](#superseded-work).
 - **Performance criteria are measured, never estimated.** They point at targets in [docs/design/scaling.md](docs/design/scaling.md), name the hardware (`dev-m5` until the production host exists, then `prod`) and are checked only with a result in `docs/perf/`.
 - **Check a box only when it's really done:** committed, `make check` green, and doing what the line says. Partial work stays unchecked.
 - **Every phase ends with acceptance criteria.** A phase is done when every box in it is checked, acceptance criteria included.
@@ -196,8 +196,8 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 
 - [x] `HUMAN` Fill in `deploy/HOST.md` (or give an agent the facts to write it): OS and version, CPU architecture, RAM and disk, network setup (public IP, or ports 80 and 443 forwarded if it's at home), and anything else already running on it.
 - [x] `HUMAN` Point DNS A records (and AAAA if the host has public IPv6) for `lorehallow.com`, `www.lorehallow.com` and `play.lorehallow.com` at the host, and note the DNS provider in `deploy/HOST.md`.
-- [ ] Write `deploy/bootstrap/host.sh`, an idempotent provisioning script: create the `deploy` and service users, key-only SSH with root login off, firewall allowing only 22, 80 and 443, automatic security updates, fail2ban or equivalent, Caddy, and the `/srv/lorehallow` and `/etc/lorehallow` layout.
-- [ ] `HUMAN` Review and run the bootstrap script with sudo (or let an agent run it), and authorize SSH keys for agent sessions on the `deploy` user. CI never gets a key (AGENTS.md section 10).
+- [x] Write `deploy/bootstrap/host.sh`, an idempotent provisioning script: create the `deploy` and service users, key-only SSH with root login off, firewall allowing only 22, 80 and 443, automatic security updates, fail2ban or equivalent, Caddy, and the `/srv/lorehallow` and `/etc/lorehallow` layout.
+- [x] `HUMAN` Harden the host and give agent sessions SSH access for deploys: run the bootstrap script with sudo on a fresh host, or, on a host the owner already hardened, record its firewall, SSH and update settings in `deploy/HOST.md` instead. CI never gets a key (AGENTS.md section 10).
 - [x] `ADR` Reverse proxy: Caddy with automatic HTTPS (recommended). Config in `deploy/caddy/lorehallow.caddy` (a site file on the shared host, ADR 0009), site root `/srv/lorehallow/web/current`.
 - [x] HTTPS works with valid certificates; HTTP redirects to HTTPS and `www` redirects to the apex.
 - [x] Security headers (HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), compression, and long cache lifetimes for fingerprinted assets.
@@ -300,7 +300,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] Caddy site file for the Astro output: cache rules match Astro's asset folder, the public site's CSP stays `script-src 'none'` and is kept separate from play.lorehallow.com's game CSP, and the `/downloads/` redirect; validated as the caddy user before every reload ([ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md)).
 - [x] `HUMAN` Approve the cutover after reviewing the local Astro build and the parity report. The Go-generated site stays live until then.
 - [x] Cutover: deploy the Astro build with `make deploy-web`, confirm the live checks, keep the last Go-built release as the rollback target, and rehearse the automatic rollback with an Astro release (`make rehearse-rollback-web`).
-- [ ] Retire the Go web module once the cutover has held for a week with no rollback: delete its Go code, templates, `go.mod` and `go.sum`, its Make targets, its CI cache path and its govulncheck run, keep the parser fixtures the TypeScript tests use, and update every doc that describes it.
+- [x] Retire the Go web module once the cutover has held for a week with no rollback: delete its Go code, templates, `go.mod` and `go.sum`, its Make targets, its CI cache path and its govulncheck run, keep the parser fixtures the TypeScript tests use, and update every doc that describes it.
 
 ### 1.10 Launch
 
@@ -319,7 +319,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
 - [x] /play exists and accurately says whether the game is playable, and /downloads redirects to it.
 - [x] No draft appears in any public artifact.
-- [ ] The Go web module is gone, `make check` runs only the TypeScript site checks, and the progress tracker, feeds and badge still update on every deploy.
+- [x] The Go web module is gone, `make check` runs only the TypeScript site checks, and the progress tracker, feeds and badge still update on every deploy.
 
 ---
 

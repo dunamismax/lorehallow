@@ -1,4 +1,4 @@
-// /sitemap.xml: every page except the 404, in the order the Go generator lists them.
+// /sitemap.xml: every page except the 404, in the order the site has always listed them.
 import type { APIRoute } from "astro";
 import { isoDate } from "../lib/devlog.ts";
 import { type SitemapURL, sitemap } from "../lib/feeds.ts";

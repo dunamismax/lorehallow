@@ -33,7 +33,6 @@ export_credentials.cfg
 
 # Website build output
 /web/dist/
-/web/dist-astro/
 /web/.astro/
 
 # Node

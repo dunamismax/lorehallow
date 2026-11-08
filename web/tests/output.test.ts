@@ -1,5 +1,5 @@
 // Output tests on the real Astro build (BUILD.md 1.8), ported from the Go
-// generator's (web/internal/site/site_test.go). The site is built once, from
+// generator's tests. The site is built once, from
 // the repository, with an extra draft post that must not appear anywhere.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";

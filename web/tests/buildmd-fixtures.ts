@@ -1,5 +1,5 @@
-// The Go parser's test fixtures (web/internal/buildmd/parse_test.go), shared
-// by the TypeScript parser's tests and the parity test.
+// The BUILD.md parser's test fixtures, carried over from the retired Go
+// parser's tests.
 
 const meta = "> **Goal:** A goal.\n> **Ships:** v0.0.0\n> **Lesson:** A lesson.\n> **Depends on:** Nothing";
 

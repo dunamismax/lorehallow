@@ -7,7 +7,7 @@
 #
 # One pixel is 100 font units and the em is 10 pixels, so the font is crisp
 # at font sizes that are multiples of 10px (20px = 2x, 30px = 3x).
-# cmd/lorehallow-web compiles this file into a WOFF font at build time
+# web/src/lib/pixelfont.ts compiles this file into a WOFF font at build time
 # (internal/pixelfont) and also draws page titles on the social cards with it.
 # Licensed with the rest of the art: CC BY-NC 4.0.
 

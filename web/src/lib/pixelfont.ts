@@ -5,8 +5,8 @@
 // The source format is described at the top of that file: one grid of "#" and
 // "." per glyph, capital height 7 rows, descenders in rows 8 and 9.
 //
-// A port of web/internal/pixelfont (ADR 0016). The TrueType output is the same,
-// byte for byte, as the Go compiler's.
+// Ported from the retired Go generator (ADR 0016); its TrueType output was
+// checked byte for byte against the Go compiler's before the Go code was removed.
 import { fillRect, type RGBA } from "./png.ts";
 
 /** Rows above the baseline (capital height). */

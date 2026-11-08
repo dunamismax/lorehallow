@@ -16,11 +16,11 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 ## Status
 
-**Phase 1: lorehallow.com. Pre-alpha, nothing to play yet.**
+**Phase 2: Two Players, One World. Pre-alpha, nothing to play yet.**
 
 The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built with Astro in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. The game server's networking core (Phase 2) is already partly built.
 
-**Two frontend changes are planned** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). The website is being rebuilt in Astro, still with no browser JavaScript; the Go-built site stays live until the new one matches it page for page (Phase 1). The game becomes a browser game built with Phaser and TypeScript: you'll play by opening play.lorehallow.com, with nothing to install, and there will be no desktop downloads (Phase 2). Until those land, the checkout still has the Go site generator and a small Godot client skeleton. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+**Next: the browser game** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). The game becomes a browser game built with Phaser and TypeScript: you'll play by opening play.lorehallow.com, with nothing to install, and there will be no desktop downloads (Phase 2). Until it lands, the checkout still has a small Godot client skeleton. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 
@@ -107,7 +107,7 @@ lorehallow/
 ├── server/        # Go module: game server, bots, admin tools
 ├── proto/         # Protobuf schemas and golden test vectors
 ├── content/       # Data-driven game content: maps, items, quests, mobs
-├── web/           # lorehallow.com: Go site generator today, Astro next
+├── web/           # lorehallow.com: Astro, static, no browser JavaScript
 ├── tools/         # Art intake pipeline, codegen and dev helpers
 ├── art/
 │   ├── style/     # Locked palette, style guide, reference sheet

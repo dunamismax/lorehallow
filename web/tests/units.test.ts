@@ -1,5 +1,5 @@
 // Unit tests for the site's TypeScript modules, ported from the Go
-// generator's (web/internal/site, web/internal/pixelfont).
+// generator's tests.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";

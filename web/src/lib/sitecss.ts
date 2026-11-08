@@ -3,8 +3,8 @@
 // and progress-bar rules, and the responsive pixel-art rules last. Built
 // after every page, because the last part depends on the images they drew.
 //
-// site.css is still the Go generator's text/template until the cutover (BUILD.md
-// 1.9), so this fills in exactly the actions it uses and fails on any other.
+// Placeholders in site.css: {{font NAME}}, {{art PATH}}, {{fireflies}},
+// {{percents}} and {{questmap}}. Any other {{...}} fails the build.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { State } from "./state.ts";
@@ -56,31 +56,28 @@ export function questMapCSS(n: number): string {
 	return s;
 }
 
-const fireflyRange =
-	"{{range $i, $p := .Fireflies}}.ff-{{$i}} { left: calc(50% + var(--k) * {{index $p 0}}px); bottom: calc(var(--k) * {{index $p 1}}px); animation-duration: {{index $p 2}}s, {{index $p 3}}s; animation-delay: -{{index $p 4}}s, -{{index $p 5}}s; }\n{{end}}";
-const percentRange = "{{range .Percents}}.xp-{{.}}{width:{{.}}%}{{end}}";
-
 /** Renders the stylesheet for a finished build. */
 export function siteCSS(st: State, phases: number): string {
 	let src = readFileSync(join(st.web, "static", "css", "site.css"), "utf8");
-	src = src.replace(/\{\{\/\*[\s\S]*?\*\/\}\}/g, "");
-	src = src.replace(fireflyRange, () =>
+	// The header comment documents the placeholders; drop it so they aren't filled in there.
+	src = src.replace(/^\/\*[\s\S]*?\*\/\n/, "");
+	src = src.replaceAll("{{fireflies}}", () =>
 		FIREFLIES.map(
 			(p, i) =>
 				`.ff-${i} { left: calc(50% + var(--k) * ${p[0]}px); bottom: calc(var(--k) * ${p[1]}px); animation-duration: ${p[2]}s, ${p[3]}s; animation-delay: -${p[4]}s, -${p[5]}s; }\n`,
 		).join(""),
 	);
-	src = src.replace(percentRange, () =>
+	src = src.replaceAll("{{percents}}", () =>
 		Array.from({ length: 101 }, (_, i) => `.xp-${i}{width:${i}%}`).join(""),
 	);
-	src = src.replace("{{.QuestMap}}", () => questMapCSS(phases));
-	src = src.replace(/\{\{font "([a-z]+)"\}\}/g, (_, k: string) => {
+	src = src.replaceAll("{{questmap}}", () => questMapCSS(phases));
+	src = src.replace(/\{\{font ([a-z]+)\}\}/g, (_, k: string) => {
 		const url = st.fonts[k as keyof State["fonts"]];
 		if (!url) throw new Error(`site.css: unknown font "${k}"`);
 		return url;
 	});
-	src = src.replace(/\{\{art "([^"]+)"\}\}/g, (_, key: string) => st.assets.image(key).url);
+	src = src.replace(/\{\{art ([^}\s]+)\}\}/g, (_, key: string) => st.assets.image(key).url);
 	const left = /\{\{[\s\S]*?\}\}/.exec(src);
-	if (left) throw new Error(`site.css: template action ${left[0]} isn't supported`);
-	return `/* lorehallow.com. Built from web/static/css/site.css by cmd/lorehallow-web. */\n${st.theme.css()}${src}${st.assets.fitCSS()}`;
+	if (left) throw new Error(`site.css: unknown placeholder ${left[0]}`);
+	return `/* lorehallow.com. Built from web/static/css/site.css by src/lib/sitecss.ts. */\n${st.theme.css()}${src}${st.assets.fitCSS()}`;
 }

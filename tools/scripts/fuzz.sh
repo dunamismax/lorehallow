@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs every Go fuzz target, in the server and website modules, for
+# Runs every Go fuzz target in the server module for
 # FUZZTIME each (default 10s). Called by `make fuzz`. `go test` can fuzz one
 # target at a time, so this finds them all. The seed corpus of every target
 # also runs in `make check`.
@@ -9,7 +9,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FUZZTIME="${FUZZTIME:-10s}"
 
 found=0
-for module in server web; do
+for module in server; do
   cd "$ROOT/$module"
   while IFS=: read -r file _ line; do
     name="$(sed -E 's/^func (Fuzz[A-Za-z0-9_]*)\(.*/\1/' <<<"$line")"

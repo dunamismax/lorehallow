@@ -1,6 +1,6 @@
 # 0014: An Astro website and a Phaser browser game
 
-- **Status:** Accepted. Supersedes [ADR 0011](0011-go-website.md) and [ADR 0003](0003-gdscript-protobuf.md), and the client row of [ADR 0001](0001-stack.md). Not implemented yet: the checkout still has the Go site generator and the Godot client until the BUILD.md 1.9 and 2.10 cutovers.
+- **Status:** Accepted. Supersedes [ADR 0011](0011-go-website.md) and [ADR 0003](0003-gdscript-protobuf.md), and the client row of [ADR 0001](0001-stack.md). The website half is done: lorehallow.com is the Astro build and the Go generator is gone (BUILD.md 1.9). The Godot client remains until the BUILD.md 2.10 cutover.
 - **Date:** 2026-11-07
 - **BUILD.md:** 1.2, 1.9, 2.6, 2.10, Phase 15
 

@@ -1,5 +1,5 @@
 // The devlog collection: web/content/devlog/*.md read in place, with the same
-// front matter rules as the Go generator. A bad field fails the build with the
+// front matter rules the Go-built site had. A bad field fails the build with the
 // file and field named. LOREHALLOW_DEVLOG_DIR points it elsewhere (the output
 // tests add a draft to a copy).
 

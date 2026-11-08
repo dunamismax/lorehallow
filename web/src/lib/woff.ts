@@ -1,5 +1,5 @@
 // Wraps a TrueType font in the WOFF 1.0 container: the same tables, each
-// compressed with zlib. Every browser reads it. A port of web/internal/woff.
+// compressed with zlib. Every browser reads it.
 import { deflateSync, inflateSync } from "node:zlib";
 
 /** Converts a TrueType (sfnt) font to WOFF. The output depends only on the input. */

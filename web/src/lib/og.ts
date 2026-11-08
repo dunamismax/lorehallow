@@ -1,7 +1,6 @@
 // Share cards: the 240×126 og_card art at exactly 5x (1200×630), with the page
 // title drawn on a plaque in the hand-drawn pixel font. Everything is placed on
 // the art's own pixel grid, so the card stays true pixel art.
-// A port of web/internal/site/og.go.
 import { CAP_ROWS, type PixelFont, ROWS } from "./pixelfont.ts";
 import { fillRect, type RGBA, upscale } from "./png.ts";
 import { rgb, type Theme } from "./theme.ts";

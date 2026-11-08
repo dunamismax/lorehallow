@@ -53,7 +53,7 @@ export function shortDate(d: Date): string {
 /** "2026-11-07". */
 export const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
 
-/** "7 November 2026" in the build machine's time zone, as the Go generator writes the build date. */
+/** "7 November 2026" in the build machine's time zone, as the footer has always shown it. */
 export function localLongDate(d: Date): string {
 	return `${d.getDate()} ${d.toLocaleString("en-GB", { month: "long" })} ${d.getFullYear()}`;
 }

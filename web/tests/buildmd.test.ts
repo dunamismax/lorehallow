@@ -1,4 +1,4 @@
-// Tests for the BUILD.md parser, ported from web/internal/buildmd/parse_test.go.
+// Tests for the BUILD.md parser, carried over from the retired Go parser's tests.
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";

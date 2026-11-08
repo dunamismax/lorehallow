@@ -1,5 +1,5 @@
 // RSS 2.0 and Atom feeds for the devlog, and the sitemap, with the same
-// entries, ids and dates as the Go generator's (web/internal/site/feeds.go),
+// entries, ids and dates the Go-built site published before the Astro cutover,
 // so feed readers see no duplicates after the cutover.
 import type { Post } from "./devlog.ts";
 

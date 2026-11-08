@@ -30,4 +30,4 @@ It's empty until v0.2.0 goes live (BUILD.md 2.10), and /play says plainly that t
 | `notes` | A site path (`/devlog/...`) or an `https://` URL, or `""` |
 | `protocol` | The `PROTOCOL_VERSION` the build speaks (`proto/PROTOCOL_VERSION`) |
 
-No other fields are allowed. Both builds validate it and fail with the release and field named: `src/lib/releases.ts` for Astro, `internal/site` for the Go site until it's retired.
+No other fields are allowed. The build validates it (`src/lib/releases.ts`) and fails with the release and field named.

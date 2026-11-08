@@ -1,6 +1,5 @@
 // BUILD.md as the site shows it: per-phase progress, the current phase, the
 // unchecked owner items, and the "quests complete" feed from git history.
-// A port of web/internal/site/progress.go.
 import { execFileSync } from "node:child_process";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";

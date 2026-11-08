@@ -54,7 +54,6 @@ setup: ## Install project-local dependencies (safe to re-run)
 	@$(ROOT)/tools/scripts/install-addons.sh
 	@echo "Godot import:"; $(GODOT_HEADLESS) --import >/dev/null 2>&1 && echo "  ok"
 	@echo "Art tools (uv):"; cd $(ROOT)/tools/art && uv sync --frozen --quiet && echo "  ok"
-	@echo "Website Go modules:"; cd $(ROOT)/web && go mod download && echo "  ok"
 	@echo "Node workspace (npm ci):"; cd $(ROOT) && npm ci --no-audit --loglevel=error && echo "  ok"
 
 # --- Aggregate gates ------------------------------------------------------------
@@ -62,7 +61,6 @@ setup: ## Install project-local dependencies (safe to re-run)
 .PHONY: fmt
 fmt: ## Format all code in place
 	cd $(ROOT)/server && gofmt -w $$(find . -name '*.go' -not -path './internal/pb/*')
-	cd $(ROOT)/web && gofmt -w .
 	cd $(ROOT) && npx --no-install biome check --write .
 	cd $(ROOT)/client && gdformat $(GD_SOURCES)
 	cd $(ROOT)/tools/art && uv run --frozen ruff format . && uv run --frozen ruff check --fix .
@@ -231,55 +229,26 @@ sync: ## Mirror art/processed into client/ and web/, and content/ into client/as
 # --- Website and BUILD.md ----------------------------------------------------------
 
 .PHONY: web-dev
-web-dev: ## Preview the Astro site at http://127.0.0.1:4321 with drafts, rebuilt on change
+web-dev: ## Preview the website at http://127.0.0.1:4321 with drafts, rebuilt on change
 	cd $(ROOT)/web && npx --no-install astro dev
 
 .PHONY: web-build
-web-build: ## Build the Astro site into web/dist-astro/ (no drafts; deploys still use web-go-build until BUILD.md 1.9)
+web-build: ## Build the website into web/dist/ (no drafts), exactly what make deploy-web publishes
 	cd $(ROOT)/web && npx --no-install astro build
 
-.PHONY: web-go-dev
-web-go-dev: ## Preview the Go-built site (live until BUILD.md 1.9) at http://127.0.0.1:4322 with drafts
-	cd $(ROOT)/web && go run ./cmd/lorehallow-web serve -addr $(or $(WEB_ADDR),127.0.0.1:4322)
-
-.PHONY: web-go-build
-web-go-build: ## Build the Go-generated site into web/dist/ (what make deploy-web publishes until BUILD.md 1.9)
-	cd $(ROOT)/web && go run ./cmd/lorehallow-web build
-
-.PHONY: web-parity
-web-parity: ## Build both sites from this commit and fail on any difference not accepted in docs/design/website-parity.md
-	cd $(ROOT)/web && node scripts/parity.ts
-
 .PHONY: web-lint
-web-lint: web-go-lint web-ts-lint ## Website: every linter, for the Go generator and the TypeScript side
-
-.PHONY: web-test
-web-test: web-go-test web-ts-test web-parity ## Website: every test for both sites, and the parity check between them
-
-.PHONY: web-go-lint
-web-go-lint: ## Website (Go generator, until BUILD.md 1.9): gofmt check, go vet, golangci-lint and govulncheck
-	@cd $(ROOT)/web && out="$$(gofmt -l .)" && if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
-	cd $(ROOT)/web && go vet ./...
-	cd $(ROOT)/web && golangci-lint run ./...
-	cd $(ROOT)/web && go tool govulncheck ./...
-
-.PHONY: web-go-test
-web-go-test: ## Website (Go generator, until BUILD.md 1.9): go test -race ./...
-	cd $(ROOT)/web && go test -race -count=1 ./...
-
-.PHONY: web-ts-lint
-web-ts-lint: ## Website (Astro and TypeScript): Biome, astro check, tsc --noEmit and npm audit
+web-lint: ## Website: Biome, astro check, tsc --noEmit and npm audit
 	cd $(ROOT) && npx --no-install biome check .
 	cd $(ROOT)/web && npx --no-install astro check --minimumSeverity warning
 	cd $(ROOT)/web && npx --no-install tsc --noEmit -p .
 	cd $(ROOT) && npm audit --audit-level=moderate
 
-.PHONY: web-ts-test
-web-ts-test: ## Website (TypeScript): node --test, including the parser parity test against the Go parser
+.PHONY: web-test
+web-test: ## Website: node --test (parser, units, and the output tests on a real build)
 	cd $(ROOT)/web && node --test 'tests/**/*.test.ts'
 
 .PHONY: buildmd-lint
-buildmd-lint: ## Fail on any BUILD.md format-contract violation (the TypeScript parser)
+buildmd-lint: ## Fail on any BUILD.md format-contract violation
 	cd $(ROOT) && node web/scripts/buildmd-lint.ts BUILD.md
 
 .PHONY: clean

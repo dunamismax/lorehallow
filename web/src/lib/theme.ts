@@ -1,5 +1,5 @@
 // The palette from art/style/palette.hex and the color roles the stylesheet
-// uses. Ported from web/internal/site/theme.go.
+// uses.
 
 /** One palette entry. */
 export interface Color {
@@ -160,7 +160,7 @@ export class Theme {
 	css(): string {
 		let s = ":root {\n\t/* Palette: generated from art/style/palette.hex. */\n";
 		for (const c of this.palette) s += `\t--c-${c.name}: ${c.hex};\n`;
-		s += "\t/* Roles: the only colors text and backgrounds use (internal/site/theme.go). */\n";
+		s += "\t/* Roles: the only colors text and backgrounds use (src/lib/theme.ts). */\n";
 		for (const r of ROLES) s += `\t--${r.name}: var(--c-${r.token});\n`;
 		return `${s}}\n`;
 	}

@@ -1,5 +1,5 @@
 // lorehallow.com: a static Astro build with no browser JavaScript (ADR 0014).
-// Every URL keeps the shape the Go-built site gave it (docs/design/website-parity.md).
+// Every URL keeps the shape it had before the Astro cutover (docs/design/website-parity.md).
 import { satteri } from "@astrojs/markdown-satteri";
 import { defineConfig } from "astro/config";
 import lorehallow from "./src/integration.ts";
@@ -8,8 +8,8 @@ import { dropRawHTML } from "./src/lib/markdown.ts";
 export default defineConfig({
 	site: "https://lorehallow.com",
 	output: "static",
-	// Its own folder until the cutover, so both builds can be compared (scripts/parity.ts).
-	outDir: process.env.LOREHALLOW_ASTRO_OUT ?? "./dist-astro",
+	// LOREHALLOW_ASTRO_OUT builds elsewhere (the deploy and the output tests use it).
+	outDir: process.env.LOREHALLOW_ASTRO_OUT ?? "./dist",
 	publicDir: "./public",
 	trailingSlash: "always",
 	build: {

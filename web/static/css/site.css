@@ -1,7 +1,8 @@
-{{/*
-  lorehallow.com stylesheet. A text/template: cmd/lorehallow-web fills in
-  font and art URLs, prepends the palette tokens and color roles
-  (internal/site/theme.go) and appends the pixel image rules.
+/*
+  lorehallow.com stylesheet. src/lib/sitecss.ts fills in the placeholders
+  ({{font NAME}}, {{art PATH}}, {{fireflies}}, {{percents}}, {{questmap}}),
+  prepends the palette tokens and color roles (src/lib/theme.ts) and appends
+  the responsive pixel-art rules for the images the pages drew.
 
   Rules of the house:
   - `color` and `background-color` use the role variables (--text, --bg, ...)
@@ -10,12 +11,12 @@
   - Pixel art is drawn at whole-number scales with image-rendering: pixelated.
   - The pixel font is used at 20, 30 and 40px only (2x, 3x, 4x).
   - All motion is CSS and stops under prefers-reduced-motion.
-*/}}
-@font-face { font-family: "Lorehallow Pixel"; src: url("{{font "pixel"}}") format("woff"); font-display: swap; }
-@font-face { font-family: "Go"; src: url("{{font "regular"}}") format("woff"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Go"; src: url("{{font "italic"}}") format("woff"); font-weight: 400; font-style: italic; font-display: swap; }
-@font-face { font-family: "Go"; src: url("{{font "bold"}}") format("woff"); font-weight: 700; font-style: normal; font-display: swap; }
-@font-face { font-family: "Go Mono"; src: url("{{font "mono"}}") format("woff"); font-display: swap; }
+*/
+@font-face { font-family: "Lorehallow Pixel"; src: url("{{font pixel}}") format("woff"); font-display: swap; }
+@font-face { font-family: "Go"; src: url("{{font regular}}") format("woff"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Go"; src: url("{{font italic}}") format("woff"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "Go"; src: url("{{font bold}}") format("woff"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Go Mono"; src: url("{{font mono}}") format("woff"); font-display: swap; }
 
 :root {
 	--pixel: "Lorehallow Pixel", "Go", ui-monospace, monospace;
@@ -184,9 +185,9 @@ h3 .badge { margin-left: 4px; }
 	background-position: calc(50% + var(--k) * 120px) bottom;
 	image-rendering: pixelated;
 }
-.hero-far { background-image: url("{{art "web/parallax_far.png#mirror"}}"); }
-.hero-mid { background-image: url("{{art "web/parallax_mid.png#mirror"}}"); }
-.hero-near { background-image: url("{{art "web/parallax_near.png#mirror"}}"); }
+.hero-far { background-image: url("{{art web/parallax_far.png#mirror}}"); }
+.hero-mid { background-image: url("{{art web/parallax_mid.png#mirror}}"); }
+.hero-near { background-image: url("{{art web/parallax_near.png#mirror}}"); }
 .hero-content { position: relative; --halo: 2px 2px 0 var(--c-ink); }
 .wordmark { margin: 0 0 12px; line-height: 0; }
 .wordmark img { filter: drop-shadow(0 4px 0 var(--c-ink)); }
@@ -248,8 +249,7 @@ h3 .badge { margin-left: 4px; }
 	box-shadow: 0 0 calc(var(--k) * 2px) calc(var(--k) * 1px) rgb(242 196 90 / 0.35);
 	animation: drift 9s steps(9) infinite, blink 3s steps(3) infinite;
 }
-{{range $i, $p := .Fireflies}}.ff-{{$i}} { left: calc(50% + var(--k) * {{index $p 0}}px); bottom: calc(var(--k) * {{index $p 1}}px); animation-duration: {{index $p 2}}s, {{index $p 3}}s; animation-delay: -{{index $p 4}}s, -{{index $p 5}}s; }
-{{end}}
+{{fireflies}}
 @keyframes drift {
 	0%, 100% { transform: translate(0, 0); }
 	25% { transform: translate(calc(var(--k) * 3px), calc(var(--k) * -2px)); }
@@ -293,7 +293,7 @@ h3 .badge { margin-left: 4px; }
 	content: ""; position: absolute; inset: 0;
 	background-image: repeating-linear-gradient(90deg, transparent 0 calc(10% - 2px), var(--c-ink) calc(10% - 2px) 10%);
 }
-{{range .Percents}}.xp-{{.}}{width:{{.}}%}{{end}}
+{{percents}}
 
 .progress-widget { display: grid; gap: 40px; align-items: center; }
 @media (min-width: 960px) { .progress-widget { grid-template-columns: 3fr 2fr; } }
@@ -355,7 +355,7 @@ h3 .badge { margin-left: 4px; }
 .quest-map {
 	--gap: 24px; --road: 12px; --road-y: 44px;
 	background-color: var(--bg-raised);
-	background-image: url("{{art "tiles/terrain_base.png#grass_a"}}");
+	background-image: url("{{art tiles/terrain_base.png#grass_a}}");
 	background-size: 64px 64px; background-repeat: repeat;
 	border: 4px solid var(--c-ink); box-shadow: 0 0 0 4px var(--c-bark), 0 0 0 8px var(--c-ink);
 	padding: 24px 16px; margin: 0 0 48px;
@@ -402,7 +402,7 @@ h3 .badge { margin-left: 4px; }
 	.qm-node { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 8px; }
 	.qm-plaque { width: 100%; }
 }
-{{.QuestMap}}
+{{questmap}}
 
 .legend { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15px; color: var(--text-muted); }
 

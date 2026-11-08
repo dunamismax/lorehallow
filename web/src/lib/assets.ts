@@ -1,5 +1,5 @@
 // Every fingerprinted file under /assets/, and the pixel image rules the pages
-// ask for. A port of web/internal/site/assets.go.
+// ask for.
 //
 // Pages register what they use while Astro renders them; the lorehallow
 // integration (src/integration.ts) then writes the files and the stylesheet,

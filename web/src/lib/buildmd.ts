@@ -6,11 +6,10 @@
 // `make buildmd-lint` fails on any problem it reports. If the format changes,
 // change this file, its tests and the contract together.
 //
-// It is a port of the Go parser in web/internal/buildmd, and the parity test
-// (tests/buildmd-parity.test.ts) holds the two to the same output until the Go
-// module is retired. Regular expressions use Go's (RE2's) ASCII meaning of
-// \s and \S, and trimming follows Go's strings.TrimSpace, so both parsers
-// agree on every input.
+// It was ported from the Go parser of the retired Go site generator and held to
+// it on real, fixture and randomly broken input until that was removed. The
+// regular expressions keep Go's (RE2's) ASCII meaning of \s and \S, and
+// trimming keeps Go's strings.TrimSpace, so the format contract didn't change.
 
 /** Tags an item may carry, in backticks right after its checkbox. */
 export const TAGS = ["HUMAN", "ADR"] as const;
