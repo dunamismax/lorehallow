@@ -2,15 +2,23 @@
 
 The Godot 4 game client skeleton, written in statically typed GDScript. **It is being replaced.**
 
-## Planned: the Phaser browser client
+## Next: the Phaser client
 
-Lorehallow becomes a browser game at play.lorehallow.com, built with Phaser, strict TypeScript and Vite ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md 2.6). None of it exists yet. The first task is the scaffold, then, in BUILD.md order:
+Lorehallow becomes a browser game at play.lorehallow.com, built with Phaser, strict TypeScript and Vite ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md)). None of it exists yet; it is the next work in the plan, starting at BUILD.md 2.6. These notes are for whoever starts it. Everything they mention was checked on 2026-11-08; check versions again before pinning.
 
-- `make client-dev` (Vite dev server, proxying `/ws` and `/api/` to the local Go server) and `make client-build` (the static build, with version and commit embedded)
-- TypeScript protobuf bindings from `make proto`, passing every golden vector in `proto/testdata/` byte for byte
-- the starter map from `content/maps/`, drawn at whole-number scales of 640×360 with nearest-neighbor sampling
-- a dev art scene with a pixel check in a headless browser (the new `make client-art-check`)
-- a browser smoke test where two sessions see each other move through the real Go server
+**Order** (BUILD.md 2.6, then 2.2, 2.7, 2.8, 2.9, 2.10): the scaffold and `make client-dev`/`client-build`; TypeScript protobuf bindings passing every golden vector; integer pixel scaling and the title screen; the dev art scene and its headless pixel check; the connect screen and Net module; input, interpolation and animation; the debug overlay and network simulation; and the two-browser smoke test against the real Go server.
+
+**Toolchain.** The npm workspace already exists ([ADR 0015](../docs/decisions/0015-frontend-toolchain.md)): add `"client"` to `workspaces` in the root `package.json` and give `client/` its own `package.json` (`@lorehallow/client`), `tsconfig.json` (extend the same strict settings as `web/`, plus `noUncheckedIndexedAccess`) and `vite.config.ts`. Add `client/src/**` and `client/tests/**` to the `includes` in `biome.json`, and exclude the generated bindings. Tests use `node --test`, as in `web/`. Latest versions seen: Phaser 4.2.1, Vite 8.3.6 (Astro already depends on Vite 8), `@bufbuild/protobuf` and `@bufbuild/protoc-gen-es` 2.17.0, Playwright 1.65.0 for the headless browser.
+
+**Protobuf bindings.** Add a `local` protoc-gen-es plugin to `proto/buf.gen.yaml` with `target=ts`, `import_extension=ts` and `erasable_syntax=true`. The last one makes enums `as const` objects instead of TypeScript `enum`s; without it Node's type stripping can't run the generated code in tests, and `erasableSyntaxOnly` fails. Write a `PROTOCOL_VERSION` constant from `proto/PROTOCOL_VERSION` in `tools/scripts/gen-proto.sh`, next to the Go and GDScript ones, and add the output folder to `proto-check`'s stale-code list in the Makefile. The golden JSON files are protojson with proto field names and enum numbers, so compare against `toJson(schema, msg, { useProtoFieldName: true, enumAsInteger: true })`.
+
+**Pixel scaling.** Phaser's `roundPixels` only behaves at integer zoom. Choose the scale in device pixels (`floor(min(innerWidth * devicePixelRatio / 640, innerHeight * devicePixelRatio / 360))`, at least 1), keep the canvas backing store at 640×360 with `pixelArt: true` and `Scale.NONE`, set the canvas's CSS size to 640k/dpr by 360k/dpr pixels, and call `game.scale.refresh()` after a resize so input coordinates follow. A pure function for the scale choice makes the required test easy.
+
+**Assets.** Load art and maps through Vite's asset handling so built files get content hashes, and set `build.assetsInlineLimit: 0` so nothing becomes a `data:` URL. The game's CSP (BUILD.md 2.9) allows scripts only from `'self'`.
+
+**Text.** Phaser's canvas text is anti-aliased, which breaks the pixel rules. The hand-drawn font in `web/static/fonts/lorehallow-pixel.txt` has a parser in `web/src/lib/pixelfont.ts` (`PixelFont.parse`, `measure`, `rects`). That module imports `fillRect` from `web/src/lib/png.ts`, which imports `node:zlib`; move `RGBA`, `blank` and `fillRect` into a small module with no Node imports before using the parser in the browser.
+
+**Local server.** `make server` runs the Go server on 127.0.0.1:7420 with `content/maps/starter.tmj`. The Vite dev server should proxy `/ws` (with `ws: true`), `/healthz`, `/version` and `/api/` to it.
 
 Both clients share this folder until BUILD.md 2.10. Keep Godot out of the Phaser folders, keep the Godot checks below green, and remove Godot, its addons, the GDScript bindings and their tooling only after the Phaser checks pass in `make check`.
 
