@@ -280,7 +280,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 
 ### 1.8 Quality gates
 
-- [ ] Lighthouse audit on the live Astro site after the cutover (1.9), on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/`. Lighthouse runs locally under Node against the live site; it isn't part of `make check` or CI.
+- [x] Lighthouse audit on the live Astro site after the cutover (1.9), on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/`. Lighthouse runs locally under Node against the live site; it isn't part of `make check` or CI.
 - [x] The Go output tests ported to TypeScript and run on the Astro build in `make web-test`: every check listed in `web/README.md` (no scripts, iframes, inline handlers, `style` attributes or `javascript:` URLs; alt text and whole-number image sizes; links, fragments and CSS `url()`s resolve; no other origins; the 1 MB landing page budget; WCAG AA pairs and colors only through roles; titles, descriptions, canonical URLs, Open Graph cards and repository links on every page; valid feeds and sitemap; no drafts; valid release data).
 - [x] Parity check, run in `make check` until 1.9: builds both sites and compares URL sets, page text, meta tags, feeds, `/progress.json`, `/progress.svg`, the sitemap and asset references. Every difference is fixed or listed as accepted in the parity inventory.
 - [x] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
@@ -314,7 +314,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
 - [x] Every page links to the GitHub and Codeberg repositories.
 - [x] The devlog has at least one published post and a valid RSS feed.
-- [ ] Lighthouse budgets pass and no page ships any JavaScript.
+- [x] Lighthouse budgets pass and no page ships any JavaScript.
 - [x] A deliberately bad deploy was rolled back with one command.
 - [x] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
 - [x] /play exists and accurately says whether the game is playable, and /downloads redirects to it.
