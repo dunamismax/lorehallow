@@ -1,0 +1,23 @@
+{
+	"name": "lorehallow-frontends",
+	"private": true,
+	"description": "One npm workspace for lorehallow.com (web/) and, from BUILD.md 2.6, the browser game (client/). See docs/decisions/0015-frontend-toolchain.md.",
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"workspaces": [
+		"web"
+	],
+	"packageManager": "npm@11.20.0",
+	"engines": {
+		"node": ">=26.13.0 <27",
+		"npm": ">=11.20.0 <12"
+	},
+	"scripts": {
+		"lint": "biome check .",
+		"fmt": "biome check --write ."
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.6",
+		"typescript": "6.0.3"
+	}
+}

@@ -1,0 +1,18 @@
+{
+	"name": "@lorehallow/web",
+	"private": true,
+	"description": "lorehallow.com, built with Astro: static output, no browser JavaScript (ADR 0014).",
+	"license": "AGPL-3.0-only",
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"check": "astro check && tsc --noEmit"
+	},
+	"devDependencies": {
+		"@astrojs/check": "0.9.12",
+		"@astrojs/markdown-satteri": "0.4.7",
+		"astro": "7.4.7",
+		"typescript": "6.0.3"
+	}
+}

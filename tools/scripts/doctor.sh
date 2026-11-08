@@ -78,6 +78,8 @@ check buf "$BUF_VERSION" minor "$(hint bufbuild/buf/buf 'https://buf.build/docs/
 # shellcheck disable=SC2016 # $(go env GOPATH) is printed for the user to run
 check golangci-lint "$GOLANGCI_LINT_VERSION" minor "$(hint golangci-lint 'curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin v'"$GOLANGCI_LINT_VERSION")" golangci-lint --version
 check gdtoolkit "$GDTOOLKIT_VERSION" minor "uv tool install gdtoolkit==$GDTOOLKIT_VERSION" gdformat --version
+check node "$NODE_VERSION" minor "$(hint node@26 'https://nodejs.org/en/download (Node '"$NODE_VERSION"' LTS), or mise use node@'"$NODE_VERSION")" node --version
+check npm "$NPM_VERSION" minor "npm install -g npm@$NPM_VERSION (npm ships with Node; this matches Node $NODE_VERSION)" npm --version
 check make 4.0 major "$(hint make 'sudo apt install make') (GNU Make 4+; on macOS put gnubin first on PATH)" make --version
 check git 2.30 major "$(hint git 'sudo apt install git')" git --version
 

@@ -55,6 +55,7 @@ setup: ## Install project-local dependencies (safe to re-run)
 	@echo "Godot import:"; $(GODOT_HEADLESS) --import >/dev/null 2>&1 && echo "  ok"
 	@echo "Art tools (uv):"; cd $(ROOT)/tools/art && uv sync --frozen --quiet && echo "  ok"
 	@echo "Website Go modules:"; cd $(ROOT)/web && go mod download && echo "  ok"
+	@echo "Node workspace (npm ci):"; cd $(ROOT) && npm ci --no-audit --loglevel=error && echo "  ok"
 
 # --- Aggregate gates ------------------------------------------------------------
 

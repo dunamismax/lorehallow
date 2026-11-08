@@ -1,0 +1,34 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": [
+			"package.json",
+			"biome.json",
+			"web/package.json",
+			"web/tsconfig.json",
+			"web/astro.config.ts",
+			"web/src/**",
+			"web/scripts/**",
+			"web/tests/**"
+		]
+	},
+	"formatter": {
+		"indentStyle": "tab",
+		"lineWidth": 110
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"linter": {
+		"rules": {
+			"recommended": true
+		}
+	}
+}
