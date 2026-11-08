@@ -51,7 +51,7 @@ All served by Caddy, not by the build. They don't change at the cutover except f
 | Request | Response | Checked by |
 |---|---|---|
 | `http://lorehallow.com/...` | Redirect to `https://` (Caddy automatic HTTPS) | deploy |
-| `https://www.lorehallow.com/<uri>` | 308 to `https://lorehallow.com/<uri>` | deploy |
+| `https://www.lorehallow.com/<uri>` | 301 to `https://lorehallow.com/<uri>` | deploy |
 | A directory without its slash, such as `/about` | 308 to `/about/` (Caddy `file_server`) | deploy |
 | A missing path | HTTP 404 with the body of `/404.html` | deploy |
 | `/assets/*` | `Cache-Control: public, max-age=31536000, immutable` | deploy |
