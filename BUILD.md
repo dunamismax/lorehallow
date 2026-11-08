@@ -254,7 +254,7 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] Move the Phase 0 devlog draft into the collection.
 - [x] `HUMAN` Edit and publish the first devlog post.
 - [x] Devlog as an Astro content collection reading `web/content/devlog/` in place: the same front-matter schema, a build failure naming the file and field for bad front matter, the same slugs, and raw HTML in posts still dropped.
-- [ ] Drafts appear only in `make web-dev`. A test proves no draft reaches any public artifact: pages, tag pages, feeds, the sitemap, share cards or any file in the build output.
+- [x] Drafts appear only in `make web-dev`. A test proves no draft reaches any public artifact: pages, tag pages, feeds, the sitemap, share cards or any file in the build output.
 - [x] Devlog index, tag and post pages, plus RSS and Atom as build-time endpoints, with the same URLs, entry ids and dates, so feed readers see no duplicates after the cutover.
 
 ### 1.6 Play (/play)
