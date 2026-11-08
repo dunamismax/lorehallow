@@ -230,8 +230,7 @@ test("every page has its metadata and links to both repositories", () => {
 		const og = found.get("og:image") ?? "";
 		const card = files.get(og.replace(`${BaseURL}/`, ""));
 		const size = card ? decodePNG(card) : null;
-		if (size?.width !== 1200 || size?.height !== 630)
-			problems.push(`${p}: og:image ${og} isn't 1200×630`);
+		if (size?.width !== 1200 || size?.height !== 630) problems.push(`${p}: og:image ${og} isn't 1200×630`);
 	}
 	assert.deepEqual(problems, []);
 });
