@@ -20,6 +20,12 @@ const web = new URL("..", import.meta.url).pathname;
  */
 const ACCEPTED: { path: RegExp; why: string; normalize: (s: string) => string }[] = [
 	{
+		path: /^about\/index\.html$/,
+		why: "the About page's tech stack says which generator built the site",
+		normalize: (s) =>
+			s.replace(/<li><strong>This website:<\/strong>[^<]*/, "<li><strong>This website:</strong> GENERATOR."),
+	},
+	{
 		path: /^progress\.json$/,
 		why: "generated is the build time",
 		normalize: (s) => s.replace(/"generated": "[^"]*"/, '"generated": ""'),

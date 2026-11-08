@@ -143,3 +143,4 @@ Recorded here as the parity check finds them. Anything not listed fails the chec
 - Hashes in the names of re-encoded PNGs and of WOFF files, and therefore every URL and CSS `url()` that points at them, as explained under [Generated assets](#generated-assets).
 - Whitespace between tags. The parity check compares pages after collapsing whitespace.
 - `/progress.json`'s `generated` timestamp (it's the build time).
+- The About page's "This website" line, which names the generator that built the page (the Astro build says Astro from the cutover on).

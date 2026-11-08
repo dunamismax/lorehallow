@@ -22,14 +22,16 @@ lorehallow.com {
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		# No third-party anything: everything is served from here. The site
-		# ships no JavaScript at all (ADR 0011), so scripts are refused.
+		# ships no JavaScript at all (ADR 0014), so scripts are refused. This
+		# policy is the website's alone: the game at play.lorehallow.com gets
+		# its own in its own block (BUILD.md 2.9), and neither loosens the other.
 		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'none'; font-src 'self'; connect-src 'self' wss://play.lorehallow.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 		-Server
 	}
 
-	# The static website (BUILD.md 1.2, 1.9), one release at a time, written
-	# by the Go generator in web/ (ADR 0011). Files under /assets/ carry a
-	# content hash in their names, so they can be cached forever.
+	# The static website (BUILD.md 1.2, 1.9), one release at a time, built
+	# by Astro in web/ (ADR 0014). Files under /assets/ carry a content hash
+	# in their names (ADR 0016), so they can be cached forever.
 	root * /srv/lorehallow/web/current
 
 	# Downloads became Play when the game moved to the browser (ADR 0014,

@@ -10,7 +10,9 @@
 #                                   back on its own (the site is wrong for a few seconds)
 #
 # Needs LOREHALLOW_DEPLOY_HOST (environment or deploy/host.env), an ssh
-# target such as root@ubuntu-vm, and Go to build the site.
+# target such as root@ubuntu-vm, and Node with the workspace installed
+# (make setup) to build the site with Astro. The site is built here; Node
+# never goes to the host, which only gets the files.
 #
 # On the host:
 #   /srv/lorehallow/web/releases/<timestamp>/   one directory per release
@@ -46,7 +48,10 @@ switch_to() { # $1: release directory name
 
 # check_live <short commit>: fetch pages through the host's own Caddy (so
 # DNS and the home router aren't part of the test) and check that the
-# expected release is the one being served, with its stylesheet and data.
+# expected release is the one being served: its stylesheet and share card
+# with immutable caching, pages that revalidate, absolute canonical and
+# share-card URLs, the feeds and progress data, /play/, the /downloads/
+# redirect, and a real 404.
 check_live() {
   remote "bash -s" -- "$1" "$SITE" <<'CHECK'
 set -euo pipefail
@@ -57,10 +62,16 @@ for i in $(seq 1 10); do
   [[ $i == 10 ]] && { echo "check: / isn't serving $want" >&2; exit 1; }
   sleep 1
 done
+headers() { curl -fsS -o /dev/null -D - --max-time 10 --resolve "$site:443:127.0.0.1" "https://$site$1" | tr -d '\r'; }
 css="$(grep -o '/assets/site\.[0-9a-f]*\.css' <<<"$page" | head -n1)"
 [[ -n "$css" ]] || { echo "check: no stylesheet link on /" >&2; exit 1; }
-get "$css" >/dev/null || { echo "check: $css doesn't load" >&2; exit 1; }
-for p in /progress/ /devlog/ /play/ /progress.json /devlog/rss.xml; do
+h="$(headers "$css")" && grep -qi '^cache-control: .*immutable' <<<"$h" || { echo "check: $css doesn't load with immutable caching" >&2; exit 1; }
+h="$(headers /)" && grep -qi '^cache-control: .*must-revalidate' <<<"$h" || { echo "check: / isn't revalidated" >&2; exit 1; }
+grep -q "<link rel=\"canonical\" href=\"https://$site/\">" <<<"$page" || { echo "check: / has no absolute canonical URL" >&2; exit 1; }
+card="$(grep -o "<meta property=\"og:image\" content=\"https://$site/assets/og-[^\"]*\.png\">" <<<"$page" | sed 's/.*content="https:\/\/[^/]*//; s/">$//')"
+[[ -n "$card" ]] || { echo "check: / has no absolute share-card URL" >&2; exit 1; }
+h="$(headers "$card")" && grep -qi '^content-type: image/png' <<<"$h" || { echo "check: share card $card doesn't load" >&2; exit 1; }
+for p in /progress/ /devlog/ /play/ /progress.json /progress.svg /devlog/rss.xml /devlog/atom.xml /sitemap.xml; do
   get "$p" >/dev/null || { echo "check: $p doesn't load" >&2; exit 1; }
 done
 moved="$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 10 --resolve "$site:443:127.0.0.1" "https://$site/downloads/")"
@@ -86,8 +97,8 @@ deploy)
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   out="$(mktemp -d)"
   trap 'rm -rf "$out"' EXIT
-  echo "deploy-web: building $short"
-  (cd web && go run ./cmd/lorehallow-web build -out "$out/site")
+  echo "deploy-web: building $short with Astro"
+  (cd web && LOREHALLOW_ASTRO_OUT="$out/site" npx --no-install astro build --silent)
   if [[ "$BROKEN" == 1 ]]; then
     echo "deploy-web: rehearsal: removing the stylesheet so this release fails its check"
     rm -f "$out"/site/assets/site.*.css

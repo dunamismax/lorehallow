@@ -1,14 +1,15 @@
 # Runbook: the website
 
-How lorehallow.com is built, deployed, rolled back and watched. The generator is in [web/](../../web/README.md); host facts are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy site file is [deploy/caddy/lorehallow.caddy](../../deploy/caddy/lorehallow.caddy). Update this file whenever a procedure changes.
+How lorehallow.com is built, deployed, rolled back and watched. The site is an Astro project in [web/](../../web/README.md); host facts are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy site file is [deploy/caddy/lorehallow.caddy](../../deploy/caddy/lorehallow.caddy). Update this file whenever a procedure changes.
 
-Everything here describes the Go-built site that is live today. The planned Astro site keeps the same release model; what changes is in [Planned: the Astro cutover](#planned-the-astro-cutover) at the end.
+Since the cutover (BUILD.md 1.9, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)) the live site is the Astro build. The Go generator stays in `web/` as the rollback target until it is retired, a week after the cutover; see [The Astro cutover](#the-astro-cutover).
 
 ## Layout on the host
 
 | Path | What |
 |---|---|
-| `/srv/lorehallow/web/releases/<timestamp>/` | One build of the site (the contents of `web/dist/`). Five are kept. |
+| `/srv/lorehallow/web/releases/<timestamp>/` | One build of the site (the Astro output). Five are kept. |
+| `/srv/lorehallow/web/releases/go-final/` | A copy of the last Go-built release, kept as the cutover's rollback target until the Go module is retired. Never deleted by deploys. |
 | `/srv/lorehallow/web/current` | Symlink to the live release; Caddy's site root. Switched with one rename. |
 | `/srv/lorehallow/web/releases/placeholder/` | The old holding page. Never deleted by deploys. |
 | `lorehallow-deploy` | The user that owns `/srv/lorehallow/web`. Deploys run as root over SSH and hand each release to it. |
@@ -21,7 +22,7 @@ Everything under `/assets/` has a content hash in its name and is cached for a y
 make web-dev        # the Astro site at http://127.0.0.1:4321, drafts included
 make web-build      # the Astro site into web/dist-astro/
 make web-go-dev     # the Go-built site at http://127.0.0.1:4322, drafts included
-make web-go-build   # the Go-built site into web/dist/, exactly what deploys until the cutover (BUILD.md 1.9)
+make web-go-build   # the Go-built site into web/dist/ (the rollback target until it's retired)
 make web-test       # both sites' tests, and the parity check between them
 ```
 
@@ -33,10 +34,10 @@ make deploy-web
 
 It refuses to run with uncommitted changes to the site's sources, then:
 
-1. builds the site at the current commit,
+1. builds the site at the current commit with Astro, on the machine running the deploy (it needs Node and `make setup`; Node never goes to the host),
 2. uploads it to a new `releases/<timestamp>/` and hands it to `lorehallow-deploy`,
 3. switches `current` to it (one rename, so visitors never see half a release),
-4. checks it through the host's own Caddy: `/` is served by this commit, its stylesheet loads, `/progress/`, `/devlog/`, `/downloads/`, `/progress.json` and the RSS feed load, and a missing page returns 404,
+4. checks it through the host's own Caddy: `/` is served by this commit; its stylesheet and share card load, the stylesheet with immutable caching; `/` revalidates; the canonical and share-card URLs are absolute; `/progress/`, `/devlog/`, `/play/`, `/progress.json`, `/progress.svg`, both feeds and the sitemap load; `/downloads/` answers 301 to `/play/`; and a missing page returns 404,
 5. if any check fails, switches back to the previous release and deletes the new one,
 6. deletes all but the newest five releases.
 
@@ -85,12 +86,19 @@ When an alert comes in:
 3. Store it: `gh secret set NTFY_TOPIC --body 'lorehallow-…'`.
 4. Send a test: `gh workflow run uptime.yml -f test_alert=true`. The phone should show "Lorehallow uptime: test".
 
-## Planned: the Astro cutover
+## The Astro cutover
 
-Not done yet (BUILD.md 1.9, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)). When it happens, this section becomes the procedure and the rest of the file is updated to match.
+Done on 2026-11-08 (BUILD.md 1.9). What happened, so it can be repeated or undone:
 
-- **Same release model.** `make deploy-web` still uploads a timestamped release, switches `current` atomically, checks the release through the host's Caddy, rolls back on failure and keeps five releases. The difference is the build step: it runs the Astro build on the machine doing the deploy. Node never goes to the host.
-- **More checks.** The health check adds Astro's hashed assets (served with immutable cache headers, while pages revalidate), absolute canonical and share-card URLs, both feeds, `/progress.json`, `/progress.svg`, `/play/` and the `/downloads/` redirect. It still requires a missing page to return HTTP 404.
-- **Caddy.** The cache rule follows Astro's asset folder. `/downloads/` gets a permanent redirect to `/play/`. The CSP stays `script-src 'none'`, separate from play.lorehallow.com's game CSP. Validate as the caddy user before reloading, as always.
-- **Cutover order.** First, the owner reviews the local Astro build and the parity report and approves. Then `make deploy-web` publishes the Astro build and the live checks are confirmed. The last Go-built release stays as the rollback target, so `make rollback-web` returns to it. After that, `make rehearse-rollback-web` is run with an Astro release.
-- **After a week with no rollback,** the Go web module is deleted (BUILD.md 1.9).
+1. `make web-parity` passed: the Go and Astro builds of the same commit matched on every file, apart from the differences accepted in [docs/design/website-parity.md](../design/website-parity.md).
+2. The last Go-built release was copied to `releases/go-final/` on the host, so no deploy can rotate it away.
+3. `make deploy-web` published the Astro build, and its health check passed.
+4. `make rehearse-rollback-web` deployed an Astro release with its stylesheet missing; the check failed and the previous Astro release came back on its own.
+
+To go back to the Go-built site (only while the Go module still exists):
+
+```bash
+ssh root@ubuntu-vm 'ln -sfn releases/go-final /srv/lorehallow/web/current.new && mv -T /srv/lorehallow/web/current.new /srv/lorehallow/web/current'
+```
+
+A week after the cutover with no rollback, the Go web module is deleted (BUILD.md 1.9) and so is `releases/go-final/`.

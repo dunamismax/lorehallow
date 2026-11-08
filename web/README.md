@@ -6,8 +6,8 @@ The lorehallow.com website: a Go program that builds the whole site as static fi
 
 This directory holds two builds of lorehallow.com while it moves to Astro ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md Phase 1):
 
-- **The Astro project** (`astro.config.ts`, `src/`, `scripts/`, `tests/`): the new site. Astro components, strict TypeScript, CSS and a Markdown content collection, static output, no UI framework integrations and no browser JavaScript. It builds into `dist-astro/` and isn't deployed yet.
-- **The Go generator** (described below): the site that is live. `make deploy-web` still publishes its build until the cutover (BUILD.md 1.9), and it is deleted a week after that.
+- **The Astro project** (`astro.config.ts`, `src/`, `scripts/`, `tests/`): the live site since the cutover (BUILD.md 1.9). Astro components, strict TypeScript, CSS and a Markdown content collection, static output, no UI framework integrations and no browser JavaScript. It builds into `dist-astro/`, and `make deploy-web` publishes it.
+- **The Go generator** (described below): the site that was live until the cutover, kept as the rollback target and deleted a week after it.
 
 `make web-parity` builds both from the same commit and compares every file: page HTML and CSS after collapsing whitespace, feeds, `/progress.json` (apart from its timestamp), font tables, and decoded pixels for every image. Any difference not listed in [docs/design/website-parity.md](../docs/design/website-parity.md) fails `make check`. Today they match on all 153 files.
 
@@ -29,7 +29,7 @@ This directory holds two builds of lorehallow.com while it moves to Astro ([ADR 
 make web-dev       # the Astro site at http://127.0.0.1:4321, drafts included
 make web-build     # the Astro site into dist-astro/ (no drafts)
 make web-go-dev    # the Go-built site at http://127.0.0.1:4322, drafts included
-make web-go-build  # the Go-built site into dist/, exactly what deploys until 1.9
+make web-go-build  # the Go-built site into dist/ (the rollback target until it's retired)
 make web-lint      # both: gofmt, vet, golangci-lint, govulncheck; Biome, astro check, tsc, npm audit
 make web-test      # both: go test -race; node --test; and the parity check
 make buildmd-lint  # lint BUILD.md
