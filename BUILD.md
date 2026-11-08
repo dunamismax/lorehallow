@@ -275,7 +275,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] Custom 404 page with the hand-drawn 404 art (`web/not_found.png`: the hero lost at a broken signpost).
 - [x] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [x] No third-party trackers, scripts or fonts on any page.
-- [ ] /world, /about, /faq and the 404 page rebuilt in Astro with the same content and art; Caddy serves the 404 page with a real HTTP 404 status.
+- [x] /world, /about, /faq and the 404 page rebuilt in Astro with the same content and art; Caddy serves the 404 page with a real HTTP 404 status.
 - [x] Social metadata parity: every page keeps its title, description, canonical URL, Open Graph and Twitter tags and its 1200×630 share card; `sitemap.xml` and `robots.txt` are build-time endpoints with the same entries.
 
 ### 1.8 Quality gates
@@ -295,11 +295,11 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] `make deploy-web` and `make rollback-web` for manual use.
 - [x] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
 - [x] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
-- [ ] `deploy/web/deploy.sh` builds the Astro site on the machine running the deploy (Node never goes to the host) and keeps the same release model: timestamped release, atomic `current` switch, health check through the host's Caddy, automatic rollback, five releases kept.
-- [ ] The deploy health check covers what Astro changes: hashed assets load with immutable cache headers and pages revalidate, canonical URLs and share-card URLs are absolute and correct, the RSS and Atom feeds, `/progress.json` and `/progress.svg` load, `/play/` loads, `/downloads/` redirects, and a missing page returns HTTP 404.
-- [ ] Caddy site file for the Astro output: cache rules match Astro's asset folder, the public site's CSP stays `script-src 'none'` and is kept separate from play.lorehallow.com's game CSP, and the `/downloads/` redirect; validated as the caddy user before every reload ([ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md)).
-- [ ] `HUMAN` Approve the cutover after reviewing the local Astro build and the parity report. The Go-generated site stays live until then.
-- [ ] Cutover: deploy the Astro build with `make deploy-web`, confirm the live checks, keep the last Go-built release as the rollback target, and rehearse the automatic rollback with an Astro release (`make rehearse-rollback-web`).
+- [x] `deploy/web/deploy.sh` builds the Astro site on the machine running the deploy (Node never goes to the host) and keeps the same release model: timestamped release, atomic `current` switch, health check through the host's Caddy, automatic rollback, five releases kept.
+- [x] The deploy health check covers what Astro changes: hashed assets load with immutable cache headers and pages revalidate, canonical URLs and share-card URLs are absolute and correct, the RSS and Atom feeds, `/progress.json` and `/progress.svg` load, `/play/` loads, `/downloads/` redirects, and a missing page returns HTTP 404.
+- [x] Caddy site file for the Astro output: cache rules match Astro's asset folder, the public site's CSP stays `script-src 'none'` and is kept separate from play.lorehallow.com's game CSP, and the `/downloads/` redirect; validated as the caddy user before every reload ([ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md)).
+- [x] `HUMAN` Approve the cutover after reviewing the local Astro build and the parity report. The Go-generated site stays live until then.
+- [x] Cutover: deploy the Astro build with `make deploy-web`, confirm the live checks, keep the last Go-built release as the rollback target, and rehearse the automatic rollback with an Astro release (`make rehearse-rollback-web`).
 - [ ] Retire the Go web module once the cutover has held for a week with no rollback: delete its Go code, templates, `go.mod` and `go.sum`, its Make targets, its CI cache path and its govulncheck run, keep the parser fixtures the TypeScript tests use, and update every doc that describes it.
 
 ### 1.10 Launch
@@ -316,9 +316,9 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] The devlog has at least one published post and a valid RSS feed.
 - [ ] Lighthouse budgets pass and no page ships any JavaScript.
 - [x] A deliberately bad deploy was rolled back with one command.
-- [ ] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
-- [ ] /play exists and accurately says whether the game is playable, and /downloads redirects to it.
-- [ ] No draft appears in any public artifact.
+- [x] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
+- [x] /play exists and accurately says whether the game is playable, and /downloads redirects to it.
+- [x] No draft appears in any public artifact.
 - [ ] The Go web module is gone, `make check` runs only the TypeScript site checks, and the progress tracker, feeds and badge still update on every deploy.
 
 ---
