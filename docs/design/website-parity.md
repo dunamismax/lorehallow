@@ -26,7 +26,6 @@ Every URL below keeps answering exactly as it does now. A page that moves gets a
 | `/devlog/tags/<tag>/` | One page per tag of a published post | parity, output |
 | `/devlog/rss.xml` | RSS 2.0 feed | parity, output, deploy |
 | `/devlog/atom.xml` | Atom feed | parity, output, deploy |
-| `/downloads/` | Downloads (replaced by `/play/`, below) | parity until 1.6, then a 301 redirect |
 | `/about/` | About, with `#how-its-made` | parity, output |
 | `/faq/` | FAQ | parity, output |
 | `/404.html` | The 404 page, served by Caddy for any missing path with HTTP 404 | parity, output, deploy |
@@ -38,12 +37,12 @@ Every URL below keeps answering exactly as it does now. A page that moves gets a
 | `/apple-touch-icon.png` | The 180 px favicon | parity (byte for byte) |
 | `/assets/<name>.<hash10>.<ext>` | Fingerprinted CSS, fonts, art and share cards (below) | parity, output, deploy |
 
-New with the Astro build:
+Changed during the migration, in both builds at once so the parity check still compares them (BUILD.md 1.6):
 
 | URL | What | Checked by |
 |---|---|---|
-| `/play/` | Replaces Downloads (BUILD.md 1.6): says plainly whether the game is playable | output, deploy |
-| `/downloads/` | 301 to `/play/`, in the Caddy site file, kept for good | deploy |
+| `/play/` | Replaces Downloads: says plainly whether the game is playable, from `web/data/releases.json` | parity, output, deploy |
+| `/downloads` and `/downloads/` | 301 to `/play/`, in the Caddy site file, kept for good | deploy |
 
 ## Redirects and status codes
 
@@ -98,7 +97,7 @@ From `web/templates/layout.html`. Every page keeps all of these with the same va
 | `twitter:card` | `summary_large_image` | parity |
 | `generator` | `lorehallow-web <short commit>` | parity |
 | `<body class="page-<section>">` | | parity |
-| Header, nav and footer | Skip link, emblem and wordmark, the six nav links with `aria-current`, footer links to GitHub, Codeberg, BUILD.md, RSS, FAQ, both licenses and How it's made, and the build commit and date | parity, output |
+| Header, nav and footer | Skip link, emblem and wordmark, the six nav links (Play in place of Downloads since 1.6) with `aria-current`, footer links to GitHub, Codeberg, BUILD.md, RSS, FAQ, both licenses and How it's made, and the build commit and date | parity, output |
 
 ## Output tests and budgets
 
@@ -117,7 +116,7 @@ Every check in `web/internal/site/site_test.go` and the parser and font tests is
 | `TestEveryPageHasMetadata` | Title, description, canonical URL, Open Graph tags with a 1200×630 card, GitHub and Codeberg links on every page | output |
 | `TestFeedsSitemapAndProgressData` | RSS, Atom and the sitemap are valid XML; `/progress.json` has the right shape and totals | output |
 | `TestDraftsOnlyInServe` | Drafts never reach the build | output (extended: no draft in any page, tag page, feed, sitemap, share card or any file) |
-| `TestDownloadsWithARelease` | Release data renders and validates | output, against the new `/play/` release data (1.6) |
+| `TestPlayWithARelease` (was `TestDownloadsWithARelease`) | Release data renders and validates | unit (`parseReleases`), and the play page in parity |
 | `TestParseAchievements` | The git-history achievement feed pairs checks, rewords and moves correctly | unit, same fixtures |
 | `TestFrontMatter` | Front matter errors name the file and field | unit |
 | `TestPaletteParsing` | `palette.hex` parsing and its errors | unit |

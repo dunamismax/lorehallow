@@ -4,9 +4,9 @@ Data files the website builds pages from.
 
 ## releases.json
 
-Drives lorehallow.com/downloads on the current, Go-built site. It's empty, and the page says so. The build fails on any entry that doesn't match this schema.
+Every version of the browser game that has gone live at play.lorehallow.com, newest first. It drives [lorehallow.com/play](https://lorehallow.com/play/) and, from Phase 15, the patch notes. There are no platform files, sizes or checksums: the game is played in the browser and a new version is a new static build ([ADR 0014](../../docs/decisions/0014-astro-website-and-phaser-browser-client.md)).
 
-**Being retired.** There will be no downloads: the game is played in the browser ([ADR 0014](../../docs/decisions/0014-astro-website-and-phaser-browser-client.md)). BUILD.md 1.6 replaces this file with the release data /play and the patch notes need (version, date, channel, notes link, protocol version), with no platform files, sizes or checksums, and documents the new schema here. The schema below describes the current file.
+It's empty until v0.2.0 goes live (BUILD.md 2.10), and /play says plainly that there's nothing to play yet. Add the entry in the same commit that deploys the version.
 
 ```json
 {
@@ -16,29 +16,18 @@ Drives lorehallow.com/downloads on the current, Go-built site. It's empty, and t
       "date": "2026-12-01",
       "channel": "alpha",
       "notes": "/devlog/v0-2-0/",
-      "files": [
-        {
-          "platform": "linux",
-          "url": "https://github.com/dunamismax/lorehallow/releases/download/v0.2.0/lorehallow-v0.2.0-linux-amd64.tar.gz",
-          "size": 48234112,
-          "sha256": "64 lowercase hex characters"
-        }
-      ]
+      "protocol": 3
     }
   ]
 }
 ```
 
-| Field | Rules |
+| Field | Rule |
 |---|---|
-| `version` | `vX.Y.Z` |
-| `date` | `YYYY-MM-DD` |
+| `version` | `vX.Y.Z`, as tagged in git |
+| `date` | `YYYY-MM-DD`, the day it went live; entries are listed newest first |
 | `channel` | `alpha`, `beta` or `stable` |
-| `notes` | Link to the release notes (a devlog post or `docs/releases/`), or `""` |
-| `files` | At least one |
-| `files[].platform` | `windows`, `macos` or `linux` |
-| `files[].url` | `https://` only |
-| `files[].size` | Bytes, greater than zero |
-| `files[].sha256` | 64 lowercase hex characters |
+| `notes` | A site path (`/devlog/...`) or an `https://` URL, or `""` |
+| `protocol` | The `PROTOCOL_VERSION` the build speaks (`proto/PROTOCOL_VERSION`) |
 
-Newest release first. For each platform, the downloads page shows the first release that has a file for it. The system requirements and "verify your download" sections appear once any release exists.
+No other fields are allowed. Both builds validate it and fail with the release and field named: `src/lib/releases.ts` for Astro, `internal/site` for the Go site until it's retired.

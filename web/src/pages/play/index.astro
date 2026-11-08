@@ -1,0 +1,57 @@
+---
+// /play: whether the browser game is playable, and where (BUILD.md 1.6).
+import { join } from "node:path";
+import Img from "../../components/Img.astro";
+import Layout from "../../layouts/Layout.astro";
+import { loadReleases, PlayURL } from "../../lib/releases.ts";
+import { BuildMDURL, state } from "../../lib/state.ts";
+
+const releases = loadReleases(join(state().web, "data", "releases.json"));
+const latest = releases[0];
+---
+<Layout path="/play/" title="Play" section="play" description="Lorehallow is played in the browser at play.lorehallow.com, with nothing to install. Here's whether it's playable yet.">
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="kicker">In your browser</p>
+      <h1>Play</h1>
+      {latest ? (
+      <p class="lede">Lorehallow {latest.version} is live. Open it in your browser: there's nothing to download or install.</p>
+      ) : (
+      <p class="lede">There's nothing to play yet. When the first version is ready, you'll play Lorehallow by opening <strong>play.lorehallow.com</strong> in your browser, with nothing to download or install. <a href="/progress/">Follow the progress</a> or <a href="/devlog/">read the devlog</a> to see how close it is.</p>
+      )}
+    </div>
+    <Img src="icons/section_icons.png#downloads" alt="decorative" k={4} />
+  </div>
+</section>
+<div class="wrap content">
+  {latest && (
+  <div class="platform">
+    <h2>{latest.version}</h2>
+    <p class="status">{latest.channel} · released {latest.date}</p>
+    <p><a class="button" href={PlayURL}>Play in your browser</a></p>
+    {latest.notes && <p><a href={latest.notes}>What's new in this version</a></p>}
+  </div>
+  )}
+  <div class="prose">
+    {!latest && (
+    <Fragment>
+    <h2 id="when">When can I play?</h2>
+    <p>Phase 2 of <a href={BuildMDURL}>the plan</a> ends with the first playable version: two players in one small world, moving around and seeing each other. After that, every phase ships a new version, and it goes live here and at play.lorehallow.com the same day. Pre-1.0 versions are numbered after their phase, so Phase 2 is v0.2.0.</p>
+    </Fragment>
+    )}
+    <h2 id="browsers">What you'll need</h2>
+    <ul class="stack-list">
+      <li>A current desktop browser: Chrome, Edge, Firefox or Safari, on a desktop or laptop computer.</li>
+      <li>A keyboard, and an internet connection: the world lives on the server.</li>
+    </ul>
+    <p>It's free. There are no downloads, installers or launchers: every new version is simply there the next time you load the page.</p>
+    {releases.length > 0 && (
+    <Fragment>
+    <h2 id="history">Every version</h2>
+    <ul class="stack-list">{releases.map((r) => <li>{r.version} ({r.channel}), {r.date}{r.notes && <Fragment>: <a href={r.notes}>notes</a></Fragment>}</li>)}</ul>
+    </Fragment>
+    )}
+  </div>
+</div>
+</Layout>

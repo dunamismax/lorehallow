@@ -35,7 +35,7 @@ import { BuildMDURL, CodebergURL, RepoURL } from "../../lib/state.ts";
     <h2 id="stack">The stack</h2>
     <ul class="stack-list">
       <li><strong>Server:</strong> Go. One process with many zones, each zone run by a single goroutine at 20 ticks a second. WebSockets over TLS, Protocol Buffers on the wire.</li>
-      <li><strong>Client:</strong> Godot 4 with GDScript, rendering 640×360 pixel art scaled by whole numbers.</li>
+      <li><strong>Client:</strong> a browser game built with Phaser and TypeScript, played at play.lorehallow.com with nothing to install. It draws 640×360 pixel art scaled by whole numbers.</li>
       <li><strong>Data:</strong> PostgreSQL, from Phase 4.</li>
       <li><strong>This website:</strong> a small Go program that turns BUILD.md, Markdown and the art into static pages. It ships no JavaScript and makes no third-party requests. Its heading font is hand-drawn too; the body text is set in the Go fonts by Bigelow &amp; Holmes.</li>
       <li><strong>Hosting:</strong> self-hosted on the owner's own server behind Caddy. Each deploy is a new release directory and an atomic switch, so a bad one rolls back with one command.</li>

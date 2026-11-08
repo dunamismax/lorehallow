@@ -60,9 +60,11 @@ done
 css="$(grep -o '/assets/site\.[0-9a-f]*\.css' <<<"$page" | head -n1)"
 [[ -n "$css" ]] || { echo "check: no stylesheet link on /" >&2; exit 1; }
 get "$css" >/dev/null || { echo "check: $css doesn't load" >&2; exit 1; }
-for p in /progress/ /devlog/ /downloads/ /progress.json /devlog/rss.xml; do
+for p in /progress/ /devlog/ /play/ /progress.json /devlog/rss.xml; do
   get "$p" >/dev/null || { echo "check: $p doesn't load" >&2; exit 1; }
 done
+moved="$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 10 --resolve "$site:443:127.0.0.1" "https://$site/downloads/")"
+[[ "$moved" == "301 https://$site/play/" ]] || { echo "check: /downloads/ answered '$moved', not a 301 to /play/" >&2; exit 1; }
 code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --resolve "$site:443:127.0.0.1" "https://$site/no-such-page")"
 [[ "$code" == 404 ]] || { echo "check: a missing page returned $code, not 404" >&2; exit 1; }
 CHECK

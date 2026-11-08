@@ -31,6 +31,11 @@ lorehallow.com {
 	# by the Go generator in web/ (ADR 0011). Files under /assets/ carry a
 	# content hash in their names, so they can be cached forever.
 	root * /srv/lorehallow/web/current
+
+	# Downloads became Play when the game moved to the browser (ADR 0014,
+	# BUILD.md 1.6). The old address keeps working, for good.
+	redir /downloads /play/ permanent
+	redir /downloads/ /play/ permanent
 	@immutable path /assets/*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
 	# Pages, feeds and /progress.* change on every deploy: browsers and

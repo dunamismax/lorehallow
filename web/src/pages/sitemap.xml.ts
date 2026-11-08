@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
 		page("/devlog/"),
 		...tags.map((t) => page(`/devlog/tags/${t}/`)),
 		...posts.map((p) => page(p.url, isoDate(p.date))),
-		page("/downloads/"),
+		page("/play/"),
 		page("/about/"),
 		page("/faq/"),
 	];

@@ -486,10 +486,10 @@ func TestDraftsOnlyInServe(t *testing.T) {
 	}
 }
 
-func TestDownloadsWithARelease(t *testing.T) {
+func TestPlayWithARelease(t *testing.T) {
 	root := t.TempDir()
 	copyRepoInputs(t, root)
-	rel := `{"releases":[{"version":"v0.2.0","date":"2026-12-01","channel":"alpha","notes":"/devlog/","files":[{"platform":"linux","url":"https://example.com/l.tar.gz","size":1048576,"sha256":"` + strings.Repeat("ab", 32) + `"}]}]}`
+	rel := `{"releases":[{"version":"v0.3.0","date":"2027-01-10","channel":"alpha","notes":"/devlog/","protocol":4},{"version":"v0.2.0","date":"2026-12-01","channel":"alpha","notes":"","protocol":3}]}`
 	if err := os.WriteFile(filepath.Join(root, "web/data/releases.json"), []byte(rel), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -497,17 +497,23 @@ func TestDownloadsWithARelease(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	page := string(o.Files["downloads/index.html"])
-	for _, want := range []string{"v0.2.0", "Download for Linux", "System requirements", "Verify your download", "Not available yet"} {
+	page := string(o.Files["play/index.html"])
+	for _, want := range []string{"Lorehallow v0.3.0 is live", `href="https://play.lorehallow.com/"`, "Every version", "v0.2.0 (alpha), 2026-12-01"} {
 		if !strings.Contains(page, want) {
-			t.Errorf("downloads page is missing %q", want)
+			t.Errorf("play page is missing %q", want)
 		}
 	}
-	for _, bad := range []string{`"version":"0.2"`, `"platform":"amiga"`, `"url":"http://x"`} {
-		broken := strings.Replace(strings.Replace(strings.Replace(rel, `"version":"v0.2.0"`, bad, 1), `"platform":"linux"`, bad, 1), `"url":"https://example.com/l.tar.gz"`, bad, 1)
-		_ = os.WriteFile(filepath.Join(root, "web/data/releases.json"), []byte(broken), 0o644)
+	for name, bad := range map[string]string{
+		"version":    strings.Replace(rel, `"v0.3.0"`, `"0.3"`, 1),
+		"channel":    strings.Replace(rel, `"channel":"alpha"`, `"channel":"nightly"`, 1),
+		"notes":      strings.Replace(rel, `"/devlog/"`, `"http://x"`, 1),
+		"protocol":   strings.Replace(rel, `"protocol":4`, `"protocol":0`, 1),
+		"order":      strings.Replace(rel, `"2027-01-10"`, `"2026-01-10"`, 1),
+		"old schema": strings.Replace(rel, `"protocol":4`, `"protocol":4,"files":[]`, 1),
+	} {
+		_ = os.WriteFile(filepath.Join(root, "web/data/releases.json"), []byte(bad), 0o644)
 		if _, err := Build(Config{Root: root, Files: web.Files}); err == nil {
-			t.Errorf("releases.json with %s was accepted", bad)
+			t.Errorf("releases.json with a bad %s was accepted", name)
 		}
 	}
 }

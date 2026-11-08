@@ -222,7 +222,7 @@ func (b *builder) build() error {
 		CSS: cssToken, Fonts: map[string]string{}, Icons: map[string]string{}, Theme: theme,
 		Nav: []NavItem{
 			{"Home", "/", "home"}, {"World", "/world/", "world"}, {"Progress", "/progress/", "progress"},
-			{"Devlog", "/devlog/", "devlog"}, {"Downloads", "/downloads/", "downloads"}, {"About", "/about/", "about"},
+			{"Devlog", "/devlog/", "devlog"}, {"Play", "/play/", "play"}, {"About", "/about/", "about"},
 		},
 	}
 	b.site = s
@@ -539,8 +539,8 @@ func (b *builder) pagesAll() error {
 			return err
 		}
 	}
-	if err := b.render("downloads", &Page{Path: "/downloads/", Title: "Downloads", Section: "downloads",
-		Description: "Lorehallow builds for Windows, macOS and Linux. Nothing is available yet; follow the progress."}); err != nil {
+	if err := b.render("play", &Page{Path: "/play/", Title: "Play", Section: "play",
+		Description: "Lorehallow is played in the browser at play.lorehallow.com, with nothing to install. Here's whether it's playable yet."}); err != nil {
 		return err
 	}
 	if err := b.render("about", &Page{Path: "/about/", Title: "About", Section: "about",
@@ -628,30 +628,20 @@ func questMapCSS(n int) string {
 	return s.String()
 }
 
-// Release is one entry in web/data/releases.json (schema in web/data/README.md).
+// Release is one entry in web/data/releases.json (schema in web/data/README.md):
+// a version of the browser game that went live at play.lorehallow.com.
 type Release struct {
-	Version string        `json:"version"`
-	Date    string        `json:"date"`
-	Channel string        `json:"channel"`
-	Notes   string        `json:"notes"`
-	Files   []ReleaseFile `json:"files"`
+	Version  string `json:"version"`
+	Date     string `json:"date"`
+	Channel  string `json:"channel"`
+	Notes    string `json:"notes"`
+	Protocol int    `json:"protocol"`
 }
 
-// ReleaseFile is one download.
-type ReleaseFile struct {
-	Platform string `json:"platform"`
-	URL      string `json:"url"`
-	Size     int64  `json:"size"`
-	SHA256   string `json:"sha256"`
-}
+var versionRE = regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
 
-var (
-	versionRE = regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
-	sha256RE  = regexp.MustCompile(`^[0-9a-f]{64}$`)
-)
-
-// Platforms the downloads page shows, in order.
-var Platforms = []string{"windows", "macos", "linux"}
+// PlayURL is where the game is played.
+const PlayURL = "https://play.lorehallow.com/"
 
 func loadReleases(file string) ([]Release, error) {
 	data, err := os.ReadFile(file)
@@ -666,6 +656,7 @@ func loadReleases(file string) ([]Release, error) {
 	if err := dec.Decode(&doc); err != nil {
 		return nil, fmt.Errorf("releases.json: %w", err)
 	}
+	prev := ""
 	for i, r := range doc.Releases {
 		where := fmt.Sprintf("releases.json release %d", i)
 		if !versionRE.MatchString(r.Version) {
@@ -674,38 +665,22 @@ func loadReleases(file string) ([]Release, error) {
 		if _, err := time.Parse("2006-01-02", r.Date); err != nil {
 			return nil, fmt.Errorf("%s: date must be YYYY-MM-DD", where)
 		}
+		if prev != "" && r.Date > prev {
+			return nil, fmt.Errorf("%s: releases must be listed newest first", where)
+		}
+		prev = r.Date
 		if !slices.Contains([]string{"alpha", "beta", "stable"}, r.Channel) {
 			return nil, fmt.Errorf("%s: channel must be alpha, beta or stable", where)
 		}
-		if len(r.Files) == 0 {
-			return nil, fmt.Errorf("%s: no files", where)
+		if r.Notes != "" && !strings.HasPrefix(r.Notes, "/") && !strings.HasPrefix(r.Notes, "https://") {
+			return nil, fmt.Errorf("%s: notes must be a site path or an https URL", where)
 		}
-		for _, f := range r.Files {
-			if !slices.Contains(Platforms, f.Platform) {
-				return nil, fmt.Errorf("%s: platform %q must be one of %v", where, f.Platform, Platforms)
-			}
-			if !strings.HasPrefix(f.URL, "https://") {
-				return nil, fmt.Errorf("%s: url must be https", where)
-			}
-			if f.Size <= 0 || !sha256RE.MatchString(f.SHA256) {
-				return nil, fmt.Errorf("%s: each file needs a size and a lowercase sha256", where)
-			}
+		if r.Protocol < 1 {
+			return nil, fmt.Errorf("%s: protocol must be the PROTOCOL_VERSION it speaks (1 or more)", where)
 		}
 	}
 	return doc.Releases, nil
 }
 
-// Latest returns the newest release's file for a platform, if any.
-func (s *Site) Latest(platform string) map[string]any {
-	for _, r := range s.Releases {
-		for _, f := range r.Files {
-			if f.Platform == platform {
-				return map[string]any{"Release": r, "File": f}
-			}
-		}
-	}
-	return nil
-}
-
-// PlatformList is Platforms for templates.
-func (s *Site) PlatformList() []string { return Platforms }
+// PlayURL is for templates.
+func (s *Site) PlayURL() string { return PlayURL }

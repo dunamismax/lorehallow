@@ -148,3 +148,37 @@ test("devlog front matter: all six fields, nothing else, each checked", () => {
 		assert.ok(!schema.safeParse(data).success, `${name} accepted`);
 	assert.ok(schema.safeParse({ ...good, cover: "web/devlog_header.png" }).success);
 });
+
+test("release data: valid entries pass, every bad field fails", async () => {
+	const { parseReleases } = await import("../src/lib/releases.ts");
+	const good = {
+		releases: [
+			{ version: "v0.3.0", date: "2027-01-10", channel: "alpha", notes: "/devlog/", protocol: 4 },
+			{ version: "v0.2.0", date: "2026-12-01", channel: "alpha", notes: "", protocol: 3 },
+		],
+	};
+	assert.equal(parseReleases(JSON.stringify(good)).length, 2);
+	assert.deepEqual(parseReleases('{"releases": []}'), []);
+	const first = good.releases[0];
+	const bad: Record<string, unknown> = {
+		version: { ...first, version: "0.3" },
+		date: { ...first, date: "10 Jan 2027" },
+		channel: { ...first, channel: "nightly" },
+		notes: { ...first, notes: "http://x" },
+		protocol: { ...first, protocol: 0 },
+		"unknown field": { ...first, files: [] },
+	};
+	for (const [name, r] of Object.entries(bad)) {
+		assert.throws(
+			() => parseReleases(JSON.stringify({ releases: [r] })),
+			/releases.json/,
+			`${name} accepted`,
+		);
+	}
+	assert.throws(
+		() => parseReleases(JSON.stringify({ releases: [...good.releases].reverse() })),
+		/newest first/,
+	);
+	assert.throws(() => parseReleases("{}"));
+	assert.equal(parseReleases(readFileSync(`${web}data/releases.json`, "utf8")).length >= 0, true);
+});
