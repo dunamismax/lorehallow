@@ -12,7 +12,7 @@ Read [AGENTS.md](AGENTS.md) before changing this file.
 - **Performance criteria are measured, never estimated.** They point at targets in [docs/design/scaling.md](docs/design/scaling.md), name the hardware (`dev-m5` until the production host exists, then `prod`) and are checked only with a result in `docs/perf/`.
 - **Check a box only when it's really done:** committed, `make check` green, and doing what the line says. Partial work stays unchecked.
 - **Every phase ends with acceptance criteria.** A phase is done when every box in it is checked, acceptance criteria included.
-- **`HUMAN` items need the owner:** generating art, money, accounts, DNS, credentials, approvals and playtests. Agents prepare everything around them and keep working on whatever isn't blocked.
+- **`HUMAN` items were the owner's.** The owner has pre-approved every approval and decision among them (AGENTS.md section 2, decision 47): agents do the work and check the box, noting the pre-approval in the commit body. Items that need the owner physically (money, a new account, a credential, a multi-person playtest) are built up to that one step, written up in `docs/ops/owner-todo.md` and left unchecked. An unchecked owner-only item never blocks the next item or phase.
 - **`ADR` items are decision points.** The agent makes the call, writes `docs/decisions/NNNN-*.md` and adds a row to the decision log in AGENTS.md. Where an item names a recommended option, that is the default unless the ADR finds a good reason otherwise.
 - **The plan can change.** Agents add, split and reword unchecked items as real work demands, and explain why in the commit body. Checked items are never deleted. Cut scope moves to [Deferred](#deferred).
 
