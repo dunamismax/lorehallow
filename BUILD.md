@@ -261,11 +261,11 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 
 Downloads is replaced by a Play entry point: Lorehallow is played in the browser at play.lorehallow.com, and there are no native builds ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)).
 
-- [ ] /play page with no script: before the browser game is live, it says plainly that nothing is playable yet, that playing will mean opening play.lorehallow.com with nothing to install, and links to /progress and the devlog. Once v0.2.0 is live (2.10), it links to play.lorehallow.com with the current version and the supported browsers.
-- [ ] `/downloads/` permanently redirects (301, in the Caddy site file) to `/play/` once /play is live, and the redirect stays; the sitemap lists /play and drops /downloads.
-- [ ] Navigation and footer say Play instead of Downloads, and the landing page's calls to action, the FAQ (platforms: any current desktop browser; when can I play) and the about page's tech stack describe browser play, not downloads.
-- [ ] Replace `web/data/releases.json` (platform files, sizes, checksums) with the release data /play and the patch notes need (version, date, channel, notes link, protocol version), with its schema documented in `web/data/README.md` and validated at build time.
-- [ ] The deploy health check loads `/play/` and expects the `/downloads/` redirect, instead of loading /downloads.
+- [x] /play page with no script: before the browser game is live, it says plainly that nothing is playable yet, that playing will mean opening play.lorehallow.com with nothing to install, and links to /progress and the devlog. Once v0.2.0 is live (2.10), it links to play.lorehallow.com with the current version and the supported browsers.
+- [x] `/downloads/` permanently redirects (301, in the Caddy site file) to `/play/` once /play is live, and the redirect stays; the sitemap lists /play and drops /downloads.
+- [x] Navigation and footer say Play instead of Downloads, and the landing page's calls to action, the FAQ (platforms: any current desktop browser; when can I play) and the about page's tech stack describe browser play, not downloads.
+- [x] Replace `web/data/releases.json` (platform files, sizes, checksums) with the release data /play and the patch notes need (version, date, channel, notes link, protocol version), with its schema documented in `web/data/README.md` and validated at build time.
+- [x] The deploy health check loads `/play/` and expects the `/downloads/` redirect, instead of loading /downloads.
 
 ### 1.7 More pages
 
@@ -281,7 +281,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 ### 1.8 Quality gates
 
 - [ ] Lighthouse audit on the live Astro site after the cutover (1.9), on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/`. Lighthouse runs locally under Node against the live site; it isn't part of `make check` or CI.
-- [ ] The Go output tests ported to TypeScript and run on the Astro build in `make web-test`: every check listed in `web/README.md` (no scripts, iframes, inline handlers, `style` attributes or `javascript:` URLs; alt text and whole-number image sizes; links, fragments and CSS `url()`s resolve; no other origins; the 1 MB landing page budget; WCAG AA pairs and colors only through roles; titles, descriptions, canonical URLs, Open Graph cards and repository links on every page; valid feeds and sitemap; no drafts; valid release data).
+- [x] The Go output tests ported to TypeScript and run on the Astro build in `make web-test`: every check listed in `web/README.md` (no scripts, iframes, inline handlers, `style` attributes or `javascript:` URLs; alt text and whole-number image sizes; links, fragments and CSS `url()`s resolve; no other origins; the 1 MB landing page budget; WCAG AA pairs and colors only through roles; titles, descriptions, canonical URLs, Open Graph cards and repository links on every page; valid feeds and sitemap; no drafts; valid release data).
 - [x] Parity check, run in `make check` until 1.9: builds both sites and compares URL sets, page text, meta tags, feeds, `/progress.json`, `/progress.svg`, the sitemap and asset references. Every difference is fixed or listed as accepted in the parity inventory.
 - [x] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
 - [x] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
