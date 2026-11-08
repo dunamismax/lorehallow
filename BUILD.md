@@ -252,7 +252,7 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] Index, tag pages and post pages with pixel-art styling and comfortable reading typography.
 - [x] RSS and Atom feeds.
 - [x] Move the Phase 0 devlog draft into the collection.
-- [ ] `HUMAN` Edit and publish the first devlog post.
+- [x] `HUMAN` Edit and publish the first devlog post.
 - [ ] Devlog as an Astro content collection reading `web/content/devlog/` in place: the same front-matter schema, a build failure naming the file and field for bad front matter, the same slugs, and raw HTML in posts still dropped.
 - [ ] Drafts appear only in `make web-dev`. A test proves no draft reaches any public artifact: pages, tag pages, feeds, the sitemap, share cards or any file in the build output.
 - [ ] Devlog index, tag and post pages, plus RSS and Atom as build-time endpoints, with the same URLs, entry ids and dates, so feed readers see no duplicates after the cutover.
@@ -313,7 +313,7 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 
 - [x] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
 - [x] Every page links to the GitHub and Codeberg repositories.
-- [ ] The devlog has at least one published post and a valid RSS feed.
+- [x] The devlog has at least one published post and a valid RSS feed.
 - [ ] Lighthouse budgets pass and no page ships any JavaScript.
 - [x] A deliberately bad deploy was rolled back with one command.
 - [ ] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
