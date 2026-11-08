@@ -1,0 +1,7 @@
+---
+interface Props {
+	tag: string;
+}
+const { tag } = Astro.props;
+---
+{tag === "HUMAN" && <span class="badge badge-human" title="Needs the owner: money, accounts, approvals, playtests">Owner</span>}{tag === "ADR" && <span class="badge badge-adr" title="A decision recorded in docs/decisions/">Decision</span>}

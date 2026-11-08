@@ -1,0 +1,30 @@
+---
+import Img from "../../components/Img.astro";
+import PostCard from "../../components/PostCard.astro";
+import Layout from "../../layouts/Layout.astro";
+import { site } from "../../lib/site.ts";
+
+const { posts, tags } = await site();
+---
+<Layout path="/devlog/" title="Devlog" section="devlog" description="Notes from building Lorehallow in the open: the server, the pixel art and the world.">
+<section class="page-head devlog-head">
+  <div class="wrap">
+    <Img src="web/devlog_header.png" alt="A writer's desk at night: an open book, a quill and ink, a lantern, a candle, a sleeping cat on a stack of books and a map scroll." max={960} eager />
+    <h1>Devlog</h1>
+    <p class="lede center-block">Notes from building Lorehallow in the open: the server, the art and the world. Follow along with <a href="/devlog/rss.xml">RSS</a> or <a href="/devlog/atom.xml">Atom</a>.</p>
+  </div>
+</section>
+<div class="wrap content">
+  {posts.length > 0 ? (
+  <div class="post-list post-list-3">{posts.map((p) => <PostCard post={p} />)}</div>
+  ) : (
+  <div class="empty"><p>The first post is still being written. <a href="/devlog/rss.xml">Subscribe to the RSS feed</a> and it'll find you. Meanwhile, <a href="/progress/">the progress page</a> shows every step as it lands.</p></div>
+  )}
+  {tags.length > 0 && (
+  <Fragment>
+  <h2 id="tags">Tags</h2>
+  <ul class="tags">{tags.map((t) => <li><a href={`/devlog/tags/${t}/`}>#{t}</a></li>)}</ul>
+  </Fragment>
+  )}
+</div>
+</Layout>

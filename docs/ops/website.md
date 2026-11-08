@@ -18,9 +18,11 @@ Everything under `/assets/` has a content hash in its name and is cached for a y
 ## Build and preview locally
 
 ```bash
-make web-dev     # http://127.0.0.1:4321, drafts included, rebuilt on reload
-make web-build   # web/dist/, exactly what deploys
-make web-test    # the output tests
+make web-dev        # the Astro site at http://127.0.0.1:4321, drafts included
+make web-build      # the Astro site into web/dist-astro/
+make web-go-dev     # the Go-built site at http://127.0.0.1:4322, drafts included
+make web-go-build   # the Go-built site into web/dist/, exactly what deploys until the cutover (BUILD.md 1.9)
+make web-test       # both sites' tests, and the parity check between them
 ```
 
 ## Deploy

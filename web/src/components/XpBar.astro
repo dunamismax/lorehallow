@@ -1,0 +1,16 @@
+---
+interface Props {
+	done: number;
+	total: number;
+	percent: number;
+	label: string;
+	big?: boolean;
+}
+const { done, total, percent, label, big = false } = Astro.props;
+---
+<div class={big ? "xp xp-big" : "xp"}>
+  <div class="xp-label"><span>{label}</span><span class="xp-num">{done} / {total} · {percent}%</span></div>
+  <div class="xp-track" role="progressbar" aria-label={label} aria-valuemin="0" aria-valuemax={total} aria-valuenow={done} aria-valuetext={`${done} of ${total} done, ${percent} percent`}>
+    <span class={`xp-fill xp-${percent}`}></span>
+  </div>
+</div>

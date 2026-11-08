@@ -1,6 +1,6 @@
 # Website parity inventory
 
-Everything lorehallow.com publishes today, from the Go-built site that is live (`web/dist/` from `make web-build`, the Caddy site file `deploy/caddy/lorehallow.caddy`, and the live responses), and how the Astro build is checked against each item before the cutover (BUILD.md 1.2, 1.8 and 1.9, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)).
+Everything lorehallow.com publishes today, from the Go-built site that is live (`web/dist/` from `make web-go-build`, the Caddy site file `deploy/caddy/lorehallow.caddy`, and the live responses), and how the Astro build is checked against each item before the cutover (BUILD.md 1.2, 1.8 and 1.9, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)).
 
 How to read the "Checked by" column:
 

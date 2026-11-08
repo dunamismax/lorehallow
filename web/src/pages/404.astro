@@ -1,0 +1,13 @@
+---
+import Img from "../components/Img.astro";
+import Layout from "../layouts/Layout.astro";
+---
+<Layout path="/404.html" title="Lost in the woods" description="This page doesn't exist.">
+<div class="wrap lost">
+  <div class="framed"><Img src="web/not_found.png" alt="The hero standing lost on a forest path beside a broken signpost, with a question mark over their head." max={640} eager /></div>
+  <h1>Lost in the woods</h1>
+  <p class="lede center-block">There's no page here. The path may have moved, or it never existed.</p>
+  <p><a class="button" href="/">Back to town</a></p>
+  <p>Or try <a href="/progress/">progress</a>, <a href="/devlog/">the devlog</a> or <a href="/faq/">the FAQ</a>.</p>
+</div>
+</Layout>

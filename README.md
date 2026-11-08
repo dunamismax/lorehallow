@@ -131,12 +131,12 @@ make setup    # install project dependencies
 make check    # format checks, linters and every test suite (what CI runs)
 make server   # run the game server locally
 make client   # launch the Godot client skeleton
-make web-dev  # preview the website locally (the Go generator)
+make web-dev  # preview the website locally (the Astro build)
 ```
 
-Prerequisites today: Go, Godot 4, [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
+Prerequisites today: Go, Node (with npm), Godot 4, [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
 
-Planned with the frontend changes: Node (one pinned LTS) joins the prerequisites and Godot and gdtoolkit leave; `make web-dev` previews the Astro site; and `make client-dev` serves the Phaser game in your browser against the local server. [AGENTS.md section 7](AGENTS.md#target-architecture-and-the-current-checkout) lists the current and planned commands side by side.
+Planned with the frontend changes: Godot and gdtoolkit leave, and `make client-dev` serves the Phaser game in your browser against the local server. [AGENTS.md section 7](AGENTS.md#target-architecture-and-the-current-checkout) lists the current and planned commands side by side.
 
 ## How it's made
 

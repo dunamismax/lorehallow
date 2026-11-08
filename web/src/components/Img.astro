@@ -1,0 +1,11 @@
+---
+// A pixel-art <img>: whole-number scales only, explicit size, pixelated.
+// key is an art path under web/assets/art, optionally with #frame or #mirror.
+import type { ImgOpts } from "../lib/assets.ts";
+import { state } from "../lib/state.ts";
+
+type Props = ImgOpts & { src: string };
+const { src, ...opts } = Astro.props;
+const html = state().assets.img(src, opts);
+---
+<Fragment set:html={html} />

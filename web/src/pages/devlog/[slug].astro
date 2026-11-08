@@ -1,0 +1,34 @@
+---
+import Img from "../../components/Img.astro";
+import Layout from "../../layouts/Layout.astro";
+import { isoDate, longDate, minutes, shortDate } from "../../lib/devlog.ts";
+import { site } from "../../lib/site.ts";
+
+export async function getStaticPaths() {
+	const { posts } = await site();
+	return posts.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { posts } = await site();
+const i = posts.findIndex((p) => p.slug === Astro.params.slug);
+const post = posts[i];
+if (!post) throw new Error(`no post ${Astro.params.slug}`);
+const newer = i > 0 ? posts[i - 1] : undefined;
+const older = posts[i + 1];
+---
+<Layout path={post.url} title={post.title} section="devlog" kicker={`Devlog · ${shortDate(post.date)}`} description={post.summary} type="article" published={post.date}>
+<div class="wrap content">
+  <article class="page-sheet">
+    <p class="crumbs"><a href="/devlog/">Devlog</a></p>
+    {post.cover && <div class="post-cover"><Img src={post.cover} alt="decorative" max={600} eager /></div>}
+    <h1>{post.title}</h1>
+    <p class="meta"><time datetime={isoDate(post.date)}>{longDate(post.date)}</time> · {minutes(post)} min read{post.draft && <Fragment> · <span class="badge badge-draft">Draft</span></Fragment>}</p>
+    <Fragment set:html={post.body} />
+    {post.tags.length > 0 && <ul class="tags" aria-label="Tags">{post.tags.map((t) => <li><a href={`/devlog/tags/${t}/`}>#{t}</a></li>)}</ul>}
+  </article>
+  <nav class="post-nav" aria-label="More posts">
+    {newer ? <a class="newer" href={newer.url}>← Newer: {newer.title}</a> : <span></span>}
+    {older && <a class="older" href={older.url}>Older: {older.title} →</a>}
+  </nav>
+</div>
+</Layout>

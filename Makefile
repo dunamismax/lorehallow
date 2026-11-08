@@ -231,18 +231,30 @@ sync: ## Mirror art/processed into client/ and web/, and content/ into client/as
 # --- Website and BUILD.md ----------------------------------------------------------
 
 .PHONY: web-dev
-web-dev: ## Preview lorehallow.com at http://127.0.0.1:4321 with drafts, rebuilt on change
-	cd $(ROOT)/web && go run ./cmd/lorehallow-web serve -addr $(or $(WEB_ADDR),127.0.0.1:4321)
+web-dev: ## Preview the Astro site at http://127.0.0.1:4321 with drafts, rebuilt on change
+	cd $(ROOT)/web && npx --no-install astro dev
 
 .PHONY: web-build
-web-build: ## Build lorehallow.com into web/dist/ (no drafts)
+web-build: ## Build the Astro site into web/dist-astro/ (no drafts; deploys still use web-go-build until BUILD.md 1.9)
+	cd $(ROOT)/web && npx --no-install astro build
+
+.PHONY: web-go-dev
+web-go-dev: ## Preview the Go-built site (live until BUILD.md 1.9) at http://127.0.0.1:4322 with drafts
+	cd $(ROOT)/web && go run ./cmd/lorehallow-web serve -addr $(or $(WEB_ADDR),127.0.0.1:4322)
+
+.PHONY: web-go-build
+web-go-build: ## Build the Go-generated site into web/dist/ (what make deploy-web publishes until BUILD.md 1.9)
 	cd $(ROOT)/web && go run ./cmd/lorehallow-web build
+
+.PHONY: web-parity
+web-parity: ## Build both sites from this commit and fail on any difference not accepted in docs/design/website-parity.md
+	cd $(ROOT)/web && node scripts/parity.ts
 
 .PHONY: web-lint
 web-lint: web-go-lint web-ts-lint ## Website: every linter, for the Go generator and the TypeScript side
 
 .PHONY: web-test
-web-test: web-go-test web-ts-test ## Website: every test, for the Go generator and the TypeScript side
+web-test: web-go-test web-ts-test web-parity ## Website: every test for both sites, and the parity check between them
 
 .PHONY: web-go-lint
 web-go-lint: ## Website (Go generator, until BUILD.md 1.9): gofmt check, go vet, golangci-lint and govulncheck
@@ -256,8 +268,9 @@ web-go-test: ## Website (Go generator, until BUILD.md 1.9): go test -race ./...
 	cd $(ROOT)/web && go test -race -count=1 ./...
 
 .PHONY: web-ts-lint
-web-ts-lint: ## Website (TypeScript): Biome, tsc --noEmit and npm audit
+web-ts-lint: ## Website (Astro and TypeScript): Biome, astro check, tsc --noEmit and npm audit
 	cd $(ROOT) && npx --no-install biome check .
+	cd $(ROOT)/web && npx --no-install astro check --minimumSeverity warning
 	cd $(ROOT)/web && npx --no-install tsc --noEmit -p .
 	cd $(ROOT) && npm audit --audit-level=moderate
 

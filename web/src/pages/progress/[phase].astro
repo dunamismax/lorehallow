@@ -1,0 +1,64 @@
+---
+import Checkmark from "../../components/Checkmark.astro";
+import Img from "../../components/Img.astro";
+import TagBadge from "../../components/TagBadge.astro";
+import XpBar from "../../components/XpBar.astro";
+import Layout from "../../layouts/Layout.astro";
+import { inline } from "../../lib/markdown.ts";
+import { site } from "../../lib/site.ts";
+
+export async function getStaticPaths() {
+	const { progress } = await site();
+	return progress.phases.map((p) => ({
+		params: { phase: `phase-${p.number}` },
+		props: { number: p.number },
+	}));
+}
+
+const { progress } = await site();
+const p = progress.phases.find((x) => x.number === Astro.props.number);
+if (!p) throw new Error(`no phase ${Astro.props.number}`);
+const md = (key: string) => inline(p.meta[key] ?? "");
+const [goal, ships, lesson, depends] = await Promise.all([
+	md("Goal"),
+	md("Ships"),
+	md("Lesson"),
+	md("Depends on"),
+]);
+---
+<Layout path={p.url} title={`Phase ${p.number}: ${p.title}`} section="progress" kicker={`Progress · ${p.done} of ${p.total} done`} description={p.meta.Goal ?? ""}>
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="crumbs"><a href="/progress/">Progress</a> / Phase {p.number}</p>
+      <h1>Phase {p.number}: {p.title}</h1>
+      <p class="lede" set:html={goal} />
+    </div>
+    <Img src={`web/progress_landmarks.png#${p.landmark}`} alt="decorative" k={4} eager />
+  </div>
+</section>
+<div class="wrap content">
+  <XpBar done={p.done} total={p.total} percent={p.percent} label={`Phase ${p.number}`} big />
+  <p>{p.state === "done" ? "This phase is complete." : p.state === "current" ? <Fragment><strong>You are here.</strong> This is the phase being built now.</Fragment> : "This phase is still ahead."}{p.walkthrough && <Fragment> Read <a href={p.walkthrough}>the walkthrough</a> for how it was built and what it teaches.</Fragment>}</p>
+  <dl class="meta-list">
+    <dt>Ships</dt><dd set:html={ships} />
+    <dt>Lesson</dt><dd set:html={lesson} />
+    <dt>Depends on</dt><dd set:html={depends} />
+  </dl>
+  {p.sections.map((s) => (
+  <Fragment>
+  <div class="section-title">
+    <h2 id={`s-${s.acceptance ? "acceptance" : s.id}`}>{s.acceptance ? "Acceptance criteria" : `${s.id} ${s.title}`}</h2>
+    <span>{s.done} of {s.items.length} done</span>
+  </div>
+  <ul class="checklist">
+    {s.items.map((it) => <li class={it.checked ? "done" : undefined}><Checkmark done={it.checked} /><span><TagBadge tag={it.tag} /> <Fragment set:html={it.html} /></span></li>)}
+  </ul>
+  </Fragment>
+  ))}
+  <nav class="pager" aria-label="Phases">
+    {p.prev ? <a href={p.prev.url}>← Phase {p.prev.number}: {p.prev.title}</a> : <span></span>}
+    {p.next && <a href={p.next.url}>Phase {p.next.number}: {p.next.title} →</a>}
+  </nav>
+</div>
+</Layout>

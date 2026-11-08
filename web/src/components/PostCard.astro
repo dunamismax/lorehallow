@@ -1,0 +1,18 @@
+---
+import { isoDate, longDate, minutes, type Post } from "../lib/devlog.ts";
+import Img from "./Img.astro";
+
+interface Props {
+	post: Post;
+}
+const { post } = Astro.props;
+---
+<article class="post-card">
+  {post.cover && <a href={post.url} class="post-card-art" tabindex="-1" aria-hidden="true"><Img src={post.cover} alt="decorative" k={1} /></a>}
+  <div class="post-card-body">
+    <p class="meta"><time datetime={isoDate(post.date)}>{longDate(post.date)}</time> · {minutes(post)} min read{post.draft && <Fragment> · <span class="badge badge-draft">Draft</span></Fragment>}</p>
+    <h3><a href={post.url}>{post.title}</a></h3>
+    <p>{post.summary}</p>
+    {post.tags.length > 0 && <ul class="tags" aria-label="Tags">{post.tags.map((t) => <li><a href={`/devlog/tags/${t}/`}>#{t}</a></li>)}</ul>}
+  </div>
+</article>

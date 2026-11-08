@@ -2,20 +2,38 @@
 
 The lorehallow.com website: a Go program that builds the whole site as static files, which Caddy serves from `/srv/lorehallow/web/current`. It parses [BUILD.md](../BUILD.md) to render the live progress tracker. No page ships any JavaScript ([ADR 0011](../docs/decisions/0011-go-website.md)).
 
-## Planned: the move to Astro
+## Two builds of one site
 
-This directory is being rebuilt as an Astro site ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md Phase 1). **Everything below the next heading describes the Go generator that is in the checkout and live today.** None of the Astro project exists yet.
+This directory holds two builds of lorehallow.com while it moves to Astro ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md Phase 1):
 
-The plan, in order:
+- **The Astro project** (`astro.config.ts`, `src/`, `scripts/`, `tests/`): the new site. Astro components, strict TypeScript, CSS and a Markdown content collection, static output, no UI framework integrations and no browser JavaScript. It builds into `dist-astro/` and isn't deployed yet.
+- **The Go generator** (described below): the site that is live. `make deploy-web` still publishes its build until the cutover (BUILD.md 1.9), and it is deleted a week after that.
 
-1. **Parity inventory** (BUILD.md 1.2): every URL, redirect, generated asset, meta tag, output test and budget of this site, written to `docs/design/website-parity.md` with how the Astro build is checked against each.
-2. **A local Astro build** next to this generator: Astro components, strict TypeScript, CSS and Markdown content collections, static output, no UI framework integrations and no browser JavaScript. It writes to its own output folder, so both builds can be compared. The devlog collection reads `content/devlog/` in place.
-3. **One TypeScript BUILD.md parser** shared by Astro's build and `make buildmd-lint`, checked against `internal/buildmd` on the real BUILD.md and its fixtures. `/progress.json`, `/progress.svg`, the feeds and the sitemap become build-time endpoints.
-4. **Parity and output checks**: the tests listed under [Output tests](#output-tests), ported to TypeScript, plus a check that diffs the two builds. The fonts and share cards, generated in Go today (`internal/pixelfont`, `internal/woff`, `internal/site/og.go`), are ported or moved to a Go tool, as the 1.2 ADR decides.
-5. **Play replaces Downloads** (1.6): `/play/` says whether the game is playable, and `/downloads/` redirects to it. `data/releases.json` is replaced by release data with no platform files.
-6. **Cutover** (1.9), after the owner approves: `make deploy-web` publishes the Astro build with the same atomic release and rollback model. The Go module is deleted only after the cutover has held.
+`make web-parity` builds both from the same commit and compares every file: page HTML and CSS after collapsing whitespace, feeds, `/progress.json` (apart from its timestamp), font tables, and decoded pixels for every image. Any difference not listed in [docs/design/website-parity.md](../docs/design/website-parity.md) fails `make check`. Today they match on all 153 files.
 
-Until the cutover, the `make` targets below run this Go generator, and `make check` runs both sites' checks once the Astro project exists.
+### The Astro project
+
+| Path | What |
+|---|---|
+| `astro.config.ts` | Static output into `dist-astro/`, `trailingSlash: "always"` and directory URLs (the Go site's URL shape), stylesheets never inlined, prefetch and the dev toolbar off, and Sätteri Markdown with raw HTML dropped. |
+| `src/pages/` | One page or build-time endpoint per URL: `progress/[phase].astro`, `devlog/[slug].astro`, `devlog/tags/[tag].astro`, and `progress.json.ts`, `progress.svg.ts`, `devlog/rss.xml.ts`, `devlog/atom.xml.ts`, `sitemap.xml.ts`, `robots.txt.ts`, `favicon.ico.ts`, `apple-touch-icon.png.ts`. |
+| `src/layouts/`, `src/components/` | The layout (head metadata, header, nav, footer) and the shared pieces: `Img` (pixel art), `XpBar`, `PostCard`, `SectionHead`, `TagBadge`, `Checkmark`. |
+| `src/content.config.ts` | The devlog collection, reading `content/devlog/` in place with the same front matter rules. A bad field fails the build naming the file and the field. |
+| `src/lib/buildmd.ts` | The BUILD.md parser, shared by the build and `make buildmd-lint` (`scripts/buildmd-lint.ts`, run by Node directly). |
+| `src/lib/` | The rest of the generator, ported from Go ([ADR 0016](../docs/decisions/0016-fonts-and-share-cards-in-typescript.md)): `progress.ts` (the progress model, the git-history achievement feed, `/progress.json`, the badge), `assets.ts` (content-hashed `/assets/`, frame crops, mirrored pairs, responsive whole-number scales), `png.ts`, `pixelfont.ts`, `woff.ts`, `og.ts` (share cards), `theme.ts` (palette and color roles), `sitecss.ts` (the stylesheet), `feeds.ts`, `markdown.ts`, `state.ts`, `site.ts`. |
+| `src/integration.ts` | Once every page is rendered, writes the assets the pages registered and the stylesheet, which carries the responsive rules for exactly the images they drew, and points each page at it. In `astro dev` it serves the same files from memory. |
+| `scripts/parity.ts` | The parity check. |
+| `tests/` | `node --test` suites: the parser, and the parser parity test against `internal/buildmd`. |
+
+```bash
+make web-dev       # the Astro site at http://127.0.0.1:4321, drafts included
+make web-build     # the Astro site into dist-astro/ (no drafts)
+make web-go-dev    # the Go-built site at http://127.0.0.1:4322, drafts included
+make web-go-build  # the Go-built site into dist/, exactly what deploys until 1.9
+make web-lint      # both: gofmt, vet, golangci-lint, govulncheck; Biome, astro check, tsc, npm audit
+make web-test      # both: go test -race; node --test; and the parity check
+make buildmd-lint  # lint BUILD.md
+```
 
 ## The Go generator (current)
 
@@ -23,7 +41,7 @@ This is its own Go module, `github.com/dunamismax/lorehallow/web`, on the Go ver
 
 | Path | What |
 |---|---|
-| `cmd/lorehallow-web/` | `build` writes the site to `dist/` (gitignored); `serve` previews it at http://127.0.0.1:4321 with drafts, rebuilding on the next request after any source changes. |
+| `cmd/lorehallow-web/` | `build` writes the site to `dist/` (gitignored); `serve` previews it at http://127.0.0.1:4322 (`make web-go-dev`) with drafts, rebuilding on the next request after any source changes. |
 | `internal/site/` | The generator: pages, the progress model and achievement feed (from `git log` of BUILD.md), devlog, feeds, sitemap, share images, fingerprinted assets, palette tokens and color roles. Its tests check the built output. |
 | `internal/buildmd/` | The BUILD.md parser. It implements the format contract at the top of BUILD.md: phases, metadata, sections, items, tags and checked state, plus every format problem with its line number. Tested on malformed input, the real BUILD.md, and a fuzz target. |
 | `internal/pixelfont/`, `internal/woff/` | Compile the hand-drawn heading font into TrueType and WOFF ([ADR 0012](../docs/decisions/0012-website-fonts.md)). |
@@ -37,11 +55,10 @@ This is its own Go module, `github.com/dunamismax/lorehallow/web`, on the Go ver
 | `placeholder/` | The holding page served before the real site's first deploy. |
 
 ```bash
-make web-dev       # preview at http://127.0.0.1:4321, drafts included
-make web-build     # build web/dist/ exactly as it deploys
-make web-lint      # gofmt, go vet, golangci-lint, govulncheck
-make web-test      # go test -race, including the output tests below
-make buildmd-lint  # lint BUILD.md
+make web-go-dev    # preview at http://127.0.0.1:4322, drafts included
+make web-go-build  # build web/dist/ exactly as it deploys
+make web-go-lint   # gofmt, go vet, golangci-lint, govulncheck
+make web-go-test   # go test -race, including the output tests below
 ```
 
 ## How it fits together
@@ -68,8 +85,4 @@ make buildmd-lint  # lint BUILD.md
 
 Change the parser, its tests and the contract in BUILD.md together.
 
-```bash
-make web-lint      # gofmt, go vet, golangci-lint, govulncheck
-make web-test      # go test -race
-make buildmd-lint  # lint BUILD.md
-```
+The Astro build gets the same output tests in TypeScript before the cutover (BUILD.md 1.8).

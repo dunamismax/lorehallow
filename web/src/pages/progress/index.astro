@@ -1,0 +1,93 @@
+---
+import Img from "../../components/Img.astro";
+import XpBar from "../../components/XpBar.astro";
+import Layout from "../../layouts/Layout.astro";
+import { isoDate, longDate } from "../../lib/devlog.ts";
+import { badgeWidth } from "../../lib/progress.ts";
+import { site } from "../../lib/site.ts";
+import { BuildMDURL } from "../../lib/state.ts";
+
+const { st, progress: pr } = await site();
+const cur = pr.current;
+let description = `Lorehallow is ${pr.percent}% built: ${pr.done} of ${pr.total} steps in the build plan are done.`;
+if (cur) description += ` Now on Phase ${cur.number}: ${cur.title}.`;
+const feed = pr.achievements.slice(0, 12);
+---
+<Layout path="/progress/" title="Progress" section="progress" description={description} kicker={`${pr.percent}% built`}>
+<section class="page-head">
+  <div class="wrap page-head-art">
+    <div>
+      <p class="kicker">Live from BUILD.md</p>
+      <h1>The road to 1.0</h1>
+      <p class="lede">Every step from an empty repository to launch is a checkbox in <a href={BuildMDURL}>BUILD.md</a>. This page is rebuilt from it on every push, so it's never more than a few minutes behind.</p>
+    </div>
+    <Img src="icons/section_icons.png#progress" alt="decorative" k={4} />
+  </div>
+</section>
+
+<div class="wrap content">
+  <XpBar done={pr.done} total={pr.total} percent={pr.percent} label="Overall progress" big />
+  {cur && <p>Now on <a href={cur.url}>Phase {cur.number}: {cur.title}</a>, {cur.done} of {cur.total} steps done. {cur.meta.Goal}</p>}
+
+  <h2 id="map">The quest map</h2>
+  <ul class="legend" aria-label="Map key">
+    <li>Lit: finished</li><li>Gold border: you are here</li><li>Dimmed, dashed: still ahead</li>
+  </ul>
+  <nav class="quest-map" aria-label="Phases">
+    <ol>
+      {pr.phases.map((p, i) => (
+      <li class={`qm-${i} is-${p.state}`}>
+        <a class="qm-node" href={p.url} aria-current={p.state === "current" ? "step" : undefined}>
+          <span class="qm-art">{p.state === "current" && <span class="you-are-here">You are here</span>}<Img src={`web/progress_landmarks.png#${p.landmark}`} alt="decorative" k={2} /></span>
+          <span class="qm-plaque">
+            <span class="pixel">Phase {p.number}{p.state === "current" && <span class="qm-here"> · You are here</span>}</span>
+            <span class="qm-title">{p.title}</span>
+            <span class="qm-count">{p.state === "done" ? "Complete" : `${p.done} of ${p.total} done`}{p.version && ` · ${p.version}`}</span>
+          </span>
+        </a>
+      </li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="two-col">
+    <section aria-labelledby="feed">
+      <h2 id="feed">Quests complete</h2>
+      {feed.length > 0 ? (
+      <ol class="feed">
+        {feed.map((a) => (
+        <li>
+          <span class="meta"><time datetime={isoDate(a.date)}>{longDate(a.date)}</time>{a.phase && <Fragment> · <a href={a.phase.url}>Phase {a.phase.number}</a></Fragment>} · <a href={a.url} aria-label={`Commit ${a.commit}`}><code>{a.commit}</code></a></span>
+          <Fragment set:html={a.html} />
+        </li>
+        ))}
+      </ol>
+      ) : (
+      <p class="empty">No history to show in this build.</p>
+      )}
+    </section>
+    <aside aria-labelledby="waiting">
+      <h2 id="waiting">Waiting on the owner</h2>
+      {pr.waiting.length > 0 ? (
+      <div class="waiting">
+        <p>Steps in the current phase that need a person: money, accounts, credentials, approvals or a playtest. Everything else carries on around them.</p>
+        <ul>{pr.waiting.map((w) => <li set:html={w.html} />)}</ul>
+      </div>
+      ) : (
+      <p class="empty">Nothing. The current phase isn't waiting on anyone.</p>
+      )}
+      <h2 id="data">Data</h2>
+      <p><a href="/progress.json">progress.json</a> has these numbers for scripts, and there's a badge for READMEs:</p>
+      <p><img src="/progress.svg" alt="Lorehallow progress badge" width={badgeWidth(pr, st.font)} height="20"></p>
+    </aside>
+  </div>
+
+  <h2 id="phases">Every phase</h2>
+  <table class="phase-table">
+    <thead><tr><th scope="col">Phase</th><th scope="col">Ships</th><th scope="col">Progress</th></tr></thead>
+    <tbody>
+      {pr.phases.map((p) => <tr><td><a href={p.url}>{p.number}. {p.title}</a></td><td>{p.version || "·"}</td><td class="num">{p.done} / {p.total}{p.state === "done" && " ✓"}</td></tr>)}
+    </tbody>
+  </table>
+</div>
+</Layout>

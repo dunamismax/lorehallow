@@ -1,0 +1,7 @@
+---
+interface Props {
+	done: boolean;
+}
+const { done } = Astro.props;
+---
+{done ? <span class="check check-done" aria-label="Done"></span> : <span class="check" aria-label="Not done yet"></span>}

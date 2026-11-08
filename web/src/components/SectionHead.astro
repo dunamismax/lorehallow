@@ -1,0 +1,18 @@
+---
+import Img from "./Img.astro";
+
+interface Props {
+	icon: string;
+	title: string;
+	id: string;
+	kicker?: string;
+}
+const { icon, title, id, kicker } = Astro.props;
+---
+<div class="section-head">
+  <Img src={`icons/section_icons.png#${icon}`} alt="decorative" k={3} />
+  <div>
+    {kicker && <p class="kicker">{kicker}</p>}
+    <h2 id={id}>{title}</h2>
+  </div>
+</div>

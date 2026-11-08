@@ -211,10 +211,10 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] Pixel image component: integer scaling, `image-rendering: pixelated`, explicit dimensions, lazy loading below the fold.
 - [x] Parity inventory in `docs/design/website-parity.md`, taken from the live Go-built site and `web/dist/`: every published URL (pages, phase pages, tag pages, posts, feeds, `/progress.json`, `/progress.svg`, `sitemap.xml`, `robots.txt`, favicons, the 404 page), the `www` and trailing-slash redirects, every generated asset (fingerprinted CSS, fonts, art, share cards), every meta tag, every output test and budget in `web/README.md`, and for each one how the Astro build is checked against it.
 - [x] `ADR` Frontend toolchain for `web/` and `client/`: one pinned Node LTS and one package manager (npm workspaces with one committed lockfile recommended), plus the TypeScript, lint, format and test tools both frontends use, pinned in `toolchain.env`, checked by `make doctor` and listed in AGENTS.md section 13. Node is for development, builds and CI only, never on the host.
-- [ ] Astro project in `web/`, next to the Go generator until 1.9: Astro components, strict TypeScript (`astro check` and `tsc` clean), CSS and static output only, no UI framework integrations, URL settings (`trailingSlash`, `build.format`) that keep every current URL, stylesheets never inlined, prefetch, view transitions and client islands off. It writes to its own output folder so both builds can be compared until cutover.
-- [ ] `make web-dev`, `web-build`, `web-test` and `web-lint` run the Astro project (`astro check`, the linters, formatter check, tests and the package manager's audit); the Go generator's targets keep running under other names until 1.9 retires them, so `make check` covers both sites throughout.
-- [ ] `ADR` Fonts and share cards in the Astro build: port the pixel-font compiler (TrueType and WOFF) and the 1200×630 Open Graph card renderer to TypeScript (recommended), or keep them as a Go tool in `tools/` that writes committed files. Fonts and their licenses don't change, and the outputs match the Go generator's byte for byte or differ only as recorded in the parity inventory.
-- [ ] Astro layout, navigation, footer, pixel image component and palette tokens and color roles, with the same markup, classes and CSS as the Go templates.
+- [x] Astro project in `web/`, next to the Go generator until 1.9: Astro components, strict TypeScript (`astro check` and `tsc` clean), CSS and static output only, no UI framework integrations, URL settings (`trailingSlash`, `build.format`) that keep every current URL, stylesheets never inlined, prefetch, view transitions and client islands off. It writes to its own output folder so both builds can be compared until cutover.
+- [x] `make web-dev`, `web-build`, `web-test` and `web-lint` run the Astro project (`astro check`, the linters, formatter check, tests and the package manager's audit); the Go generator's targets keep running under other names until 1.9 retires them, so `make check` covers both sites throughout.
+- [x] `ADR` Fonts and share cards in the Astro build: port the pixel-font compiler (TrueType and WOFF) and the 1200×630 Open Graph card renderer to TypeScript (recommended), or keep them as a Go tool in `tools/` that writes committed files. Fonts and their licenses don't change, and the outputs match the Go generator's byte for byte or differ only as recorded in the parity inventory.
+- [x] Astro layout, navigation, footer, pixel image component and palette tokens and color roles, with the same markup, classes and CSS as the Go templates.
 
 ### 1.3 Landing page
 
@@ -228,7 +228,7 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
 - [x] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
 - [x] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
-- [ ] The landing page rebuilt in Astro, matching the Go-built page section by section, including the CSS-only motion and its `prefers-reduced-motion` switch.
+- [x] The landing page rebuilt in Astro, matching the Go-built page section by section, including the CSS-only motion and its `prefers-reduced-motion` switch.
 
 ### 1.4 Progress tracker (/progress)
 
@@ -241,10 +241,10 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
 - [x] Machine-readable `/progress.json` and a `/progress.svg` badge, with the badge added to README.md.
 - [x] Each phase links to its walkthrough on GitHub once it exists.
-- [ ] TypeScript BUILD.md parser in the Astro project, one module imported by Astro's build and by `make buildmd-lint` (run by Node directly, no build step), implementing the format contract above and reporting every problem with its line number.
+- [x] TypeScript BUILD.md parser in the Astro project, one module imported by Astro's build and by `make buildmd-lint` (run by Node directly, no build step), implementing the format contract above and reporting every problem with its line number.
 - [x] Parser parity: on the real BUILD.md, every fixture in the Go parser's tests and its fuzz seed corpus, and randomly broken copies of BUILD.md, the TypeScript parser returns the same phases, sections, items, tags, checked state and problems as the Go parser. The test runs in `make check` until the Go parser is retired.
-- [ ] /progress, the phase pages, the quest map, the git-backed achievement feed (walking `git log -p BUILD.md`, so builds need full history), the "Waiting on the owner" panel and the walkthrough links rebuilt in Astro with the same content and URLs.
-- [ ] `/progress.json` and `/progress.svg` as Astro build-time endpoints that match the Go output for the same commit (the README badge and the uptime check read them).
+- [x] /progress, the phase pages, the quest map, the git-backed achievement feed (walking `git log -p BUILD.md`, so builds need full history), the "Waiting on the owner" panel and the walkthrough links rebuilt in Astro with the same content and URLs.
+- [x] `/progress.json` and `/progress.svg` as Astro build-time endpoints that match the Go output for the same commit (the README badge and the uptime check read them).
 
 ### 1.5 Devlog (/devlog)
 
@@ -253,9 +253,9 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] RSS and Atom feeds.
 - [x] Move the Phase 0 devlog draft into the collection.
 - [x] `HUMAN` Edit and publish the first devlog post.
-- [ ] Devlog as an Astro content collection reading `web/content/devlog/` in place: the same front-matter schema, a build failure naming the file and field for bad front matter, the same slugs, and raw HTML in posts still dropped.
+- [x] Devlog as an Astro content collection reading `web/content/devlog/` in place: the same front-matter schema, a build failure naming the file and field for bad front matter, the same slugs, and raw HTML in posts still dropped.
 - [ ] Drafts appear only in `make web-dev`. A test proves no draft reaches any public artifact: pages, tag pages, feeds, the sitemap, share cards or any file in the build output.
-- [ ] Devlog index, tag and post pages, plus RSS and Atom as build-time endpoints, with the same URLs, entry ids and dates, so feed readers see no duplicates after the cutover.
+- [x] Devlog index, tag and post pages, plus RSS and Atom as build-time endpoints, with the same URLs, entry ids and dates, so feed readers see no duplicates after the cutover.
 
 ### 1.6 Play (/play)
 
@@ -276,13 +276,13 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 - [x] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [x] No third-party trackers, scripts or fonts on any page.
 - [ ] /world, /about, /faq and the 404 page rebuilt in Astro with the same content and art; Caddy serves the 404 page with a real HTTP 404 status.
-- [ ] Social metadata parity: every page keeps its title, description, canonical URL, Open Graph and Twitter tags and its 1200×630 share card; `sitemap.xml` and `robots.txt` are build-time endpoints with the same entries.
+- [x] Social metadata parity: every page keeps its title, description, canonical URL, Open Graph and Twitter tags and its 1200×630 share card; `sitemap.xml` and `robots.txt` are build-time endpoints with the same entries.
 
 ### 1.8 Quality gates
 
 - [ ] Lighthouse audit on the live Astro site after the cutover (1.9), on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/`. Lighthouse runs locally under Node against the live site; it isn't part of `make check` or CI.
 - [ ] The Go output tests ported to TypeScript and run on the Astro build in `make web-test`: every check listed in `web/README.md` (no scripts, iframes, inline handlers, `style` attributes or `javascript:` URLs; alt text and whole-number image sizes; links, fragments and CSS `url()`s resolve; no other origins; the 1 MB landing page budget; WCAG AA pairs and colors only through roles; titles, descriptions, canonical URLs, Open Graph cards and repository links on every page; valid feeds and sitemap; no drafts; valid release data).
-- [ ] Parity check, run in `make check` until 1.9: builds both sites and compares URL sets, page text, meta tags, feeds, `/progress.json`, `/progress.svg`, the sitemap and asset references. Every difference is fixed or listed as accepted in the parity inventory.
+- [x] Parity check, run in `make check` until 1.9: builds both sites and compares URL sets, page text, meta tags, feeds, `/progress.json`, `/progress.svg`, the sitemap and asset references. Every difference is fixed or listed as accepted in the parity inventory.
 - [x] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
 - [x] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
 - [x] Responsive from 360 px phones to 4K screens, with art always scaled by whole numbers.
