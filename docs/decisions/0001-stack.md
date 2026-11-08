@@ -1,6 +1,6 @@
 # 0001: The Lorehallow stack
 
-- **Status:** Accepted
+- **Status:** Accepted. The client row is superseded by [ADR 0014](0014-astro-website-and-phaser-browser-client.md): the game is a Phaser and TypeScript browser client, and native desktop exports are retired. The website, never listed here, is covered by ADRs 0011 and 0014.
 - **Date:** 2026-11-06
 - **BUILD.md:** 0.2
 

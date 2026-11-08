@@ -1,6 +1,6 @@
 # 0002: Toolchain versions and how they are pinned
 
-- **Status:** Accepted. Node.js was later removed from the toolchain by [ADR 0011](0011-go-website.md); the rest stands.
+- **Status:** Accepted. Node.js was later removed from the toolchain by [ADR 0011](0011-go-website.md), and returns for frontend development, builds and CI under [ADR 0014](0014-astro-website-and-phaser-browser-client.md), pinned in BUILD.md 1.2. Godot, gdtoolkit, GUT and godobuf leave when the Godot client is removed (BUILD.md 2.10). The rest stands.
 - **Date:** 2026-11-06
 - **BUILD.md:** 0.3
 

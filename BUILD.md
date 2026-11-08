@@ -8,6 +8,7 @@ Read [AGENTS.md](AGENTS.md) before changing this file.
 
 - **Phases run in order.** The current phase is the lowest-numbered phase with an unchecked box. Within a phase, sections run roughly top to bottom, but independent items can be done in any order or in parallel.
 - **Website first.** Phase 1 is finished, live and polished before any more work on the server phases (the owner's call, AGENTS.md decision 38). Until then, server work is limited to keeping `make check` green and the live server healthy.
+- **Two frontend migrations** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). Phase 1 moves lorehallow.com from the Go site generator to Astro; its first item is the parity inventory in 1.2. Phase 2 replaces the Godot client with a Phaser browser game; its first client item is the Phaser scaffold in 2.6. While Phase 1 waits only on an owner approval, the Phaser work in `client/` (2.6, the client map import in 2.2, 2.7, 2.8 and the Godot retirement in 2.10) may go ahead, because none of it changes lorehallow.com. Deploying the game waits until Phase 1 is done. Superseded checked work is kept as history in [Superseded work](#superseded-work).
 - **Performance criteria are measured, never estimated.** They point at targets in [docs/design/scaling.md](docs/design/scaling.md), name the hardware (`dev-m5` until the production host exists, then `prod`) and are checked only with a result in `docs/perf/`.
 - **Check a box only when it's really done:** committed, `make check` green, and doing what the line says. Partial work stays unchecked.
 - **Every phase ends with acceptance criteria.** A phase is done when every box in it is checked, acceptance criteria included.
@@ -32,8 +33,8 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 | Phase | Title | Ships | Core lesson |
 |---|---|---|---|
 | 0 | Foundations | Scaffold, pipelines, first art | Project structure, codegen, image processing |
-| 1 | lorehallow.com | The website | Linux hosting, DNS, TLS, static sites, deploys and rollback |
-| 2 | Two Players, One World | v0.2.0 | WebSockets, connection lifecycle, backpressure, tick loops, interpolation |
+| 1 | lorehallow.com | The website, rebuilt in Astro | Linux hosting, DNS, TLS, static sites, migrating a live site, deploys and rollback |
+| 2 | Two Players, One World | v0.2.0, playable in the browser | WebSockets, connection lifecycle, backpressure, tick loops, interpolation, a browser client |
 | 3 | Many Players | v0.3.0 | Prediction, interest management, bandwidth, load testing, profiling |
 | 4 | Accounts and Characters | v0.4.0 | Auth, sessions, PostgreSQL, login storms, backups |
 | 5 | Chat and Presence | v0.5.0 | Fan-out messaging, rate limiting |
@@ -46,7 +47,7 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 | 12 | Operations | v0.12.0 | Observability, soak testing, zero-downtime deploys |
 | 13 | Classes and the v1 World | v0.13.0 | Content production, balance tooling |
 | 14 | Audio, UI and Polish | v0.14.0 | Game feel, UX, accessibility |
-| 15 | Distribution and Releases | v0.15.0 | Release engineering, signing, the web build |
+| 15 | Browser Releases | v0.15.0 | Release engineering for a web client: versioned builds, compatibility, cache-safe updates, rollback |
 | 16 | Security and Hardening | v0.16.0 | Threat modeling, fuzzing, abuse prevention |
 | 17 | Closed Alpha | v0.17.0 | Playtesting, triage, live tuning |
 | 18 | Open Beta | v0.18.0 | Capacity planning at scale, community operations |
@@ -103,22 +104,14 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `buf.yaml` and `buf.gen.yaml` in `proto/`, package `lorehallow.v1`, buf lint enabled.
 - [x] First schema in `proto/lorehallow/v1/`: an `Envelope` with a `oneof` payload, `Ping` and `Pong`, and the `PROTOCOL_VERSION` convention documented in `proto/README.md`.
 - [x] Go code generation into `server/internal/pb/` (committed, marked generated).
-- [x] `ADR` GDScript code generation: try godobuf on the pinned Godot 4 version first; if it can't pass the round-trip tests below, write `tools/protoc-gen-gdscript` (a Go protoc plugin) for the proto3 subset Lorehallow uses.
-- [x] GDScript code generation into `client/net/pb/` (committed, marked generated).
 - [x] Golden vectors: a Go program writes encoded messages and JSON descriptions to `proto/testdata/`; Go and GDScript tests decode and re-encode them and compare bytes.
 - [x] `make proto` regenerates everything; `make check` fails when generated code is stale or `buf breaking` reports an unplanned breaking change against `main`.
 
-### 0.6 Godot client skeleton
+### 0.6 Client skeleton
 
-- [x] Create the Godot 4 project in `client/` with the project name, a placeholder icon and the folder layout from AGENTS.md.
-- [x] Rendering settings: base viewport 640×360, stretch mode `viewport`, integer scaling, default texture filter Nearest, no mipmaps, 2D pixel snapping.
-- [x] Pixel-art import preset (filter off, mipmaps off, lossless) as the project default.
-- [x] Main scene with a placeholder title screen showing the build version.
-- [x] Autoload skeletons: `Config`, `Log` and `Net` (empty for now).
-- [x] GUT installed in `addons/` with one passing test; `make test` runs GUT headless.
-- [x] gdtoolkit through uv; `make fmt` and `make lint` cover `client/`, excluding generated code and addons.
-- [x] Static typing enforced: the project warns on untyped declarations.
-- [x] `make client` launches the client (Godot found through a `GODOT` variable with sensible macOS and Linux defaults).
+The Godot skeleton built here is superseded by the Phaser client (2.6, [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)); its items are in [Superseded work](#superseded-work). The pixel rules it settled carry over.
+
+- [x] Client pixel rules settled for the game: base viewport 640×360, integer scaling only, nearest-neighbor filtering, no mipmaps, positions snapped to whole pixels (AGENTS.md section 7).
 
 ### 0.7 Art pipeline tooling
 
@@ -145,7 +138,6 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 - [x] `HUMAN` Generate Batch 01 in ChatGPT and drop the files unchanged into `art/inbox/batch-01/`.
 - [x] Run intake on Batch 01 and iterate with corrected prompts until every asset is accepted.
 - [x] Save the accepted reference sheet as `art/style/reference.png` for every later prompt to attach.
-- [x] Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels.
 
 ### 0.9 Art Batch 02: brand and website art
 
@@ -158,7 +150,6 @@ lorehallow.com parses this file. From Phase 1 on, `make check` lints it.
 ### 0.10 Continuous integration
 
 - [x] GitHub Actions workflow runs `make check` on every push to `main` (Linux), caching Go and uv.
-- [x] Godot headless tests run in CI with the pinned Godot version.
 - [x] CI status badge in README.md.
 - [x] Document in AGENTS.md that CI runs on GitHub and Codeberg is a mirror.
 
@@ -187,9 +178,6 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### Acceptance criteria
 
 - [x] On a fresh clone, `make doctor && make setup && make check` passes on macOS, and `make check` passes in CI on Linux.
-- [x] `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
-- [x] Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
-- [x] Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
 - [x] Batch 02 assets are processed and ready in `art/processed/web/`.
 - [x] The Phase 0 walkthrough exists and every `ADR` item in this phase has its ADR.
 
@@ -197,17 +185,19 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ## Phase 1: lorehallow.com
 
-> **Goal:** A fast, beautiful, self-hosted website at lorehallow.com that sells the dream, links to the public repositories, tracks BUILD.md automatically, hosts a devlog and has a downloads page ready for the first builds.
-> **Ships:** The lorehallow.com website
-> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site generation in Go and atomic deploys with rollback
+> **Goal:** A fast, beautiful, self-hosted website at lorehallow.com that sells the dream, links to the public repositories, tracks BUILD.md automatically, hosts a devlog and points players to the browser game, built with Astro and no browser JavaScript, replacing the Go-generated site without breaking a URL.
+> **Ships:** The lorehallow.com website, rebuilt in Astro
+> **Lesson:** Linux server hardening, DNS, TLS, reverse proxies, static site generation, migrating a live site by parity checks and cutover, and atomic deploys with rollback
 > **Depends on:** Phase 0 sections 0.2, 0.3 and 0.9 (the rest of Phase 0 can finish in parallel)
+
+The Go-generated site was built first and is live ([ADR 0011](docs/decisions/0011-go-website.md)). The Astro migration ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)) starts with the parity inventory in 1.2 and a local Astro build. The Go site stays live until the Astro build passes the parity checks and the owner approves a separate cutover (1.9). Checked items that describe the live site stay checked: the parity checks keep them true across the cutover.
 
 ### 1.1 Host provisioning and hardening
 
 - [x] `HUMAN` Fill in `deploy/HOST.md` (or give an agent the facts to write it): OS and version, CPU architecture, RAM and disk, network setup (public IP, or ports 80 and 443 forwarded if it's at home), and anything else already running on it.
 - [x] `HUMAN` Point DNS A records (and AAAA if the host has public IPv6) for `lorehallow.com`, `www.lorehallow.com` and `play.lorehallow.com` at the host, and note the DNS provider in `deploy/HOST.md`.
 - [ ] Write `deploy/bootstrap/host.sh`, an idempotent provisioning script: create the `deploy` and service users, key-only SSH with root login off, firewall allowing only 22, 80 and 443, automatic security updates, fail2ban or equivalent, Caddy, and the `/srv/lorehallow` and `/etc/lorehallow` layout.
-- [ ] `HUMAN` Review and run the bootstrap script with sudo (or let an agent run it), and authorize SSH keys for agent sessions and for CI on the `deploy` user.
+- [ ] `HUMAN` Review and run the bootstrap script with sudo (or let an agent run it), and authorize SSH keys for agent sessions on the `deploy` user. CI never gets a key (AGENTS.md section 10).
 - [x] `ADR` Reverse proxy: Caddy with automatic HTTPS (recommended). Config in `deploy/caddy/lorehallow.caddy` (a site file on the shared host, ADR 0009), site root `/srv/lorehallow/web/current`.
 - [x] HTTPS works with valid certificates; HTTP redirects to HTTPS and `www` redirects to the apex.
 - [x] Security headers (HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), compression, and long cache lifetimes for fingerprinted assets.
@@ -215,13 +205,16 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 1.2 Site scaffold
 
-- [x] `ADR` Website stack: a Go static site generator in `web/` (its own module) with no JavaScript on any page ([ADR 0011](docs/decisions/0011-go-website.md)).
-- [x] `cmd/lorehallow-web` with `build` (writes the site to `web/dist/`) and `serve` (local preview that rebuilds on change, drafts included); templates (`html/template`), CSS and fonts embedded with `go:embed`.
 - [x] Design tokens generated from `art/style/palette.hex` into CSS custom properties, so the site and the game share one palette.
 - [x] `ADR` Fonts: an open-licensed pixel font for headings and a readable body font, both self-hosted with license files committed.
 - [x] Base layout: header with logo and navigation (Home, World, Progress, Devlog, Downloads, About), footer linking GitHub, Codeberg, RSS and the licenses.
 - [x] Pixel image component: integer scaling, `image-rendering: pixelated`, explicit dimensions, lazy loading below the fold.
-- [x] Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (gofmt, go vet, golangci-lint, govulncheck), with the tests and linters included in `make check`.
+- [ ] Parity inventory in `docs/design/website-parity.md`, taken from the live Go-built site and `web/dist/`: every published URL (pages, phase pages, tag pages, posts, feeds, `/progress.json`, `/progress.svg`, `sitemap.xml`, `robots.txt`, favicons, the 404 page), the `www` and trailing-slash redirects, every generated asset (fingerprinted CSS, fonts, art, share cards), every meta tag, every output test and budget in `web/README.md`, and for each one how the Astro build is checked against it.
+- [ ] `ADR` Frontend toolchain for `web/` and `client/`: one pinned Node LTS and one package manager (npm workspaces with one committed lockfile recommended), plus the TypeScript, lint, format and test tools both frontends use, pinned in `toolchain.env`, checked by `make doctor` and listed in AGENTS.md section 13. Node is for development, builds and CI only, never on the host.
+- [ ] Astro project in `web/`, next to the Go generator until 1.9: Astro components, strict TypeScript (`astro check` and `tsc` clean), CSS and static output only, no UI framework integrations, URL settings (`trailingSlash`, `build.format`) that keep every current URL, stylesheets never inlined, prefetch, view transitions and client islands off. It writes to its own output folder so both builds can be compared until cutover.
+- [ ] `make web-dev`, `web-build`, `web-test` and `web-lint` run the Astro project (`astro check`, the linters, formatter check, tests and the package manager's audit); the Go generator's targets keep running under other names until 1.9 retires them, so `make check` covers both sites throughout.
+- [ ] `ADR` Fonts and share cards in the Astro build: port the pixel-font compiler (TrueType and WOFF) and the 1200×630 Open Graph card renderer to TypeScript (recommended), or keep them as a Go tool in `tools/` that writes committed files. Fonts and their licenses don't change, and the outputs match the Go generator's byte for byte or differ only as recorded in the parity inventory.
+- [ ] Astro layout, navigation, footer, pixel image component and palette tokens and color roles, with the same markup, classes and CSS as the Go templates.
 
 ### 1.3 Landing page
 
@@ -235,10 +228,10 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] "Built in the open" section linking the GitHub and Codeberg repositories and BUILD.md.
 - [x] Ambient touches (drifting fireflies, lantern flicker) in CSS only, switched off under `prefers-reduced-motion`.
 - [x] No JavaScript: the page has no scripts at all, and everything above is plain HTML and CSS.
+- [ ] The landing page rebuilt in Astro, matching the Go-built page section by section, including the CSS-only motion and its `prefers-reduced-motion` switch.
 
 ### 1.4 Progress tracker (/progress)
 
-- [x] BUILD.md parser in `web/internal/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state.
 - [x] Parser unit tests, including malformed input, and a `buildmd-lint` command in `make check` that fails on any format violation.
 - [x] Overall progress XP bar and per-phase progress bars, computed from the boxes.
 - [x] Quest map: one landmark per phase along a winding road; finished landmarks lit, the current one marked "You are here", future ones dimmed.
@@ -248,21 +241,31 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] "Waiting on the owner" panel listing unchecked `HUMAN` items in the current phase.
 - [x] Machine-readable `/progress.json` and a `/progress.svg` badge, with the badge added to README.md.
 - [x] Each phase links to its walkthrough on GitHub once it exists.
+- [ ] TypeScript BUILD.md parser in the Astro project, one module imported by Astro's build and by `make buildmd-lint` (run by Node directly, no build step), implementing the format contract above and reporting every problem with its line number.
+- [ ] Parser parity: on the real BUILD.md, every fixture in the Go parser's tests and its fuzz seed corpus, and randomly broken copies of BUILD.md, the TypeScript parser returns the same phases, sections, items, tags, checked state and problems as the Go parser. The test runs in `make check` until the Go parser is retired.
+- [ ] /progress, the phase pages, the quest map, the git-backed achievement feed (walking `git log -p BUILD.md`, so builds need full history), the "Waiting on the owner" panel and the walkthrough links rebuilt in Astro with the same content and URLs.
+- [ ] `/progress.json` and `/progress.svg` as Astro build-time endpoints that match the Go output for the same commit (the README badge and the uptime check read them).
 
 ### 1.5 Devlog (/devlog)
 
-- [x] Devlog posts as Markdown files with front matter in `web/content/devlog/`, rendered with goldmark and validated at build time (title, date, summary, tags, cover image, draft).
 - [x] Posts with `draft: true` show only in `serve` and are never written by `build`.
 - [x] Index, tag pages and post pages with pixel-art styling and comfortable reading typography.
 - [x] RSS and Atom feeds.
 - [x] Move the Phase 0 devlog draft into the collection.
 - [ ] `HUMAN` Edit and publish the first devlog post.
+- [ ] Devlog as an Astro content collection reading `web/content/devlog/` in place: the same front-matter schema, a build failure naming the file and field for bad front matter, the same slugs, and raw HTML in posts still dropped.
+- [ ] Drafts appear only in `make web-dev`. A test proves no draft reaches any public artifact: pages, tag pages, feeds, the sitemap, share cards or any file in the build output.
+- [ ] Devlog index, tag and post pages, plus RSS and Atom as build-time endpoints, with the same URLs, entry ids and dates, so feed readers see no duplicates after the cutover.
 
-### 1.6 Downloads (/downloads)
+### 1.6 Play (/play)
 
-- [x] Platform cards for Windows, macOS and Linux with an honest "Not available yet. Follow the progress." state.
-- [x] Page driven by `web/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
-- [x] System requirements and "verify your download" sections that appear once releases exist.
+Downloads is replaced by a Play entry point: Lorehallow is played in the browser at play.lorehallow.com, and there are no native builds ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)).
+
+- [ ] /play page with no script: before the browser game is live, it says plainly that nothing is playable yet, that playing will mean opening play.lorehallow.com with nothing to install, and links to /progress and the devlog. Once v0.2.0 is live (2.10), it links to play.lorehallow.com with the current version and the supported browsers.
+- [ ] `/downloads/` permanently redirects (301, in the Caddy site file) to `/play/` once /play is live, and the redirect stays; the sitemap lists /play and drops /downloads.
+- [ ] Navigation and footer say Play instead of Downloads, and the landing page's calls to action, the FAQ (platforms: any current desktop browser; when can I play) and the about page's tech stack describe browser play, not downloads.
+- [ ] Replace `web/data/releases.json` (platform files, sizes, checksums) with the release data /play and the patch notes need (version, date, channel, notes link, protocol version), with its schema documented in `web/data/README.md` and validated at build time.
+- [ ] The deploy health check loads `/play/` and expects the `/downloads/` redirect, instead of loading /downloads.
 
 ### 1.7 More pages
 
@@ -272,46 +275,62 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] Custom 404 page with the hand-drawn 404 art (`web/not_found.png`: the hero lost at a broken signpost).
 - [x] Open Graph and social card meta on every page with generated share images, plus `sitemap.xml`, `robots.txt` and canonical URLs.
 - [x] No third-party trackers, scripts or fonts on any page.
+- [ ] /world, /about, /faq and the 404 page rebuilt in Astro with the same content and art; Caddy serves the 404 page with a real HTTP 404 status.
+- [ ] Social metadata parity: every page keeps its title, description, canonical URL, Open Graph and Twitter tags and its 1200×630 share card; `sitemap.xml` and `robots.txt` are build-time endpoints with the same entries.
 
 ### 1.8 Quality gates
 
-- [ ] Lighthouse audit from Chrome DevTools on the live landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/` (Lighthouse is a Node tool, so it isn't in CI; ADR 0011).
+- [ ] Lighthouse audit on the live Astro site after the cutover (1.9), on the landing page, /progress and a devlog post: 95 or higher for performance, accessibility, best practices and SEO on mobile, recorded in `docs/perf/`. Lighthouse runs locally under Node against the live site; it isn't part of `make check` or CI.
+- [ ] The Go output tests ported to TypeScript and run on the Astro build in `make web-test`: every check listed in `web/README.md` (no scripts, iframes, inline handlers, `style` attributes or `javascript:` URLs; alt text and whole-number image sizes; links, fragments and CSS `url()`s resolve; no other origins; the 1 MB landing page budget; WCAG AA pairs and colors only through roles; titles, descriptions, canonical URLs, Open Graph cards and repository links on every page; valid feeds and sitemap; no drafts; valid release data).
+- [ ] Parity check, run in `make check` until 1.9: builds both sites and compares URL sets, page text, meta tags, feeds, `/progress.json`, `/progress.svg`, the sitemap and asset references. Every difference is fixed or listed as accepted in the parity inventory.
 - [x] Output tests on the built site in `make web-test`: no `<script>` tags or inline event handlers on any page, alt text and explicit dimensions on every image, and WCAG AA contrast for every palette pair the CSS uses.
 - [x] Accessibility: alt text on all art, full keyboard navigation, visible focus, WCAG AA contrast.
 - [x] Responsive from 360 px phones to 4K screens, with art always scaled by whole numbers.
 - [x] Internal link checker in `make check`.
 - [x] Landing page transfers under 1 MB, enforced by a test on the built output.
 
-### 1.9 Deploy automation
+### 1.9 Deploys and cutover
 
 - [x] `deploy/web/deploy.sh`: build, upload to a new timestamped release directory, switch the `current` symlink atomically, keep the last five releases.
 - [x] `make deploy-web` and `make rollback-web` for manual use.
 - [x] `ADR` Uptime monitoring that alerts the owner (for example ntfy) when the site has been down for five minutes.
 - [x] `HUMAN` Pick an ntfy topic, subscribe to it on your phone and add it as the `NTFY_TOPIC` secret (docs/ops/website.md), then send a test alert.
+- [ ] `deploy/web/deploy.sh` builds the Astro site on the machine running the deploy (Node never goes to the host) and keeps the same release model: timestamped release, atomic `current` switch, health check through the host's Caddy, automatic rollback, five releases kept.
+- [ ] The deploy health check covers what Astro changes: hashed assets load with immutable cache headers and pages revalidate, canonical URLs and share-card URLs are absolute and correct, the RSS and Atom feeds, `/progress.json` and `/progress.svg` load, `/play/` loads, `/downloads/` redirects, and a missing page returns HTTP 404.
+- [ ] Caddy site file for the Astro output: cache rules match Astro's asset folder, the public site's CSP stays `script-src 'none'` and is kept separate from play.lorehallow.com's game CSP, and the `/downloads/` redirect; validated as the caddy user before every reload ([ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md)).
+- [ ] `HUMAN` Approve the cutover after reviewing the local Astro build and the parity report. The Go-generated site stays live until then.
+- [ ] Cutover: deploy the Astro build with `make deploy-web`, confirm the live checks, keep the last Go-built release as the rollback target, and rehearse the automatic rollback with an Astro release (`make rehearse-rollback-web`).
+- [ ] Retire the Go web module once the cutover has held for a week with no rollback: delete its Go code, templates, `go.mod` and `go.sum`, its Make targets, its CI cache path and its govulncheck run, keep the parser fixtures the TypeScript tests use, and update every doc that describes it.
 
 ### 1.10 Launch
 
 - [x] `docs/walkthroughs/phase-01-website.md`: DNS, TLS and Caddy, static builds, the deploy pipeline, and how BUILD.md becomes the progress page.
 - [x] Devlog draft announcing the website.
-- [ ] `HUMAN` Review the live site on desktop and phone and approve it.
+- [ ] `docs/walkthroughs/phase-01-website-migration.md`: moving a live static site to a new generator without breaking a URL: the parity inventory, one shared parser, build-time endpoints, the separate cutover and the rollback target. The original Phase 1 walkthrough stays as history.
+- [ ] `HUMAN` Review the live Astro site on desktop and phone after the cutover and approve it.
 
 ### Acceptance criteria
 
 - [x] https://lorehallow.com serves the landing page with a valid certificate, and HTTP and `www` redirect correctly.
 - [x] Every page links to the GitHub and Codeberg repositories.
 - [ ] The devlog has at least one published post and a valid RSS feed.
-- [x] /downloads exists and accurately says no builds are available yet.
 - [ ] Lighthouse budgets pass and no page ships any JavaScript.
 - [x] A deliberately bad deploy was rolled back with one command.
+- [ ] lorehallow.com is served from the Astro build, and every URL in the parity inventory answers as it did before the cutover: the same content, the same redirects, and a real 404 for a missing page.
+- [ ] /play exists and accurately says whether the game is playable, and /downloads redirects to it.
+- [ ] No draft appears in any public artifact.
+- [ ] The Go web module is gone, `make check` runs only the TypeScript site checks, and the progress tracker, feeds and badge still update on every deploy.
 
 ---
 
 ## Phase 2: Two Players, One World
 
-> **Goal:** Two players on different machines connect to the server at play.lorehallow.com and see each other move smoothly around one shared 30×20 map, on a connection layer that already survives slow and hostile clients and a bot swarm that measures it.
-> **Ships:** v0.2.0
-> **Lesson:** WebSockets, message framing, connection lifecycle, backpressure, authoritative simulation, tick loops, interpolation and deploying a Go service behind TLS
-> **Depends on:** Phase 0. Phase 1 runs in parallel; only the deploy in 2.9 needs the host from 1.1.
+> **Goal:** Two players on different machines open play.lorehallow.com in their browsers and see each other move smoothly around one shared 30×20 map, drawn by a Phaser client, on a connection layer that already survives slow and hostile clients and a bot swarm that measures it.
+> **Ships:** v0.2.0, playable in the browser at play.lorehallow.com
+> **Lesson:** WebSockets, message framing, connection lifecycle, backpressure, authoritative simulation, tick loops, interpolation, a browser game client, and deploying a Go service and a static game build behind TLS
+> **Depends on:** Phase 0 and Phase 1 (website first). The Phaser client needs only the frontend toolchain ADR from 1.2, and its work in `client/` may go ahead while Phase 1 waits on an owner approval (see the preamble). The deploys in 2.9 and 2.10 wait until Phase 1 is done.
+
+The server sections (2.1 to 2.5) were built first. The client is now a Phaser browser game ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)); the Godot skeleton from Phase 0 is retired in 2.10, once the Phaser checks cover it.
 
 ### 2.1 Protocol v1
 
@@ -328,7 +347,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [x] `ADR` Map source of truth: Tiled JSON (`.tmj`) in `content/maps/` (recommended), read by the server for collision and spawn points and imported by the client for rendering.
 - [x] Server map loader for tile layers, the collision layer and spawn points, tested against a small fixture map.
-- [ ] Client map import that builds TileMapLayers from the processed tilesets.
+- [ ] Phaser client map import: loads `content/maps/*.tmj` and the processed tilesets synced into the client, draws the tile layers in file order, never draws the `collision` layer, and is tested against the same fixture map as the server loader.
 - [x] Map validator in `make check`: tilesets exist, collision layer present, at least one spawn point.
 - [x] `make sync` also mirrors `content/` into `client/assets/content/`.
 
@@ -363,22 +382,31 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] `make loadtest SCENARIO=<name>` runs a [scaling.md](docs/design/scaling.md) scenario against a fresh server and writes a draft result to `docs/perf/`; `idle` and `spread` work.
 - [x] Baseline on `dev-m5`: Case 1 Tier 1 (100 idle connections) and 100 bots in `spread`, recorded in `docs/perf/` with memory per connection, goroutines, tick p99 and bytes per player.
 
-### 2.6 Client networking
+### 2.6 Phaser browser client
 
-- [ ] Connect screen: server choice (default `wss://play.lorehallow.com/ws`, plus local), display name, connect button and clear error states, including each `Disconnect` reason.
-- [ ] `Net` autoload: WebSocketPeer connection, envelope encode and decode, reconnect with jittered exponential backoff, signals per message type.
-- [ ] Input sampled at a fixed rate and sent as `Input` messages with sequence numbers.
+The first client task is the scaffold. It shares `client/` with the Godot project until 2.10, so Godot must be kept out of the Phaser folders and `make check` runs both clients' checks in the meantime.
+
+- [ ] Phaser scaffold in `client/`: Phaser, strict TypeScript (`strict` plus unchecked index access; `tsc --noEmit` clean) and Vite on the 1.2 frontend toolchain, the folder layout from AGENTS.md section 7, and lint, format check and unit tests in `make check`.
+- [ ] Local development: `make client-dev` serves the client with Vite and proxies `/ws`, `/healthz`, `/version` and `/api/` to the local Go server, so the dev page is same-origin like production; `make client-build` writes the static build with the version, commit and protocol version embedded.
+- [ ] TypeScript protobuf bindings generated by `make proto` with buf (committed, marked generated), plus `PROTOCOL_VERSION` as a constant; a test decodes and re-encodes every golden vector in `proto/testdata/` byte for byte and checks its JSON description, in `make check`.
+- [ ] Crisp integer pixel scaling: a 640×360 base, the canvas sized to the largest whole-number multiple that fits the window and letterboxed, never stretched by CSS; nearest-neighbor sampling, rounded pixels and a pixel-snapped camera; a test covers the scale choice at common window sizes.
+- [ ] Title screen showing the build version and commit (replacing the Godot one).
+- [ ] Dev art scene that draws every synced image at 1x to 4x with a 3×3 seam patch per tileset, and `make client-art-check` rendering it in a headless browser and checking every pixel against the processed art.
+- [ ] Connect screen: server choice (play.lorehallow.com by default, plus local), display name, connect button and clear error states, including each `Disconnect` reason and its close code.
+- [ ] Net module: a browser WebSocket with binary frames, envelope encode and decode through the generated bindings, reconnect with jittered exponential backoff, and typed events per message type.
+- [ ] Input sampled at a fixed rate and sent as `PlayerInput` messages with sequence numbers.
 - [ ] Local player drawn at the server's authoritative position (prediction comes in Phase 3).
 - [ ] Remote players drawn about 100 ms behind the latest snapshot, interpolating between buffered snapshots, with capped extrapolation for short gaps.
 - [ ] Idle and walk animations per direction, driven by movement state.
 - [ ] Debug overlay (F3): RTT, snapshot rate, interpolation buffer depth, server tick and entity count.
 - [ ] Dev network simulation: configurable delay, jitter and drops, on the server and in the client.
+- [ ] Browser smoke test: starts the real Go server and two headless browser sessions of the client build; each sees the other join and move, and sees the other leave within one second of closing. It runs in `make check` and CI.
 
 ### 2.7 Art Batch 03: player character and starter tiles
 
 - [ ] Draw Batch 03 by hand (manifest and sources in `art/src/`): the player character sheet (32×48, four directions, idle 2 frames, walk 4 frames) and the extra tiles the starter map needs (trees, rocks, path edges, water edges and a few props).
 - [ ] Run intake, check frame alignment, iterate until accepted, and `make sync`.
-- [ ] Character SpriteFrames and animation setup in the client; placeholder art fully replaced.
+- [ ] Character animations in the Phaser client built from the sheet's sidecar JSON (frame size, order and pivot); placeholder art fully replaced.
 
 ### 2.8 Starter map
 
@@ -390,24 +418,31 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [x] systemd unit `deploy/server/lorehallow-server.service`: dedicated user, restart on failure, sandboxing options, `LimitNOFILE` raised for many connections, env file at `/etc/lorehallow/server.env`.
 - [x] Caddy site for `play.lorehallow.com` proxying `/ws` WebSocket upgrades to the server on localhost.
 - [x] `make deploy-server`: cross-compile for the host, upload, switch, restart, check `/healthz`, and roll back automatically on failure.
-- [ ] Public `GET /api/status` (online count, uptime, version, protocol version) at `lorehallow.com/api/status`, cached briefly.
-- [ ] Website /status page and a landing-page indicator showing server state and player count (progressive enhancement).
+- [ ] Public `GET /api/status` (online count, uptime, version, protocol version), cached briefly, proxied by Caddy at `play.lorehallow.com/api/status` and, read-only, at `lorehallow.com/api/status`.
+- [ ] Server state and player count shown on the game's own pages at play.lorehallow.com; lorehallow.com stays script-free and shows only what is known at build time, linking to the game for live numbers.
 - [x] Logs in journald, and `docs/ops/runbook.md` started with start, stop, logs, deploy and rollback commands.
+- [ ] Caddy serves the client's static build at play.lorehallow.com from `/srv/lorehallow/client/current`, keeping `/ws`, `/healthz`, `/version` and `/api/` proxied to the Go server; `index.html` revalidates and hashed assets are cached as immutable.
+- [ ] Game CSP on play.lorehallow.com, separate from the website's: scripts only from `'self'`, no inline scripts and no `unsafe-eval`, `connect-src` limited to the game's own origin and `wss://play.lorehallow.com`, and only the image and media sources Phaser needs, each with a reason in the site file.
+- [ ] `make deploy-client` and `make rollback-client`: build the client on the machine running the deploy, upload a timestamped release, switch `current` atomically, check that the page, its assets and the `/ws` handshake work through Caddy, roll back on failure, keep five releases; documented in `docs/ops/runbook.md`.
 
-### 2.10 Playtest builds
+### 2.10 Browser play and retiring Godot
 
-- [ ] `make export` builds Windows, macOS and Linux clients headless with the pinned export templates.
-- [ ] Publish the v0.2.0 builds as GitHub and Codeberg releases and list them on /downloads as "Prototype".
+- [ ] The v0.2.0 browser build is live at play.lorehallow.com (`make deploy-client`), and /play on lorehallow.com links to it as "Prototype".
+- [ ] Remove the Godot client once the Phaser checks (2.6's golden vector test, art check and browser smoke test) pass in `make check`: the Godot project files, GDScript sources and GUT tests, the GDScript bindings in `client/net/pb/` and their generation in `tools/scripts/gen-proto.sh`, the GUT and godobuf addons and their install script, export presets and templates, and the Godot import cache rules.
+- [ ] Remove Godot from the tooling in the same change: the Godot, GUT, godobuf and gdtoolkit pins in `toolchain.env`, their `make doctor` and `make setup` steps, the Godot Make targets and variables, the Godot steps in CI, and the AGENTS.md toolchain rows. `make check` stays green before and after.
+- [ ] Update every doc that describes the Godot client (client and proto READMEs, AGENTS.md, README.md, the protocol design note) and mark the remaining Godot decisions superseded; the Phase 0 walkthrough stays as history.
 
 ### 2.11 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-02-two-players.md`: the tick loop, the snapshot format, interpolation, the connection lifecycle and backpressure, authoritative validation and the deploy, with pointers into the code.
+- [ ] `docs/walkthroughs/phase-02-two-players.md`: the tick loop, the snapshot format, interpolation, the connection lifecycle and backpressure, authoritative validation, the browser client and the deploys, with pointers into the code.
 - [ ] Devlog draft for v0.2.0 with a short clip of two players moving.
 - [ ] Release notes in `docs/releases/v0.2.0.md` and tag `v0.2.0`.
 
 ### Acceptance criteria
 
-- [ ] `HUMAN` Playtest: two clients on different machines connect to the server at play.lorehallow.com over `wss://`.
+- [ ] `HUMAN` Playtest: two people on different machines open play.lorehallow.com in their browsers and connect to the server over `wss://`, with nothing to install.
+- [ ] The browser smoke test passes in CI: two sessions see each other move through the real Go server.
+- [ ] The repository has no Godot project, GDScript, Godot addons or Godot toolchain pins, and `make doctor` doesn't ask for Godot.
 - [ ] Each player sees the other moving smoothly with no teleporting or jitter under normal latency, and also with 100 ms simulated latency and 20 ms jitter.
 - [ ] Closing a client removes that player for everyone within one second.
 - [ ] A modified client sending forged or flooded input cannot move faster than allowed (integration test).
@@ -428,7 +463,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [ ] `ADR` Position representation: fixed-point integers (for example 1/16 pixel) so client and server compute identical results.
 - [ ] Movement extracted into a pure step function with identical rules on both sides, documented in `docs/design/movement.md`.
-- [ ] Shared test vectors: Go generates input sequences and expected positions; GDScript replays them and must match exactly.
+- [ ] Shared test vectors: Go generates input sequences and expected positions; the TypeScript client replays them and must match exactly.
 
 ### 3.2 Prediction and reconciliation
 
@@ -475,7 +510,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 3.8 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-03-many-players.md`: prediction, reconciliation, fixed-point simulation, interest management, and measuring and reducing bandwidth.
-- [ ] Devlog draft, release notes, tag `v0.3.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.3.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -522,7 +557,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Position and state saved on logout, on disconnect and every 60 seconds, and restored on login.
 - [ ] A failure in the middle of a save (connection killed, transaction aborted, server killed) leaves the last committed state intact, tested against a real Postgres.
 - [ ] Session resume: a client that reconnects within a grace window with its session token returns to its character without logging in again; `make loadtest SCENARIO=reconnect` meets the scaling.md reconnect-storm target on `dev-m5`.
-- [ ] Client login, registration, character select and creation screens with clear errors; the token lives in memory unless "remember me" is chosen.
+- [ ] Client login, registration, character select and creation screens with clear errors; the session token lives in memory, or in a Secure, HttpOnly, SameSite=Strict cookie scoped to play.lorehallow.com when "remember me" is chosen, never in script-readable storage.
 
 ### 4.4 Backups
 
@@ -539,7 +574,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 4.6 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-04-accounts.md`: password hashing, sessions, migrations, transactions and backups.
-- [ ] Devlog draft, release notes, tag `v0.4.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.4.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -587,12 +622,12 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 - [ ] `ADR` Game UI font: an open-licensed pixel font with full Latin coverage, ideally matching the website.
 - [ ] Draw Batch 05 by hand: 9-slice window frames, buttons, chat bubble, nameplate backing, channel icons and emote frames (sit, wave, dance).
-- [ ] Intake and integrate, with one Godot theme at `client/ui/theme.tres` used by all UI.
+- [ ] Intake and integrate, with one UI theme module in the client used by all UI.
 
 ### 5.5 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-05-chat.md`: fan-out, rate limiting and moderation design.
-- [ ] Devlog draft, release notes, tag `v0.5.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.5.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -651,7 +686,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 6.6 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-06-combat.md`: server-authoritative combat, cooldowns, threat and AI state machines.
-- [ ] Devlog draft, release notes, tag `v0.6.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.6.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -704,7 +739,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 7.6 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-07-crowds.md`: why fan-out is O(n²), spatial partitioning, hysteresis, priority and bandwidth budgets, and degrading gracefully.
-- [ ] Devlog draft, release notes, tag `v0.7.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.7.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -753,7 +788,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 8.5 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-08-items.md`: transactions, idempotency and how duplication bugs happen and are prevented.
-- [ ] Devlog draft, release notes, tag `v0.8.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.8.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -804,7 +839,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 9.6 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-09-quests.md`: data-driven design, content validation and quest state machines.
-- [ ] Devlog draft, release notes, tag `v0.9.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.9.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -845,7 +880,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 10.4 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-10-grouping.md`: cross-entity state, consistency and disconnect handling.
-- [ ] Devlog draft, release notes, tag `v0.10.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.10.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -888,7 +923,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 11.4 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-11-zones.md`: ownership boundaries, handoff and failure handling, and why the boundary is a message protocol.
-- [ ] Devlog draft, release notes, tag `v0.11.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.11.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -925,7 +960,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] `ADR` Zero-downtime strategy: drain and hand connections off through the gateway, or scheduled restarts with in-game countdowns and automatic reconnects.
 - [ ] Implement it: a server deploy loses no progress and causes at most a brief, automatic reconnect.
 - [ ] Database migrations follow expand-and-contract so the previous server version still works, documented in `docs/ops/migrations.md`.
-- [ ] Minimum client version announced by the server; outdated clients get an "Update required" screen linking to /downloads.
+- [ ] Minimum client version announced by the server; an outdated browser tab shows "Update available" and reloads into the current build.
 
 ### 12.5 Runbooks
 
@@ -945,7 +980,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 12.8 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-12-operations.md`: metrics, alerts, deploy strategy and incident response.
-- [ ] Devlog draft, release notes, tag `v0.12.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.12.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -995,7 +1030,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 13.5 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-13-content.md`: the content pipeline, validators and balance tooling.
-- [ ] Devlog draft, release notes, tag `v0.13.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.13.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -1022,8 +1057,8 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 14.2 Settings and controls
 
-- [ ] Settings menu: window mode, integer scale, vsync, FPS cap, audio, gameplay, chat filters and UI scale.
-- [ ] Key rebinding with conflict detection, saved to the user config.
+- [ ] Settings menu: fullscreen, integer scale, FPS cap, audio, gameplay, chat filters and UI scale.
+- [ ] Key rebinding with conflict detection, saved in the browser's local storage with the other settings.
 - [ ] `ADR` Controller support for v1, or deferred.
 
 ### 14.3 Onboarding
@@ -1038,14 +1073,14 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 14.5 Polish
 
 - [ ] Game feel pass: hit feedback, footstep dust and smooth UI transitions.
-- [ ] Performance: 60 FPS at 1080p on a five-year-old integrated-graphics laptop with 30 players on screen; profile and fix.
+- [ ] Performance: 60 FPS at 1080p in current Chrome, Firefox and Safari on a five-year-old integrated-graphics laptop with 30 players on screen; profile and fix.
 - [ ] Every placeholder asset and placeholder string is gone.
-- [ ] All player-facing strings go through Godot's translation system, with English as the only shipped language.
+- [ ] All player-facing strings go through one string table, with English as the only shipped language.
 
 ### 14.6 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-14-polish.md`: audio architecture, settings persistence and performance profiling.
-- [ ] Devlog draft, release notes, tag `v0.14.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.14.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -1055,58 +1090,56 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ---
 
-## Phase 15: Distribution and Releases
+## Phase 15: Browser Releases
 
-> **Goal:** Anyone can download, verify, install and update Lorehallow from lorehallow.com on Windows, macOS and Linux.
+> **Goal:** Every release is one versioned browser build at play.lorehallow.com that updates cleanly in open tabs, stays compatible with the server it talks to, is checked live after every deploy and rolls back with one command.
 > **Ships:** v0.15.0
-> **Lesson:** Release engineering, code signing and supply-chain hygiene
+> **Lesson:** Release engineering for a web client: versioned immutable builds, cache-safe updates, protocol compatibility, smoke checks and rollback
 > **Depends on:** Phase 14
 
-### 15.1 Builds
+There are no native builds, installers, signing, storefronts, launchers, download manifests or auto-updaters ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). Browser play has existed since Phase 2; this phase makes releasing it routine and safe.
 
-- [ ] Release workflow on `v*` tags: export every platform in CI, embed the version, package (zip for Windows, dmg or zip for macOS, tar.gz for Linux) and write SHA-256 checksums.
-- [ ] `HUMAN` Decide on macOS signing and notarization (the Apple Developer Program costs money) and Windows code signing, or choose to ship unsigned with clear instructions.
-- [ ] If signing was approved, sign and notarize in CI using secrets.
-- [ ] Pinned export templates and recorded build metadata for every release.
+### 15.1 Versioned builds
 
-### 15.2 Publishing
+- [ ] `make release-client VERSION=vX.Y.Z` builds one browser build from a clean tag: version, commit and protocol version embedded, every asset fingerprinted, and build metadata (toolchain versions, lockfile hash, commit) recorded in the release.
+- [ ] The same tag rebuilds to the same files, checked by building twice.
 
-- [ ] Publish to GitHub Releases and Codeberg releases, and self-host the files on lorehallow.com with checksums (copied to the host by hand, like every deploy).
-- [ ] Each release updates `web/data/releases.json`, and the next `make deploy-web` publishes it, so /downloads shows the latest build, checksums and older versions.
-- [ ] `/downloads/latest.json` manifest for the client update check.
-- [ ] /patch-notes built from `docs/releases/`.
+### 15.2 Protocol compatibility
 
-### 15.3 In-client updates
+- [ ] The server announces its protocol version and the minimum client version; deploy order (server first, then client) and the compatibility window are written down in `docs/ops/releases.md`.
+- [ ] A test runs the previous release's client build against the new server: compatible changes keep it playing, and an incompatible change gets the "Update available" screen, never a broken session.
 
-- [ ] The client checks `latest.json` at startup and shows "New version available" with a download link, mandatory below the server's minimum version.
-- [ ] `ADR` Launcher or auto-updater for v1, or the update prompt alone (the prompt alone is recommended for v1).
+### 15.3 Cache-safe updates
 
-### 15.4 Storefronts
+- [ ] `index.html` always revalidates and hashed assets are immutable; the previous release's assets stay served for a while after a deploy, so a tab opened before the deploy never loads a missing file.
+- [ ] An open tab learns of a new build (from the server's announcement or a reconnect) and offers to reload at a safe moment, forced only when the protocol is incompatible.
 
-- [ ] `HUMAN` Decide whether to also list Lorehallow on itch.io.
-- [ ] If yes, upload with butler from the release workflow.
+### 15.4 Smoke checks and rollback
 
-### 15.5 Install guides
+- [ ] `make deploy-client` runs a browser smoke check against the live play.lorehallow.com after every switch (the page loads, assets load, the handshake completes) and rolls back automatically on failure. It runs from the deploying machine; CI never touches the host.
+- [ ] `make rehearse-rollback-client` deploys a deliberately broken build and checks that it rolls back on its own; the last rehearsal is recorded in `deploy/HOST.md`.
 
-- [ ] Install guides per platform on the website (including any unsigned-app warnings) and final system requirements.
+### 15.5 Release notes and tags
 
-### 15.6 Web build
+- [ ] Release notes in `docs/releases/` for every version, rendered on lorehallow.com at /patch-notes, and the /play page shows the live version from the release data.
+- [ ] Annotated `vX.Y.Z` tags with their release notes as GitHub and Codeberg releases (notes only, no binaries).
 
-- [ ] `ADR` Godot web export: a single-threaded build (no SharedArrayBuffer, so no cross-origin isolation headers) of the same client, connecting over `wss://`, with no rewrite of game code.
-- [ ] The release workflow exports the web build, and lorehallow.com/play serves it with correct MIME types, compression and caching.
-- [ ] A browser smoke test in CI loads the web build headless and connects to a local server.
+### 15.6 Browser support
+
+- [ ] Supported browsers decided (current Chrome, Firefox and Safari on desktop) and stated on /play and in the FAQ, with a friendly message for unsupported ones.
+- [ ] The browser smoke test runs in CI against Chromium and Firefox (and WebKit where the CI runner allows).
 
 ### 15.7 Walkthrough
 
-- [ ] `docs/walkthroughs/phase-15-distribution.md`: the release pipeline, checksums, signing and update checks.
-- [ ] Devlog draft, release notes and tag `v0.15.0` through the new pipeline.
+- [ ] `docs/walkthroughs/phase-15-browser-releases.md`: versioned builds, cache-safe updates, protocol compatibility windows, smoke checks and rollback.
+- [ ] Devlog draft, release notes and tag `v0.15.0` through the new release flow.
 
 ### Acceptance criteria
 
-- [ ] Pushing a release tag produces builds for all three platforms, publishes them everywhere and updates /downloads with no manual steps.
-- [ ] `HUMAN` Fresh installs from the downloads page work on Windows, macOS and Linux (owner or friends verify).
+- [ ] A release goes from tag to live with `make release-client` and `make deploy-client`, run by hand, and is rolled back with one command.
+- [ ] A tab left open across a deploy keeps working or is told to reload; it never shows a broken page.
 - [ ] An outdated client is told to update.
-- [ ] The web build at lorehallow.com/play connects and plays like the desktop client.
+- [ ] `HUMAN` The game loads and plays in current Chrome, Firefox and Safari (owner or friends verify).
 
 ---
 
@@ -1126,7 +1159,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 - [ ] Fuzz targets for every message handler (envelope decoding is fuzzed from Phase 2), run briefly in CI and for an hour nightly.
 - [ ] Limits everywhere (connections per IP, messages per second, message size, pending inputs, names, chat length), each with a test.
 - [ ] Authority audit: every client message type reviewed for trust assumptions, with findings fixed.
-- [ ] Review the Phase 2 slow-client, idle and handshake timeouts against real traffic; origin checks and TLS-only connections in production.
+- [ ] Review the Phase 2 slow-client, idle and handshake timeouts against real traffic; origin checks and TLS-only connections in production; both CSPs (website and game) audited, with no `unsafe-eval` or inline scripts in the game.
 - [ ] Server-side anomaly logging (speed, impossible actions, abnormal rates) with an admin report.
 
 ### 16.3 Accounts and data
@@ -1138,12 +1171,12 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 16.4 Host and supply chain
 
 - [ ] Host audit (open ports, services, users, SSH, updates, file permissions) with findings fixed and documented.
-- [ ] Automated dependency updates (Renovate or Dependabot) for the Go modules (server and web), the art tools' Python lockfile and GitHub Actions, plus `govulncheck` in CI.
+- [ ] Automated dependency updates (Renovate or Dependabot) for the server's Go module, the Node lockfile, the art tools' Python lockfile and GitHub Actions, plus `govulncheck` and the package manager's audit in CI.
 
 ### 16.5 Walkthrough
 
 - [ ] `docs/walkthroughs/phase-16-security.md`: the threat model, fuzzing and the authority audit.
-- [ ] Devlog draft, release notes, tag `v0.16.0` and publish builds.
+- [ ] Devlog draft, release notes, tag `v0.16.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -1183,7 +1216,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 17.4 Wrap-up
 
 - [ ] `docs/walkthroughs/phase-17-alpha.md`: what testers found, what changed and what the telemetry showed.
-- [ ] Release notes, tag `v0.17.0` and publish builds.
+- [ ] Release notes, tag `v0.17.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -1228,7 +1261,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 18.5 Wrap-up
 
 - [ ] `docs/walkthroughs/phase-18-beta.md`: capacity planning, the soak test and lessons from running a public beta.
-- [ ] Release notes, tag `v0.18.0` and publish builds.
+- [ ] Release notes, tag `v0.18.0` and deploy the browser build.
 
 ### Acceptance criteria
 
@@ -1249,7 +1282,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 ### 19.1 Release candidate
 
 - [ ] Feature freeze and tag `v1.0.0-rc.1`; only fixes from here on.
-- [ ] Full regression checklist in `docs/releases/regression.md` (every system, every class from 1 to 10, every quest, every platform), run and passed.
+- [ ] Full regression checklist in `docs/releases/regression.md` (every system, every class from 1 to 10, every quest, every supported browser), run and passed.
 - [ ] Final backup and restore drill, and a written rollback plan for the launch build.
 - [ ] Performance and security checks re-run against the release candidate, with every scaling.md tier met so far re-measured on `prod`.
 
@@ -1263,7 +1296,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### 19.3 Launch
 
-- [ ] Tag `v1.0.0`; the release pipeline publishes every build, and /downloads and /progress show 1.0.
+- [ ] Tag `v1.0.0`, deploy the 1.0 browser build with `make deploy-client`, and /play and /progress show 1.0.
 - [ ] `HUMAN` Publish the launch announcements.
 - [ ] Monitor closely for the first week and ship `v1.0.x` hotfixes as needed.
 
@@ -1275,7 +1308,7 @@ Agents draw the art by hand from now on ([ADR 0004](docs/decisions/0004-hand-dra
 
 ### Acceptance criteria
 
-- [ ] v1.0.0 can be downloaded for Windows, macOS and Linux from lorehallow.com.
+- [ ] v1.0.0 is playable at play.lorehallow.com in current Chrome, Firefox and Safari, with nothing to install.
 - [ ] The first launch week had no data loss and 99% or better uptime.
 - [ ] Every earlier phase in this file is complete.
 - [ ] `HUMAN` Declare Lorehallow 1.0 shipped.
@@ -1329,7 +1362,7 @@ This is the post-1.0 track. It starts only when a result in `docs/perf/` shows a
 
 ## Deferred
 
-Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled. (The web client moved into Phase 15 as a Godot web export.)
+Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled. Native desktop and mobile clients are not deferred but retired: Lorehallow is played in the browser ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)).
 
 - Visible equipment on character sprites (layered paper-doll art)
 - Guilds
@@ -1339,7 +1372,47 @@ Ideas and cut scope parked until after 1.0. Nothing here is counted or scheduled
 - PvP: duels and arenas
 - Mounts
 - Player housing
-- A launcher with automatic patching
 - Controller support, if deferred in Phase 14
 - Languages beyond English
 - More zones and a higher level cap
+
+## Superseded work
+
+Checked work replaced by the move to an Astro website and a Phaser browser game ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md), 2026-11-07). Each item was done and verified when it was checked, and is kept here as history with its original section. The replacements are in the phases above, unchecked until they are done. Nothing here is counted, and these are plain bullets because the format contract allows no checkboxes outside a phase.
+
+The rule used: an item moved here when what it built is the Go site generator, the Godot client or native distribution itself. Checked items that only mention the old tools in passing, or that describe features the live site keeps through the parity checks, stayed in place.
+
+### Phase 0: the Godot client
+
+- 0.5 `ADR` GDScript code generation: try godobuf on the pinned Godot 4 version first; if it can't pass the round-trip tests below, write `tools/protoc-gen-gdscript` (a Go protoc plugin) for the proto3 subset Lorehallow uses. ([ADR 0003](docs/decisions/0003-gdscript-protobuf.md); replaced by the TypeScript bindings in 2.6.)
+- 0.5 GDScript code generation into `client/net/pb/` (committed, marked generated).
+- 0.6 Create the Godot 4 project in `client/` with the project name, a placeholder icon and the folder layout from AGENTS.md. (Replaced by the Phaser scaffold in 2.6.)
+- 0.6 Rendering settings: base viewport 640×360, stretch mode `viewport`, integer scaling, default texture filter Nearest, no mipmaps, 2D pixel snapping. (The engine-neutral pixel rules stay checked in 0.6.)
+- 0.6 Pixel-art import preset (filter off, mipmaps off, lossless) as the project default.
+- 0.6 Main scene with a placeholder title screen showing the build version.
+- 0.6 Autoload skeletons: `Config`, `Log` and `Net` (empty for now).
+- 0.6 GUT installed in `addons/` with one passing test; `make test` runs GUT headless.
+- 0.6 gdtoolkit through uv; `make fmt` and `make lint` cover `client/`, excluding generated code and addons.
+- 0.6 Static typing enforced: the project warns on untyped declarations.
+- 0.6 `make client` launches the client (Godot found through a `GODOT` variable with sensible macOS and Linux defaults).
+- 0.8 Dev scene `client/scenes/dev/art_test.tscn` renders the processed tiles and character at 1x to 4x with no blur, seams or off-palette pixels. (Replaced by the Phaser dev art scene and `make client-art-check` in 2.6.)
+- 0.10 Godot headless tests run in CI with the pinned Godot version.
+- Phase 0 acceptance: `make server` runs the server and `make client` launches the client, which shows the title screen and build version.
+- Phase 0 acceptance: Changing a `.proto` file and running `make proto` updates Go and GDScript code, and golden round-trip tests pass on both sides.
+- Phase 0 acceptance: Batch 01 tiles and the character render pixel-perfect in Godot at every integer scale.
+
+### Phase 1: the Go site generator and Downloads
+
+- 1.2 `ADR` Website stack: a Go static site generator in `web/` (its own module) with no JavaScript on any page ([ADR 0011](docs/decisions/0011-go-website.md)). (Replaced by the Astro project in 1.2.)
+- 1.2 `cmd/lorehallow-web` with `build` (writes the site to `web/dist/`) and `serve` (local preview that rebuilds on change, drafts included); templates (`html/template`), CSS and fonts embedded with `go:embed`.
+- 1.2 Make targets `web-dev`, `web-build`, `web-test` and `web-lint` (gofmt, go vet, golangci-lint, govulncheck), with the tests and linters included in `make check`.
+- 1.4 BUILD.md parser in `web/internal/buildmd/` implementing the format contract: phases, metadata, sections, items, tags and checked state. (Replaced by the TypeScript parser in 1.4, checked against this one.)
+- 1.5 Devlog posts as Markdown files with front matter in `web/content/devlog/`, rendered with goldmark and validated at build time (title, date, summary, tags, cover image, draft). (Replaced by the Astro content collection in 1.5.)
+- 1.6 Platform cards for Windows, macOS and Linux with an honest "Not available yet. Follow the progress." state. (Replaced by /play in 1.6.)
+- 1.6 Page driven by `web/data/releases.json` (version, date, channel, platform, URL, size, SHA-256, notes link), with the schema documented for the release automation that writes it later.
+- 1.6 System requirements and "verify your download" sections that appear once releases exist.
+- Phase 1 acceptance: /downloads exists and accurately says no builds are available yet.
+
+### Unchecked plans dropped
+
+Native distribution was planned but never started, so it was replaced in place rather than recorded here: the Phase 2 desktop exports and /downloads listing (2.10), and Phase 15's desktop packaging, signing, download manifests, update checks, itch.io listing, install guides and Godot web export. The launcher left Deferred.

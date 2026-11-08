@@ -2,6 +2,8 @@
 
 How lorehallow.com is built, deployed, rolled back and watched. The generator is in [web/](../../web/README.md); host facts are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy site file is [deploy/caddy/lorehallow.caddy](../../deploy/caddy/lorehallow.caddy). Update this file whenever a procedure changes.
 
+Everything here describes the Go-built site that is live today. The planned Astro site keeps the same release model; what changes is in [Planned: the Astro cutover](#planned-the-astro-cutover) at the end.
+
 ## Layout on the host
 
 | Path | What |
@@ -80,3 +82,13 @@ When an alert comes in:
 2. Install the ntfy app (iOS or Android) and subscribe to that topic on `ntfy.sh`.
 3. Store it: `gh secret set NTFY_TOPIC --body 'lorehallow-…'`.
 4. Send a test: `gh workflow run uptime.yml -f test_alert=true`. The phone should show "Lorehallow uptime: test".
+
+## Planned: the Astro cutover
+
+Not done yet (BUILD.md 1.9, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)). When it happens, this section becomes the procedure and the rest of the file is updated to match.
+
+- **Same release model.** `make deploy-web` still uploads a timestamped release, switches `current` atomically, checks the release through the host's Caddy, rolls back on failure and keeps five releases. The difference is the build step: it runs the Astro build on the machine doing the deploy. Node never goes to the host.
+- **More checks.** The health check adds Astro's hashed assets (served with immutable cache headers, while pages revalidate), absolute canonical and share-card URLs, both feeds, `/progress.json`, `/progress.svg`, `/play/` and the `/downloads/` redirect. It still requires a missing page to return HTTP 404.
+- **Caddy.** The cache rule follows Astro's asset folder. `/downloads/` gets a permanent redirect to `/play/`. The CSP stays `script-src 'none'`, separate from play.lorehallow.com's game CSP. Validate as the caddy user before reloading, as always.
+- **Cutover order.** First, the owner reviews the local Astro build and the parity report and approves. Then `make deploy-web` publishes the Astro build and the live checks are confirmed. The last Go-built release stays as the rollback target, so `make rollback-web` returns to it. After that, `make rehearse-rollback-web` is run with an Astro release.
+- **After a week with no rollback,** the Go web module is deleted (BUILD.md 1.9).

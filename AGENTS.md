@@ -58,7 +58,8 @@ Do not build these, and push back on anything that drifts toward them:
 - Monetization, cash shops or anything pay-to-win
 - 3D, isometric or multiple art styles
 - A large world before one zone feels good
-- Mobile clients (a browser build through Godot's web export is planned; native mobile apps are not)
+- Native clients of any kind: desktop or mobile apps, installers, signing, storefront builds, launchers or auto-updaters. Lorehallow is played in the browser at play.lorehallow.com ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md))
+- Browser JavaScript on the public website, or UI framework integrations (Nuxt, Vue, React, ...) in either frontend
 - Game-server frameworks (Nakama or similar) that hide the server the project exists to build
 - Microservices, Kubernetes, service meshes or distributed databases, until a measured bottleneck justifies one in an ADR
 - Claims about scale that haven't been measured
@@ -105,6 +106,8 @@ Never sit idle. Prepare the blocked item so the owner's part takes minutes (prom
 
 1. `git pull --rebase origin main`
 2. Read this file, then BUILD.md. The **current phase** is the lowest-numbered phase with an unchecked box. **Website first:** the owner wants lorehallow.com live, complete and beautiful before the game goes much further, so Phase 1 is finished before any more work on the server phases. Until every Phase 1 box is checked, server work is limited to keeping `make check` green and the live server healthy.
+   - **The two frontend migrations** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)): Phase 1 rebuilds lorehallow.com in Astro, starting with the parity inventory in BUILD.md 1.2. The Go-generated site stays live until the Astro build passes its parity checks and the owner approves the cutover (1.9). Phase 2 replaces the Godot client with a Phaser browser game, starting with the Phaser scaffold in 2.6.
+   - **While Phase 1 waits only on an owner approval** (the cutover approval in 1.9, the live review in 1.10 or the first devlog post in 1.5), agents may work on the Phaser client in `client/`: 2.6, the client map import in 2.2, 2.7, 2.8 and the Godot retirement in 2.10. None of it changes lorehallow.com. The frontend toolchain ADR in 1.2 comes first, because both frontends use it. Deploying the game (2.9 and 2.10) waits until Phase 1 is done.
 3. Read the most recent walkthrough in `docs/walkthroughs/` and any ADRs for the area you'll touch.
 4. Run `make doctor` and `make check` (once they exist). If the baseline is red, fixing it is your first task.
 5. Pick work: what the owner assigned, otherwise the first unchecked, unblocked item in the current phase (Phase 1 until it is done). Items within a phase may be done out of order when their dependencies are met. In the server phases, build what lets later work be measured (connection lifecycle, backpressure, the bot load generator, metrics) before what only adds content.
@@ -114,8 +117,8 @@ Never sit idle. Prepare the blocked item so the owner's part takes minutes (prom
 - Work in small, verified steps. Every commit leaves the repo working.
 - Write tests with the code, not after it.
 - Never block on art. Use placeholder art (see [section 8](#8-art-pipeline)) and keep going.
-- Use any tool you need. Installing tools (Homebrew, apt, Go modules and tools, uv tools, Godot addons) is fine; pin versions and add them to `make doctor` and the [toolchain table](#13-toolchain-versions).
-- Look up current documentation for libraries and tools (Context7 or official docs) instead of relying on memory, especially for Godot 4 and buf, which change often.
+- Use any tool you need. Installing tools (Homebrew, apt, Go modules and tools, uv tools, npm packages in the frontend workspace, and Godot addons until 2.10) is fine; pin versions and add them to `make doctor` and the [toolchain table](#13-toolchain-versions).
+- Look up current documentation for libraries and tools (Context7 or official docs) instead of relying on memory, especially for Astro, Phaser, Vite and buf, which change often.
 
 ### Finishing each step
 
@@ -173,12 +176,12 @@ The owner may run several agents at once. To keep them from stepping on each oth
   | Lane | Owns |
   |---|---|
   | server | `server/`, `content/` (server side), `docs/design/` for server topics |
-  | client | `client/` (except generated code) |
+  | client | `client/` (except generated code), `deploy/client/` once it exists |
   | web | `web/`, `deploy/web/` |
   | art | `art/`, `tools/art/` |
   | ops | `deploy/` (except `deploy/web/`), `docs/ops/`, `.github/` |
 
-- **Shared files** (`BUILD.md`, `AGENTS.md`, `Makefile`, `proto/`): keep edits small, pull right before editing, and push right after.
+- **Shared files** (`BUILD.md`, `AGENTS.md`, `Makefile`, `toolchain.env`, `proto/`, and the root Node workspace files and lockfile once they exist): keep edits small, pull right before editing, and push right after.
 - **Protocol changes are serialized.** One agent changes `proto/` at a time, and the schema change, both sides' generated code, and the code that uses it land together so `main` always builds.
 - **BUILD.md conflicts:** when rebasing, keep every check from both sides.
 - When the owner runs agents in parallel, they assign lanes. An agent without an assignment takes the first unblocked item in its lane.
@@ -187,36 +190,53 @@ The owner may run several agents at once. To keep them from stepping on each oth
 
 ## 7. Architecture and conventions
 
+### Target architecture and the current checkout
+
+[ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) sets the target: an Astro website at lorehallow.com and a Phaser browser game at play.lorehallow.com, both static builds served by Caddy, with the Go server behind them. **The checkout hasn't caught up yet.** Until the cutovers in BUILD.md 1.9 and 2.10:
+
+| | Current checkout (what `make` runs today) | Target (planned, BUILD.md) |
+|---|---|---|
+| Website | Go static site generator in `web/` (`cmd/lorehallow-web`, `internal/site`, `internal/buildmd`), live on lorehallow.com | Astro project in `web/`: Astro components, strict TypeScript, CSS, Markdown content collections, static build (1.2 to 1.9) |
+| BUILD.md parser | Go, `web/internal/buildmd`, run by `make buildmd-lint` | TypeScript, one module shared by Astro's build and `make buildmd-lint`, checked against the Go parser first (1.4) |
+| Game client | Godot 4 skeleton in GDScript in `client/` (title screen, golden protocol test, art scene) | Phaser, strict TypeScript and Vite in `client/`, played at play.lorehallow.com (2.6 to 2.10) |
+| Client protocol bindings | GDScript from godobuf in `client/net/pb/` | TypeScript generated by buf (2.6) |
+| Frontend toolchain | None: no Node in `toolchain.env` | One pinned Node LTS and one package manager for both frontends (1.2 ADR) |
+| Commands | `make web-dev`, `web-build`, `web-test`, `web-lint`, `buildmd-lint` (Go); `make client`, `client-test`, `client-lint`, `client-art-check` (Godot) | The same `web-*` names on Astro; `make client-dev`, `client-build`, `client-test`, `client-lint`, `client-art-check`, `deploy-client`, `rollback-client` on Phaser |
+
+Write docs and code for what exists now, and label planned commands as planned. During each transition `make check` runs the old and the new checks side by side, and an old piece is deleted only after its replacement's checks pass.
+
 ### Repository layout
+
+The target layout. Until 2.10, `client/` holds the Godot project (`project.godot`, `addons/`, `autoload/`, `net/pb/`, GUT `tests/`) next to the Phaser sources; until 1.9, `web/` holds the Go generator (`cmd/`, `internal/`, `templates/`, `static/`) next to the Astro project.
 
 ```
 lorehallow/
-├── AGENTS.md, BUILD.md, README.md, CLAUDE.md, Makefile
-├── client/                # Godot 4 project
-│   ├── addons/            # Third-party addons (GUT, ...), not linted
-│   ├── assets/            # art/ (synced from art/processed), audio/, fonts/, content/ (synced)
-│   ├── autoload/          # Singletons: Config, Net, Log, ...
-│   ├── net/               # Networking; net/pb/ is generated protobuf code
-│   ├── world/             # Maps, camera, world rendering
-│   ├── entities/          # Players, mobs, NPCs
-│   ├── ui/                # Screens, HUD, windows, theme
-│   ├── scenes/dev/        # Test and debug scenes
-│   └── tests/             # GUT tests
+├── AGENTS.md, BUILD.md, README.md, CLAUDE.md, Makefile, toolchain.env
+├── package.json, lockfile # One Node workspace for web/ and client/ (planned, BUILD.md 1.2)
+├── client/                # Phaser browser game: strict TypeScript, Vite (planned, BUILD.md 2.6)
+│   ├── src/               # Game code by feature: net/ (net/pb/ generated), world/, entities/, ui/, scenes/
+│   ├── assets/            # art/ and content/ (synced), audio/, fonts/
+│   ├── index.html         # The page play.lorehallow.com serves
+│   └── tests/             # Unit tests, the golden vector test, the browser smoke test
 ├── server/                # Go module github.com/dunamismax/lorehallow/server
 │   ├── cmd/               # lorehallow-server, lorehallow-bot (load generator), lorehallow-admin, ...
 │   ├── internal/          # sim/, zone/, world/, session/, wire/, bot/, metrics/, auth/, db/, pb/ (generated), ...
 │   └── migrations/        # SQL migrations (Phase 4 on)
 ├── proto/                 # lorehallow/v1/*.proto, buf config, testdata/ golden vectors
 ├── content/               # Canonical game data: maps/, items/, mobs/, quests/, ...
-├── web/                   # lorehallow.com: Go static site generator (own module), no JavaScript
+├── web/                   # lorehallow.com: Astro, strict TypeScript, no browser JavaScript (planned, BUILD.md 1.2)
+│   ├── src/               # pages/ (pages and build-time endpoints), components/, layouts/, lib/ (BUILD.md parser, progress)
+│   ├── content/devlog/    # Devlog posts: Markdown, read in place by a content collection
+│   ├── data/              # Release data for /play and patch notes
+│   └── assets/art/        # Synced from art/processed
 ├── tools/                 # art/ (Python, uv), other helpers
 ├── art/                   # style/, batches/, inbox/, processed/
-├── deploy/                # HOST.md, bootstrap/, caddy/, server/, web/, ...
+├── deploy/                # HOST.md, bootstrap/, caddy/, server/, web/, client/ (planned), ...
 ├── docs/                  # decisions/, walkthroughs/, design/, ops/, perf/, releases/
-└── .github/workflows/     # CI, uptime checks, release builds (never deploys)
+└── .github/workflows/     # CI and uptime checks (never deploys)
 ```
 
-Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/assets/art`, `server/internal/pb`, `client/net/pb`) are committed but never edited by hand. Edit the source and run `make sync` or `make proto`.
+Generated or synced copies (`client/assets/art`, `client/assets/content`, `web/assets/art`, `server/internal/pb`, the client's protobuf bindings) are committed but never edited by hand. Edit the source and run `make sync` or `make proto`.
 
 ### Networking model
 
@@ -230,7 +250,7 @@ The architecture is [ADR 0005](docs/decisions/0005-scale-and-backend-architectur
 - **Interest management:** a uniform spatial grid per zone; players only receive entities in their area of interest, with hysteresis at the edge (Phase 3, extended to chat, combat and AI in Phase 7).
 - **Snapshots are budgeted:** quantized deltas against the last snapshot the client acknowledged, each entity encoded once per tick and shared by every recipient, and a per-player byte budget for crowded areas (Phase 3 and Phase 7).
 - **Connection lifecycle:** handshake with a timeout, heartbeats both ways, a bounded inbox into the zone, a bounded send queue out, slow-client eviction, and a clean, logged removal on every exit path. Reconnects use jittered exponential backoff.
-- **Endpoints:** game traffic at `wss://play.lorehallow.com/ws`; HTTP APIs (status, auth) under `https://lorehallow.com/api/`; local dev at `ws://localhost:<port>/ws`. Metrics and pprof listen on localhost only.
+- **Endpoints:** the game page and its static build at `https://play.lorehallow.com/`; game traffic at `wss://play.lorehallow.com/ws`; the game's HTTP APIs (auth, status) under `https://play.lorehallow.com/api/`, the same origin as the game, so no CORS is needed; a read-only `https://lorehallow.com/api/status` may proxy to the same server. Local dev at `ws://127.0.0.1:7420/ws`, reached through the client dev server's proxy (planned, BUILD.md 2.6). Metrics and pprof listen on localhost only.
 
 ### Protocol rules
 
@@ -238,7 +258,7 @@ The architecture is [ADR 0005](docs/decisions/0005-scale-and-backend-architectur
 - One `Envelope` message per binary WebSocket message, with a `oneof` payload.
 - Never reuse or renumber field numbers. Mark removed fields `reserved`.
 - `PROTOCOL_VERSION` is a single integer. Bump it on any incompatible change; the server rejects mismatched clients with a clear "update required" message.
-- Every message type gets golden round-trip tests: Go writes vectors to `proto/testdata/`, and both Go and GDScript decode and re-encode them byte for byte.
+- Every message type gets golden round-trip tests: Go writes vectors to `proto/testdata/`, and both Go and the client decode and re-encode them byte for byte. Today the client side is GDScript (godobuf); the TypeScript bindings replace it in BUILD.md 2.6 and must pass the same vectors before the GDScript ones are removed.
 - Generated code is committed and never hand-edited. `make check` fails when it is stale.
 - **A protocol change lands as one commit:** the schema, both sides' generated code, the golden vectors, the code that uses it on both sides, and a `PROTOCOL_VERSION` bump if it breaks compatibility.
 - **Every message has a size budget**, written next to it in `docs/design/protocol.md`. Hot messages (`Input`, `Snapshot`) are designed for bytes: small field numbers (1 to 15 encode in one byte), packed repeated fields, `sint32` for values that can be negative, and quantized integers instead of floats.
@@ -258,24 +278,38 @@ The architecture is [ADR 0005](docs/decisions/0005-scale-and-backend-architectur
 - Tests are table-driven, run with `-race`, and never `sleep`; use the fake clock, or `testing/synctest` for code with goroutines and timers.
 - `gofmt`/`goimports`, `go vet`, `golangci-lint` and `govulncheck` must be clean.
 
-### Client conventions (Godot 4, GDScript)
+### Frontend conventions (both)
 
-- GDScript only, with **static typing everywhere** (typed variables, parameters and return values). The project warns on untyped code.
-- Files and folders `snake_case`; `class_name` in `PascalCase`; signals in past tense (`player_joined`); private members prefixed `_`.
-- Organize by feature (see layout above). Keep game logic out of UI scripts.
+- **One Node toolchain** for `web/` and `client/`: one pinned Node LTS and one package manager, in `toolchain.env` and checked by `make doctor` (BUILD.md 1.2 ADR). Node is for development, builds and CI only. Nothing Node runs on the host: Caddy serves the built files.
+- **Strict TypeScript everywhere**: `strict` on, no `any` without a comment saying why, `tsc --noEmit` clean. The linter, the formatter check and the unit tests run in `make check`.
+- **Dependencies are few and justified.** Any new npm package needs a reason in its commit body, the lockfile is committed, and the package manager's audit runs in CI.
+- Generated code (protobuf bindings) is excluded from lint and format checks and never edited by hand.
+
+### Client conventions (Phaser, TypeScript)
+
+The client in the checkout is still the Godot 4 skeleton in statically typed GDScript (`gdformat`, `gdlint` and GUT in `make check`; see [client/README.md](client/README.md)). These conventions are for the Phaser client that replaces it (BUILD.md 2.6); keep the Godot checks green until 2.10 removes them.
+
+- **Phaser, strict TypeScript and Vite.** No UI framework. DOM UI, if any, is plain TypeScript and CSS inside the game page.
+- Files and folders `snake_case` (matching the art and content ids); classes and types `PascalCase`; events in past tense (`player_joined`).
+- Organize by feature (see layout above). Keep game logic out of scenes and UI; networking goes through one Net module that wraps the generated bindings.
 - The client never decides outcomes. It renders server state, and predicts only its own movement.
-- **Pixel rules:** base viewport 640×360, integer scaling only, nearest-neighbor filtering, no mipmaps, positions snapped to whole pixels on screen, camera snapped.
-- `gdformat` and `gdlint` must be clean (generated code and `addons/` excluded). Tests use GUT and run headless in `make check`.
+- **Pixel rules:** base 640×360, the canvas at the largest whole-number scale that fits and letterboxed (never stretched by CSS), nearest-neighbor sampling (`pixelArt` on), no mipmaps, positions rounded to whole pixels on screen, camera snapped.
+- **Tests:** unit tests for logic, the golden vector test for the protocol, a pixel check of the dev art scene in a headless browser, and a browser smoke test that runs two sessions against the real Go server.
+- **Browser only.** No native wrappers, installers or update checks; a new version is a new static build.
 
 ### Web conventions (lorehallow.com)
 
-- **Go, no Node.** `web/` is its own Go module ([ADR 0011](docs/decisions/0011-go-website.md)). `cmd/lorehallow-web build` writes the static site to `web/dist/`, and Caddy serves it. Templates use `html/template` and are embedded with `go:embed`, and Markdown is rendered with goldmark. The server's Go conventions apply: standard library first, every new dependency justified in its commit body, gofmt, vet, golangci-lint, govulncheck and `go test -race`.
-- **No JavaScript on any page.** No `<script>` tags, inline handlers or third-party scripts. Caddy's CSP refuses scripts, and a generator test fails the build if one appears. Motion (parallax, fireflies, lantern flicker) is CSS only and stops under `prefers-reduced-motion`. Anything that seems to need a script is built at build time, done with plain HTML forms and links, or written up as an ADR first.
-- **Static output.** Everything dynamic (progress, the achievement feed, releases, feeds) is computed at build time from BUILD.md, git history and files in `web/content/` and `web/data/`. `make deploy-web` rebuilds and publishes it, run by hand.
+The site in the checkout and live today is built by the Go generator in `web/` ([ADR 0011](docs/decisions/0011-go-website.md), [web/README.md](web/README.md)): `html/template`, goldmark and Go output tests, with gofmt, vet, golangci-lint, govulncheck and `go test -race` in `make check`. Keep it working and live until the Astro cutover (BUILD.md 1.9). These conventions are for the Astro site that replaces it; the rules about output (no scripts, static, palette, self-hosted, pixel art) already apply to both.
+
+- **Astro, used directly** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)): Astro components, strict TypeScript, CSS and Markdown content collections, built with Astro's static build and its built-in Vite. No Nuxt, Vue, React or other UI framework integrations, and no client islands.
+- **No JavaScript on any page.** No `<script>` tags, inline handlers or third-party scripts. Keep the Astro features that inject scripts off (prefetch, view transitions, islands) and stylesheets un-inlined (the CSP is `style-src 'self'`). Caddy's CSP refuses scripts, and an output test fails the build if one appears. Motion (parallax, fireflies, lantern flicker) is CSS only and stops under `prefers-reduced-motion`. Anything that seems to need a script is built at build time, done with plain HTML forms and links, or written up as an ADR first.
+- **Static output.** Everything dynamic (progress, the achievement feed, release data, feeds, sitemap, `/progress.json`, `/progress.svg`) is computed at build time from BUILD.md, git history and files in `web/content/` and `web/data/`; with Astro, generated files are build-time endpoints. `make deploy-web` rebuilds and publishes it, run by hand.
+- **Stable URLs.** Every URL in the parity inventory (`docs/design/website-parity.md`, BUILD.md 1.2) keeps working. A page that moves gets a permanent redirect in the Caddy site file.
+- **Drafts** (`draft: true`) appear in the local preview only, never in any public artifact.
 - **Shared palette.** Colors come from tokens generated from `art/style/palette.hex`, so the site and the game share one palette.
 - **Self-hosted.** No third-party requests: no trackers, CDNs or remotely loaded fonts.
-- **Pixel art** is shown at integer scales with `image-rendering: pixelated` and explicit dimensions read from the image.
-- **The BUILD.md parser** in `web/internal/buildmd/` implements the format contract. Change both together.
+- **Pixel art** is shown at integer scales with `image-rendering: pixelated` and explicit dimensions read from the image. Never let an image pipeline resample or re-encode pixel art.
+- **The BUILD.md parser** implements the format contract. Today it is `web/internal/buildmd/` (Go); after BUILD.md 1.4 it is one TypeScript module shared by the Astro build and `make buildmd-lint`. Change the parser, its tests and the contract together.
 
 ### Content conventions
 
@@ -396,7 +430,7 @@ Paste each prompt into ChatGPT in order (attaching the reference sheet when told
 ### Naming and import
 
 - Processed paths: `art/processed/<category>/<name>.png`, categories `tiles`, `chars`, `mobs`, `npcs`, `props` (trees, rocks, posts, buildings), `items`, `ui`, `vfx`, `icons`, `web`. Names are `snake_case` (`tiles/terrain_grass.png`, `chars/player_base.png`). Sheets get a sidecar `.json` with frame size, frame order, pivot and source.
-- Godot imports use the pixel-art preset: filter off, mipmaps off, lossless compression.
+- The client loads art as plain PNGs with nearest-neighbor sampling and no mipmaps (Phaser's `pixelArt` mode); the website shows it with `image-rendering: pixelated`. Nothing resamples or re-encodes processed art. (The Godot skeleton imports with its pixel-art preset, filter off, mipmaps off and lossless, until BUILD.md 2.10.)
 
 ### Placeholders
 
@@ -410,8 +444,9 @@ Code never waits on art. Drawing is fast, so draw the real asset when you can; o
 
 - **Server:** `gofmt` check, `go vet`, `golangci-lint`, `go test -race ./...` (which also runs every fuzz target's seed corpus and every allocation test), `govulncheck`
 - **Protocol:** `buf lint`, `buf breaking`, generated code up to date, golden round-trip tests on both sides
-- **Client:** `gdformat --check`, `gdlint`, GUT tests headless
-- **Web (Go):** `gofmt` check, `go vet`, `golangci-lint`, `govulncheck`, `go test -race` (including the generator's output checks: no scripts, page weight, alt text, image sizes, internal links)
+- **Client:** today `gdformat --check`, `gdlint` and GUT tests headless (Godot). Planned (BUILD.md 2.6): `tsc --noEmit`, the linter and formatter check, unit tests, the golden vector test, the pixel check of the dev art scene and the two-session browser smoke test against the real Go server. Both sets run until 2.10 removes Godot.
+- **Web:** today the Go generator's `gofmt` check, `go vet`, `golangci-lint`, `govulncheck` and `go test -race` (including its output checks: no scripts, page weight, alt text, image sizes, internal links). Planned (BUILD.md 1.2 to 1.9): `astro check`, `tsc`, the linter and formatter check, the TypeScript parser and its parity test against the Go parser, the output tests ported to TypeScript, the parity check between the two builds, and the package manager's audit. Both sets run until 1.9 retires the Go module.
+- **Frontend dependencies:** the package manager's audit on the Node workspace, once it exists
 - **Tools:** `ruff`, `pytest`
 - **Content and docs:** content validators, BUILD.md lint
 
@@ -458,9 +493,10 @@ A change to the server's hot path or concurrency model includes its benchmark or
 
 The owner's own server sits behind lorehallow.com. Its details (OS, architecture, resources, network, what else runs there) live in `deploy/HOST.md`, which the owner fills in during Phase 1. Until it says otherwise, assume Linux with systemd. If something conflicts with this section (for example an existing reverse proxy), adapt and record an ADR.
 
-- **Domains:** `lorehallow.com` (website and `/api/`), `www.lorehallow.com` (redirects to the apex), `play.lorehallow.com` (game WebSocket traffic).
-- **Reverse proxy:** Caddy, with automatic HTTPS. Config lives in `deploy/caddy/`.
-- **Layout on the host:** releases in `/srv/lorehallow/<service>/releases/<timestamp>/` with a `current` symlink switched atomically; secrets in `/etc/lorehallow/<service>.env` (mode 0640); services run as dedicated users under systemd units from `deploy/`.
+- **Domains:** `lorehallow.com` (the public website, a static build, plus a read-only `/api/status`), `www.lorehallow.com` (redirects to the apex), `play.lorehallow.com` (the game: today the WebSocket and health routes only; planned in BUILD.md 2.9, the game's static build too, with `/ws`, `/healthz`, `/version` and `/api/` proxied to the Go server).
+- **Reverse proxy:** Caddy, with automatic HTTPS. Config lives in `deploy/caddy/`. Caddy serves the two static builds itself; only the Go server runs as a Lorehallow process.
+- **Layout on the host:** releases in `/srv/lorehallow/<service>/releases/<timestamp>/` with a `current` symlink switched atomically, for `server`, `web` and (planned) `client`; secrets in `/etc/lorehallow/<service>.env` (mode 0640); services run as dedicated users under systemd units from `deploy/`.
+- **No Node on the host.** Both frontends are built on the machine running the deploy, and only their output is uploaded.
 - **Access:** agents connect as the `deploy` user over SSH with the key the owner provides. Privileged setup goes through idempotent scripts in `deploy/bootstrap/` that the owner reviews and runs (or temporarily lets an agent run).
 
 ### What agents may do in production
@@ -488,7 +524,8 @@ Runbooks live in `docs/ops/`. Every new operational procedure gets written down 
 - Limits on everything: connections per IP, messages per second, message size, name and chat length.
 - Secrets never in the repo. `.env.example` documents variable names only.
 - Admin and metrics endpoints listen on localhost only, reached through SSH tunnels.
-- Dependencies scanned in CI (`govulncheck` on the server and website modules).
+- Dependencies scanned in CI: `govulncheck` on the Go modules, and the package manager's audit on the Node workspace once it exists.
+- **Two Content-Security-Policies**, one per site block in the Caddy file. lorehallow.com: `script-src 'none'`, nothing third-party. play.lorehallow.com: scripts only from `'self'`, no inline scripts and no `unsafe-eval`, connections only to the game's own origin and `wss://play.lorehallow.com`. Never loosen one to suit the other.
 - Automated, encrypted, off-site Postgres backups from Phase 4 on, with restores actually tested.
 
 ---
@@ -509,21 +546,28 @@ Runbooks live in `docs/ops/`. Every new operational procedure gets written down 
 
 ## 13. Toolchain versions
 
-Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time ([ADR 0002](docs/decisions/0002-toolchain-versions.md)). The machine-readable source is [`toolchain.env`](toolchain.env); `make doctor` checks against it. Update `toolchain.env` and this table in the same commit as any version bump.
+Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time ([ADR 0002](docs/decisions/0002-toolchain-versions.md)). The frontend rows marked _pin in_ are planned by [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) and aren't in `toolchain.env` yet; the Godot rows stay until BUILD.md 2.10 removes them. The machine-readable source is [`toolchain.env`](toolchain.env); `make doctor` checks against it. Update `toolchain.env` and this table in the same commit as any version bump.
 
 | Tool | Version | Notes |
 |---|---|---|
 | Go | 1.27.3 | |
-| Godot | 4.7.2-stable | Standard build, plus matching export templates |
+| Godot | 4.7.2-stable | Standard build. Removed with the Godot client in BUILD.md 2.10 |
 | Python | 3.14.9 | Managed by uv |
 | uv | 0.13.7 | |
 | buf | 1.75.0 | |
 | golangci-lint | 2.15.0 | |
-| gdtoolkit | 4.5.0 | gdformat and gdlint, via uv |
-| GUT | 9.7.1 | Godot addon, installed by `make setup` |
-| godobuf | 0.7.0 | Godot addon for GDScript protobuf codegen, installed by `make setup` |
+| gdtoolkit | 4.5.0 | gdformat and gdlint, via uv. Removed in 2.10 |
+| GUT | 9.7.1 | Godot addon, installed by `make setup`. Removed in 2.10 |
+| godobuf | 0.7.0 | Godot addon for GDScript protobuf codegen, installed by `make setup`. Removed in 2.10 |
 | protoc-gen-go | 1.36.12 | `tool` directive in `server/go.mod` |
 | govulncheck | 1.9.0 | `tool` directive in `server/go.mod` |
+| Node.js (LTS) | _pin in 1.2_ | Frontend development, builds and CI only; never on the host ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)) |
+| Package manager | _pin in 1.2_ | One for both frontends, one committed lockfile (npm workspaces recommended) |
+| TypeScript, lint, format and test tools | _pin in 1.2_ | Shared by `web/` and `client/`, in the lockfile |
+| Astro | _pin in 1.2_ | `web/`, with its built-in Vite |
+| Phaser, Vite | _pin in 2.6_ | `client/` |
+| TypeScript protobuf plugin | _pin in 2.6_ | Run by buf from `make proto` |
+| Headless browser for tests | _pin in 2.6_ | Art check and browser smoke test |
 | Caddy | _pin in 1.1_ | On the host |
 | PostgreSQL | _pin in 4.1_ | On the host and in CI |
 
@@ -535,9 +579,9 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 
 | # | Decision | Status | Why | Record |
 |---|---|---|---|---|
-| 1 | Client in Godot 4 with GDScript | Decided | Fast iteration, excellent 2D, simple export to Mac, Windows and Linux | Project brief |
+| 1 | Client in Godot 4 with GDScript | Superseded by 44 | Fast iteration, excellent 2D, simple export to Mac, Windows and Linux | Project brief |
 | 2 | Game server in Go | Decided | Built for network servers, safe concurrency, fast builds, single-binary deploys | Project brief |
-| 3 | Transport is WebSocket over TLS | Decided | Reliable and ordered like WoW's TCP model; leaves the door open for a web build | Project brief |
+| 3 | Transport is WebSocket over TLS | Decided | Reliable and ordered like WoW's TCP model; works in the browser, where the game is now played | Project brief |
 | 4 | Protocol is Protobuf with schemas in `proto/`, managed by buf | Decided | One versioned source of truth for every message | Project brief |
 | 5 | PostgreSQL for persistence, from Phase 4 | Decided | Characters, inventory and world state need real transactions | Project brief |
 | 6 | Self-hosted on the owner's server behind lorehallow.com | Decided | Learn deployment, TLS, supervision, logs and backups for real | Project brief |
@@ -549,20 +593,20 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 12 | Caddy as reverse proxy with automatic HTTPS: Lorehallow is one site file on the owner's shared Caddy; never touch the main Caddyfile, other sites, firewall or SSH; validate as the caddy user before every reload | Decided | The host already runs Caddy for other sites | [ADR 0009](docs/decisions/0009-caddy-on-a-shared-host.md) |
 | 13 | GNU Make as the single command runner | Default | Already installed on macOS and Linux; one entry point for humans, agents and CI | BUILD.md 0.3 |
 | 14 | Art tooling in Python managed by uv (Pillow, numpy) | Default | Best image-processing ecosystem; uv keeps it reproducible | BUILD.md 0.7 |
-| 15 | GUT for Godot tests; gdtoolkit for GDScript format and lint | Default | Mature, headless-friendly | BUILD.md 0.6 |
-| 16 | GDScript protobuf via godobuf 0.7.0; custom protoc plugin only if a golden test fails | Decided | Passed every golden round-trip vector on Godot 4.7 | [ADR 0003](docs/decisions/0003-gdscript-protobuf.md) |
-| 17 | Game traffic on `play.lorehallow.com`, HTTP APIs under `lorehallow.com/api/` | Default | Separates game traffic from the website; easier to move later | This file |
+| 15 | GUT for Godot tests; gdtoolkit for GDScript format and lint | Superseded by 44 | Mature, headless-friendly | BUILD.md 0.6 |
+| 16 | GDScript protobuf via godobuf 0.7.0; custom protoc plugin only if a golden test fails | Superseded by 44 | Passed every golden round-trip vector on Godot 4.7 | [ADR 0003](docs/decisions/0003-gdscript-protobuf.md) |
+| 17 | Game traffic on `play.lorehallow.com`, HTTP APIs under `lorehallow.com/api/` | Superseded by 46 | Separates game traffic from the website; easier to move later | This file |
 | 18 | Game versions `v0.<phase>.<patch>` until 1.0 | Decided | Version numbers map to BUILD.md phases | This file |
 | 19 | `main`-only git, commit and push after every verified step, no AI attribution | Decided | Owner's rules | Owner |
 | 20 | Stack decisions recorded in one ADR | Decided | One place for later ADRs to reference | [ADR 0001](docs/decisions/0001-stack.md) |
 | 21 | Toolchain pinned in `toolchain.env`; doctor accepts newer patch releases | Decided | One source for Make, doctor and CI | [ADR 0002](docs/decisions/0002-toolchain-versions.md) |
 | 22 | `PROTOCOL_VERSION` lives in `proto/PROTOCOL_VERSION`; `buf breaking` failures pass only with a bump | Decided | One integer, generated into both languages; "planned" breaks are explicit | [proto/README.md](proto/README.md) |
-| 23 | Client uses the Compatibility renderer; untyped GDScript is an error, not a warning | Decided | Widest hardware support for 2D; headless runs don't print warnings, so only an error is enforceable in CI | [client/README.md](client/README.md) |
+| 23 | Client uses the Compatibility renderer; untyped GDScript is an error, not a warning | Superseded by 44 | Widest hardware support for 2D; headless runs don't print warnings, so only an error is enforceable in CI | [client/README.md](client/README.md) |
 | 24 | Local dev server listens on 127.0.0.1:7420 | Default | Unprivileged, unlikely to clash | [server/README.md](server/README.md) |
 | 25 | Code under AGPL-3.0-only; art and writing under CC BY-NC 4.0 | Decided | Forks must share server changes; art and lore can be shared and remixed but not sold | Owner, [README.md](README.md#license) |
 | 26 | Palette v2: earth, stone and leaf ramps fitted to what the image generator draws, plus sand (33 colors) | Decided | v1 had gaps that sent browns to red and skin and grey stone to pink during quantization | [STYLE.md](art/style/STYLE.md#why-v2) |
 | 27 | Agents hand-draw the pixel art as text sources (`.pxl.yaml` grids and draw scripts); image generation only for large painted web images | Decided | Exact size, palette, layout and seamless edges; generated art missed all four in Phase 0 | [ADR 0004](docs/decisions/0004-hand-drawn-pixel-art.md) |
-| 28 | `make art-draw` renders `source:` assets and owns each batch's `report.md` and previews (intake writes `intake-report.md`); `make check` re-renders every source and fails on any drift; world objects live in a `props` category; `make client-art-check` verifies rendering in Godot pixel by pixel | Decided | One report per batch covering every asset; processed art can never silently diverge from its source; rendering checked by measurement, not by eye | [tools/art/README.md](tools/art/README.md) |
+| 28 | `make art-draw` renders `source:` assets and owns each batch's `report.md` and previews (intake writes `intake-report.md`); `make check` re-renders every source and fails on any drift; world objects live in a `props` category; `make client-art-check` verifies rendering in the client pixel by pixel (in Godot today; in a headless browser after BUILD.md 2.6) | Decided | One report per batch covering every asset; processed art can never silently diverge from its source; rendering checked by measurement, not by eye | [tools/art/README.md](tools/art/README.md) |
 | 29 | Scale goal: hundreds to thousands of simultaneous, active players, measured against tiered targets in `docs/design/scaling.md`; thousands is a target, not a capability | Decided | The owner made the Go backend the project's main achievement | [ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md) |
 | 30 | One process with many zones: one goroutine owns each zone, channels at the edges, bounded send queues with slow-client eviction, encode once then fan out, spatial-grid interest management; split across processes (Phase 20) only when a measurement says so | Decided | Patterns that hold up at thousands of connections, built in before the first tick loop | [ADR 0005](docs/decisions/0005-scale-and-backend-architecture.md) |
 | 31 | Phase 1 runs in parallel with the server phases; backend work never waits for the website | Superseded by 38 | Phase 1 was mostly blocked on the owner's host setup | Owner, [section 3](#3-session-workflow) |
@@ -573,7 +617,11 @@ One row per decision. "Default" means the choice stands unless the ADR written f
 | 36 | Each session runs on its own goroutine after the upgrade (the HTTP handler returns), and the hijacked connection gets 1 KiB read and 2 KiB write buffers instead of net/http's 4 KiB each | Decided | Measured: net/http's buffers and retained request were 12 of 18.6 KB live per idle connection | [ADR 0010](docs/decisions/0010-per-connection-memory.md) |
 | 37 | Case 1 memory per connection is the marginal cost, (RSS at N − RSS at N/2) / (N/2), with the fixed runtime overhead and the old metric still recorded in every result | Decided | The old metric spread Go's fixed 2 to 3 MB of minimum-heap slack over N, about 30 KiB per connection at 100 | Owner, [ADR 0010](docs/decisions/0010-per-connection-memory.md), [scaling.md](docs/design/scaling.md) |
 | 38 | Website first: Phase 1 is finished, live and polished before more server-phase work; the server phases resume after it | Decided | The owner wants a live, beautiful lorehallow.com before the game goes much further; the host, DNS and Caddy are already set up | Owner, [section 3](#3-session-workflow) |
-| 39 | The website is a Go static site generator in `web/` (its own module: `html/template`, goldmark, `go:embed`) with no JavaScript on any page; the BUILD.md parser and linter are Go; Node, npm and TypeScript leave the toolchain | Decided | The owner is moving every project to Go; the site is static and needs no Node or browser scripts | Owner, [ADR 0011](docs/decisions/0011-go-website.md) |
-| 40 | Website fonts: a hand-drawn pixel font for headings, compiled to TrueType and WOFF by the generator, and the Go fonts (BSD) for body text, all self-hosted with licenses committed | Decided | Matches the hand-drawn art, pixel-exact at 2x to 4x, no downloads outside the Go module proxy | [ADR 0012](docs/decisions/0012-website-fonts.md) |
+| 39 | The website is a Go static site generator in `web/` (its own module: `html/template`, goldmark, `go:embed`) with no JavaScript on any page; the BUILD.md parser and linter are Go; Node, npm and TypeScript leave the toolchain | Superseded by 43 | The owner is moving every project to Go; the site is static and needs no Node or browser scripts | Owner, [ADR 0011](docs/decisions/0011-go-website.md) |
+| 40 | Website fonts: a hand-drawn pixel font for headings, compiled to TrueType and WOFF by the generator, and the Go fonts (BSD) for body text, all self-hosted with licenses committed; the fonts carry over to Astro, and where the compiler runs is decided in BUILD.md 1.2 | Decided | Matches the hand-drawn art, pixel-exact at 2x to 4x, no downloads outside the Go module proxy | [ADR 0012](docs/decisions/0012-website-fonts.md) |
 | 41 | Website deploys: timestamped release directories under `/srv/lorehallow/web/releases/`, an atomic `current` symlink switch, a health check through the host's own Caddy with automatic rollback, five releases kept; run by hand with `make deploy-web` | Decided | Same model as the server deploy; a bad release can't stay live | [docs/ops/website.md](docs/ops/website.md) |
 | 42 | Uptime monitoring: a GitHub Actions check every five minutes from outside the home network; one ntfy alert when down for five minutes and one on recovery, plus GitHub's failed-run email | Decided | No account needed, sees home-network outages that a check on the host can't | [ADR 0013](docs/decisions/0013-uptime-monitoring.md) |
+| 43 | The website is Astro in `web/`: Astro components, strict TypeScript, CSS and Markdown content collections, static build with Astro's built-in Vite, no UI framework integrations and no browser JavaScript; one TypeScript BUILD.md parser shared by the build and the linter, checked against the Go parser; JSON, SVG and feeds as build-time endpoints; the Go site stays live until parity checks pass and the owner approves the cutover | Decided, not yet built | The owner keeps Go for the backend and its tools; production still serves static files, so no Node runs on the host | Owner, [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) |
+| 44 | The game is a Phaser browser client in `client/` (strict TypeScript, Vite) at play.lorehallow.com, with TypeScript protobuf bindings checked against the golden vectors; native desktop clients and their whole distribution pipeline are retired; Godot is removed once equivalent checks cover it | Decided, not yet built | Players open a URL to play; one build reaches every desktop platform | Owner, [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) |
+| 45 | One pinned Node LTS and one package manager for both frontends, for development, builds and CI only | Decided, versions pinned in BUILD.md 1.2 | One toolchain, one lockfile, nothing new on the host | [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) |
+| 46 | Caddy serves two independent static builds (lorehallow.com and play.lorehallow.com) and proxies the game's `/ws`, `/healthz`, `/version` and `/api/` routes on play.lorehallow.com to the Go server; each site has its own CSP (the website refuses all scripts); deploys stay manual with atomic releases and rollback | Decided | Same-origin APIs need no CORS; one site's needs never weaken the other's policy | [ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md) |

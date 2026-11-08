@@ -93,4 +93,4 @@ The decoder is fuzzed (`FuzzDecodeClient` in `internal/wire`, seeded with every 
 
 ## Changing the protocol
 
-See [`proto/README.md`](../../proto/README.md). In short: one commit carries the schema, both sides' generated code, the golden vectors, the code that uses it, and a `PROTOCOL_VERSION` bump if it breaks compatibility. Two naming traps from godobuf: a field can't be called `message`, and a message can't share a name with a Godot class (`Input`, `Node`, `Object`, ...), which is why the input message is `PlayerInput`.
+See [`proto/README.md`](../../proto/README.md). In short: one commit carries the schema, both sides' generated code, the golden vectors, the code that uses it, and a `PROTOCOL_VERSION` bump if it breaks compatibility. While the GDScript bindings exist (until BUILD.md 2.10, when the Phaser client's TypeScript bindings replace them), there are two naming traps from godobuf: a field can't be called `message`, and a message can't share a name with a Godot class (`Input`, `Node`, `Object`, ...), which is why the input message is `PlayerInput`.

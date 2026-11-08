@@ -1,6 +1,6 @@
 # 0006: Maps are Tiled JSON in content/maps
 
-- **Status:** Accepted
+- **Status:** Accepted. The map format stands. The client that imports it changes from Godot (TileMapLayers) to the Phaser browser client ([ADR 0014](0014-astro-website-and-phaser-browser-client.md), BUILD.md 2.2).
 - **Date:** 2026-11-07
 - **BUILD.md:** 2.2
 

@@ -2,6 +2,23 @@
 
 The lorehallow.com website: a Go program that builds the whole site as static files, which Caddy serves from `/srv/lorehallow/web/current`. It parses [BUILD.md](../BUILD.md) to render the live progress tracker. No page ships any JavaScript ([ADR 0011](../docs/decisions/0011-go-website.md)).
 
+## Planned: the move to Astro
+
+This directory is being rebuilt as an Astro site ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md Phase 1). **Everything below the next heading describes the Go generator that is in the checkout and live today.** None of the Astro project exists yet.
+
+The plan, in order:
+
+1. **Parity inventory** (BUILD.md 1.2): every URL, redirect, generated asset, meta tag, output test and budget of this site, written to `docs/design/website-parity.md` with how the Astro build is checked against each.
+2. **A local Astro build** next to this generator: Astro components, strict TypeScript, CSS and Markdown content collections, static output, no UI framework integrations and no browser JavaScript. It writes to its own output folder, so both builds can be compared. The devlog collection reads `content/devlog/` in place.
+3. **One TypeScript BUILD.md parser** shared by Astro's build and `make buildmd-lint`, checked against `internal/buildmd` on the real BUILD.md and its fixtures. `/progress.json`, `/progress.svg`, the feeds and the sitemap become build-time endpoints.
+4. **Parity and output checks**: the tests listed under [Output tests](#output-tests), ported to TypeScript, plus a check that diffs the two builds. The fonts and share cards, generated in Go today (`internal/pixelfont`, `internal/woff`, `internal/site/og.go`), are ported or moved to a Go tool, as the 1.2 ADR decides.
+5. **Play replaces Downloads** (1.6): `/play/` says whether the game is playable, and `/downloads/` redirects to it. `data/releases.json` is replaced by release data with no platform files.
+6. **Cutover** (1.9), after the owner approves: `make deploy-web` publishes the Astro build with the same atomic release and rollback model. The Go module is deleted only after the cutover has held.
+
+Until the cutover, the `make` targets below run this Go generator, and `make check` runs both sites' checks once the Astro project exists.
+
+## The Go generator (current)
+
 This is its own Go module, `github.com/dunamismax/lorehallow/web`, on the Go version in [`toolchain.env`](../toolchain.env). The server's Go conventions apply: standard library first, every new dependency justified in its commit body, and gofmt, vet, golangci-lint, govulncheck and `go test -race` all clean. The other rules are in [AGENTS.md section 7](../AGENTS.md#web-conventions-lorehallowcom): colors from the shared palette tokens, no third-party requests, pixel art at integer scales only, and CSS-only motion that stops under `prefers-reduced-motion`.
 
 | Path | What |

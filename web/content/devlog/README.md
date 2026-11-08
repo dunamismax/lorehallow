@@ -25,3 +25,5 @@ Front matter is a small, strict subset of YAML: `key: value` lines, where a valu
 The body is Markdown: GitHub Flavored Markdown with smart quotes and heading anchors. Raw HTML is dropped, so a post can't carry a script.
 
 Agents write posts in the owner's voice as drafts (`draft: true`). The owner edits them and publishes by setting `draft: false`.
+
+The planned Astro site (BUILD.md 1.5) reads this folder in place as a content collection, with the same front matter, slugs and rules: drafts in the local preview only, never in any public page, feed or sitemap, and raw HTML still dropped. Posts don't move and don't change.

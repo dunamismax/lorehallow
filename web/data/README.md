@@ -4,7 +4,9 @@ Data files the website builds pages from.
 
 ## releases.json
 
-Drives lorehallow.com/downloads. The release workflow (BUILD.md 15) appends to it; until then it's empty and the page says so. The build fails on any entry that doesn't match this schema.
+Drives lorehallow.com/downloads on the current, Go-built site. It's empty, and the page says so. The build fails on any entry that doesn't match this schema.
+
+**Being retired.** There will be no downloads: the game is played in the browser ([ADR 0014](../../docs/decisions/0014-astro-website-and-phaser-browser-client.md)). BUILD.md 1.6 replaces this file with the release data /play and the patch notes need (version, date, channel, notes link, protocol version), with no platform files, sizes or checksums, and documents the new schema here. The schema below describes the current file.
 
 ```json
 {

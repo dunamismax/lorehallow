@@ -1,6 +1,6 @@
 # Runbook: the game server
 
-How to run, watch, deploy and roll back `lorehallow-server` on the host. The website has its own runbook: [website.md](website.md). Facts about the host itself are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy config is [deploy/caddy/Caddyfile](../../deploy/caddy/Caddyfile); the unit is [deploy/server/lorehallow-server.service](../../deploy/server/lorehallow-server.service).
+How to run, watch, deploy and roll back `lorehallow-server` on the host. The website has its own runbook: [website.md](website.md). The browser game's static build is planned; see [the end of this file](#planned-the-browser-game-build). Facts about the host itself are in [deploy/HOST.md](../../deploy/HOST.md); the Caddy site file is [deploy/caddy/lorehallow.caddy](../../deploy/caddy/lorehallow.caddy); the unit is [deploy/server/lorehallow-server.service](../../deploy/server/lorehallow-server.service).
 
 Commands marked *(host)* run on the host: `ssh root@ubuntu-vm` (Tailscale SSH; the owner approves new sessions). Update this file whenever a procedure changes.
 
@@ -90,3 +90,15 @@ Or by hand *(host)*: `ls /srv/lorehallow/server/releases`, then `ln -sfn release
 3. A bad config refuses to start with a clear message (for example `admin-addr must be a loopback address`). Fix `/etc/lorehallow/server.env` and restart.
 4. If the last deploy broke it: `make rollback-server`.
 5. If Caddy is the problem (`curl localhost:7420/healthz` works on the host but the public URL doesn't): `systemctl status caddy`, `journalctl -u caddy -n 100`, and validate as Caddy itself would: `runuser -u caddy -- /usr/local/lib/caddy/caddy validate --config /etc/caddy/Caddyfile`. Never run `caddy validate` as root: it can create log files Caddy then can't open. Other sites share this Caddy; check them after any reload.
+
+## Planned: the browser game build
+
+Not built yet (BUILD.md 2.9 and 2.10, [ADR 0014](../decisions/0014-astro-website-and-phaser-browser-client.md)). The game becomes a Phaser browser client served as static files from play.lorehallow.com. Nothing new runs on the host: Caddy serves the files, and the Go server is unchanged.
+
+| Path or route | What |
+|---|---|
+| `/srv/lorehallow/client/releases/<timestamp>/` | One client build. `current` is a symlink switched atomically, and five releases are kept. |
+| `https://play.lorehallow.com/` | The game page and its hashed assets, served by Caddy (`index.html` revalidates; assets are immutable). |
+| `/ws`, `/healthz`, `/version`, `/api/` on play.lorehallow.com | Still proxied to `127.0.0.1:7420`. |
+
+The game's site block has its own CSP: scripts only from `'self'`, no inline scripts and no `unsafe-eval`, and connections only to its own origin and `wss://play.lorehallow.com`. `make deploy-client` and `make rollback-client` will follow the same pattern as the website. They build on the machine doing the deploy, check the page, its assets and the `/ws` handshake through Caddy, and roll back automatically. When a server change and a client change ship together, deploy the server first (BUILD.md 15.2).

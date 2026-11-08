@@ -1,6 +1,6 @@
 # 0005: Scale targets and the backend architecture
 
-- **Status:** Accepted
+- **Status:** Accepted. The backend architecture is unchanged by [ADR 0014](0014-astro-website-and-phaser-browser-client.md), which replaces the Godot client named below with a Phaser browser client.
 - **Date:** 2026-11-07
 - **BUILD.md:** Phases 2, 3, 7, 11 and 20; supersedes the scale non-goal in AGENTS.md section 1
 

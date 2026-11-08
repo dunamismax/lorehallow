@@ -1,6 +1,6 @@
 # 0011: The website is a Go static site generator, with no JavaScript
 
-- **Status:** Accepted. Supersedes the Astro and TypeScript choices in decision log rows 10 and 32.
+- **Status:** Superseded by [ADR 0014](0014-astro-website-and-phaser-browser-client.md) (2026-11-07): the website moves to Astro with strict TypeScript, still with no browser JavaScript. This generator stays live until the Astro build passes its parity checks and is cut over (BUILD.md 1.9). It had superseded the Astro and TypeScript choices in decision log rows 10 and 32.
 - **Date:** 2026-11-07
 - **BUILD.md:** 1.2
 

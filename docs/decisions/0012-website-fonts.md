@@ -1,6 +1,6 @@
 # 0012: Website fonts: a hand-drawn pixel font and the Go fonts
 
-- **Status:** Accepted
+- **Status:** Accepted. The fonts and their licenses carry over to the Astro site ([ADR 0014](0014-astro-website-and-phaser-browser-client.md)). The Go code that compiles the pixel font and draws the share cards has to move: BUILD.md 1.2 decides whether it is ported to TypeScript or kept as a Go tool in `tools/`.
 - **Date:** 2026-11-07
 - **BUILD.md:** 1.2
 

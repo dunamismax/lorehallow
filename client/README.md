@@ -1,6 +1,20 @@
 # client/
 
-The Godot 4 game client, written in statically typed GDScript.
+The Godot 4 game client skeleton, written in statically typed GDScript. **It is being replaced.**
+
+## Planned: the Phaser browser client
+
+Lorehallow becomes a browser game at play.lorehallow.com, built with Phaser, strict TypeScript and Vite ([ADR 0014](../docs/decisions/0014-astro-website-and-phaser-browser-client.md), BUILD.md 2.6). None of it exists yet. The first task is the scaffold, then, in BUILD.md order:
+
+- `make client-dev` (Vite dev server, proxying `/ws` and `/api/` to the local Go server) and `make client-build` (the static build, with version and commit embedded)
+- TypeScript protobuf bindings from `make proto`, passing every golden vector in `proto/testdata/` byte for byte
+- the starter map from `content/maps/`, drawn at whole-number scales of 640×360 with nearest-neighbor sampling
+- a dev art scene with a pixel check in a headless browser (the new `make client-art-check`)
+- a browser smoke test where two sessions see each other move through the real Go server
+
+Both clients share this folder until BUILD.md 2.10. Keep Godot out of the Phaser folders, keep the Godot checks below green, and remove Godot, its addons, the GDScript bindings and their tooling only after the Phaser checks pass in `make check`.
+
+## The Godot skeleton (current)
 
 | Path | What goes there |
 |---|---|
@@ -16,7 +30,7 @@ The Godot 4 game client, written in statically typed GDScript.
 
 The client never decides outcomes. It sends inputs and draws what the server reports, and later predicts only its own movement.
 
-Run it with `make client`. Format and lint with `make fmt` and `make lint`. See [AGENTS.md section 7](../AGENTS.md#client-conventions-godot-4-gdscript) for conventions.
+Run it with `make client`. Format and lint with `make fmt` and `make lint`. AGENTS.md section 7 describes the [Godot skeleton as it stands](../AGENTS.md#client-conventions-phaser-typescript) and the conventions for the Phaser client.
 
 ## Project settings that matter
 

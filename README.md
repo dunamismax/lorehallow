@@ -18,7 +18,9 @@ Lorehallow draws on the early days of World of Warcraft: a persistent world, zon
 
 **Phase 1: lorehallow.com. Pre-alpha, nothing to play yet.**
 
-The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built by a Go program in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. What's left of Phase 1 is the first published devlog post and the owner's review. Then work returns to the game server's networking core (Phase 2), which is already partly built. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
+The tooling is in place: the server and client skeletons, the shared protocol pipeline, the art pipeline and the BUILD.md linter, all behind one `make check`. [lorehallow.com](https://lorehallow.com) is live: a static site built by a Go program in `web/`, with no JavaScript, a progress tracker drawn from BUILD.md and a devlog. The game server's networking core (Phase 2) is already partly built.
+
+**Two frontend changes are planned** ([ADR 0014](docs/decisions/0014-astro-website-and-phaser-browser-client.md)). The website is being rebuilt in Astro, still with no browser JavaScript; the Go-built site stays live until the new one matches it page for page (Phase 1). The game becomes a browser game built with Phaser and TypeScript: you'll play by opening play.lorehallow.com, with nothing to install, and there will be no desktop downloads (Phase 2). Until those land, the checkout still has the Go site generator and a small Godot client skeleton. [BUILD.md](BUILD.md) is the full plan from an empty repo to the v1.0 release, with every step as a checkbox.
 
 ## The project
 
@@ -46,7 +48,7 @@ The goal is **hundreds to thousands of simultaneous, actively connected players.
 
 - No monetization, cash shop or pay-to-win. Ever.
 - No 3D, isometric or mixed art styles.
-- No mobile clients.
+- No native apps, desktop or mobile, and nothing to download or install. Lorehallow runs in the browser.
 - No game-server framework doing the hard parts. The server is built from the ground up in Go, because that's the point.
 - No microservices, Kubernetes or distributed databases unless a measurement proves they're needed.
 
@@ -57,8 +59,8 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 | Phase | What | Version |
 |---|---|---|
 | 0 | Foundations: repo, toolchain, protobuf pipeline, art pipeline, first art | |
-| 1 | lorehallow.com: landing page, live progress tracker, devlog, downloads | |
-| 2 | Two players, one world: connection lifecycle, backpressure, bot swarm | v0.2.0 |
+| 1 | lorehallow.com: landing page, live progress tracker, devlog, Play page, rebuilt in Astro | |
+| 2 | Two players, one world: connection lifecycle, backpressure, bot swarm, the Phaser browser client | v0.2.0 |
 | 3 | Many players: prediction, interest management, bandwidth, load testing | v0.3.0 |
 | 4 | Accounts and characters | v0.4.0 |
 | 5 | Chat and presence | v0.5.0 |
@@ -71,7 +73,7 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 | 12 | Operations | v0.12.0 |
 | 13 | Classes and the v1 world | v0.13.0 |
 | 14 | Audio, UI and polish | v0.14.0 |
-| 15 | Distribution and releases, plus a browser build | v0.15.0 |
+| 15 | Browser releases: versioned builds, cache-safe updates, rollback | v0.15.0 |
 | 16 | Security and hardening | v0.16.0 |
 | 17 | Closed alpha | v0.17.0 |
 | 18 | Open beta | v0.18.0 |
@@ -80,15 +82,16 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 
 ## Technology
 
-| Layer | Choice |
-|---|---|
-| Client | Godot 4 + GDScript (Windows, macOS, Linux, and later the browser through Godot's web export) |
-| Game server | Go |
-| Transport | WebSocket over TLS (`wss://`) |
-| Protocol | Protobuf, schemas in [`proto/`](proto/) shared by client and server |
-| Persistence | PostgreSQL |
-| Website | Go static site generator, no JavaScript (ADR 0011) |
-| Hosting | Self-hosted behind lorehallow.com (Caddy, systemd) |
+| Layer | Choice | In the checkout today |
+|---|---|---|
+| Game client | Phaser + strict TypeScript + Vite, played in the browser at play.lorehallow.com | Godot 4 + GDScript skeleton, replaced in Phase 2 |
+| Game server | Go | Go |
+| Transport | WebSocket over TLS (`wss://`) | Same |
+| Protocol | Protobuf, schemas in [`proto/`](proto/) shared by client and server | Same |
+| Persistence | PostgreSQL | Arrives in Phase 4 |
+| Website | Astro + strict TypeScript, static, no browser JavaScript | Go static site generator ([ADR 0011](docs/decisions/0011-go-website.md)), live until the Astro cutover |
+| Frontend tooling | One pinned Node LTS for development, builds and CI; never on the server | Not added yet (Phase 1) |
+| Hosting | Self-hosted: Caddy serves both static builds and proxies the game's WebSocket and API to Go; systemd | Caddy serves the website and proxies the WebSocket |
 
 **Networking model:** the server is authoritative and simulates at 20 Hz. Clients send inputs, never positions. Remote players are interpolated about 100 ms behind the latest snapshot, your own character is predicted and reconciled, and each player only receives updates about what is near them, found through a spatial grid.
 
@@ -100,11 +103,11 @@ The full plan, with acceptance criteria for every phase, is in [BUILD.md](BUILD.
 lorehallow/
 ├── AGENTS.md      # How work gets done here: workflow, conventions, decisions
 ├── BUILD.md       # The build plan, phase 0 to v1.0, tracked by the website
-├── client/        # Godot 4 project (GDScript)
+├── client/        # The game client: Godot 4 skeleton today, a Phaser browser game next
 ├── server/        # Go module: game server, bots, admin tools
 ├── proto/         # Protobuf schemas and golden test vectors
 ├── content/       # Data-driven game content: maps, items, quests, mobs
-├── web/           # lorehallow.com
+├── web/           # lorehallow.com: Go site generator today, Astro next
 ├── tools/         # Art intake pipeline, codegen and dev helpers
 ├── art/
 │   ├── style/     # Locked palette, style guide, reference sheet
@@ -120,18 +123,20 @@ Each directory has its own README.
 
 ## Development
 
-Run `make help` for the full list. (`make web-dev` arrives with the website in Phase 1.)
+Run `make help` for the full list. These work in the checkout today:
 
 ```bash
 make doctor   # check the toolchain is installed at the pinned versions
 make setup    # install project dependencies
 make check    # format checks, linters and every test suite (what CI runs)
 make server   # run the game server locally
-make client   # launch the Godot client against the local server
-make web-dev  # run the website locally
+make client   # launch the Godot client skeleton
+make web-dev  # preview the website locally (the Go generator)
 ```
 
-Prerequisites: Go, Godot 4, [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
+Prerequisites today: Go, Godot 4, [uv](https://docs.astral.sh/uv/) (which manages Python), [buf](https://buf.build), golangci-lint, gdtoolkit and GNU Make 4+. Exact versions are pinned in [`toolchain.env`](toolchain.env) and listed in [AGENTS.md](AGENTS.md#13-toolchain-versions); `make doctor` tells you what's missing and how to install it.
+
+Planned with the frontend changes: Node (one pinned LTS) joins the prerequisites and Godot and gdtoolkit leave; `make web-dev` previews the Astro site; and `make client-dev` serves the Phaser game in your browser against the local server. [AGENTS.md section 7](AGENTS.md#target-architecture-and-the-current-checkout) lists the current and planned commands side by side.
 
 ## How it's made
 
@@ -153,4 +158,4 @@ Lorehallow uses two licenses, one for code and one for art and writing.
 - the game's written content in `content/`: lore, quest and dialogue text, item, creature and place names and descriptions
 - the devlog (the website's posts in `web/content/devlog/`)
 
-Credit it as "Lorehallow (lorehallow.com)" with a link to this repository. Game data in `content/` that isn't prose (map layouts, numbers, IDs) is part of the code and under the AGPL. Releases of the game bundle both, so a build is free to share but its art and writing can't be sold.
+Credit it as "Lorehallow (lorehallow.com)" with a link to this repository. Game data in `content/` that isn't prose (map layouts, numbers, IDs) is part of the code and under the AGPL. The game's browser build bundles both, so it is free to share but its art and writing can't be sold.
