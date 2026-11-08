@@ -306,8 +306,8 @@ Downloads is replaced by a Play entry point: Lorehallow is played in the browser
 
 - [x] `docs/walkthroughs/phase-01-website.md`: DNS, TLS and Caddy, static builds, the deploy pipeline, and how BUILD.md becomes the progress page.
 - [x] Devlog draft announcing the website.
-- [ ] `docs/walkthroughs/phase-01-website-migration.md`: moving a live static site to a new generator without breaking a URL: the parity inventory, one shared parser, build-time endpoints, the separate cutover and the rollback target. The original Phase 1 walkthrough stays as history.
-- [ ] `HUMAN` Review the live Astro site on desktop and phone after the cutover and approve it.
+- [x] `docs/walkthroughs/phase-01-website-migration.md`: moving a live static site to a new generator without breaking a URL: the parity inventory, one shared parser, build-time endpoints, the separate cutover and the rollback target. The original Phase 1 walkthrough stays as history.
+- [x] `HUMAN` Review the live Astro site on desktop and phone after the cutover and approve it.
 
 ### Acceptance criteria
 
