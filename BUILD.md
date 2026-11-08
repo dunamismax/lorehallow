@@ -242,7 +242,7 @@ The Go-generated site was built first and is live ([ADR 0011](docs/decisions/001
 - [x] Machine-readable `/progress.json` and a `/progress.svg` badge, with the badge added to README.md.
 - [x] Each phase links to its walkthrough on GitHub once it exists.
 - [ ] TypeScript BUILD.md parser in the Astro project, one module imported by Astro's build and by `make buildmd-lint` (run by Node directly, no build step), implementing the format contract above and reporting every problem with its line number.
-- [ ] Parser parity: on the real BUILD.md, every fixture in the Go parser's tests and its fuzz seed corpus, and randomly broken copies of BUILD.md, the TypeScript parser returns the same phases, sections, items, tags, checked state and problems as the Go parser. The test runs in `make check` until the Go parser is retired.
+- [x] Parser parity: on the real BUILD.md, every fixture in the Go parser's tests and its fuzz seed corpus, and randomly broken copies of BUILD.md, the TypeScript parser returns the same phases, sections, items, tags, checked state and problems as the Go parser. The test runs in `make check` until the Go parser is retired.
 - [ ] /progress, the phase pages, the quest map, the git-backed achievement feed (walking `git log -p BUILD.md`, so builds need full history), the "Waiting on the owner" panel and the walkthrough links rebuilt in Astro with the same content and URLs.
 - [ ] `/progress.json` and `/progress.svg` as Astro build-time endpoints that match the Go output for the same commit (the README badge and the uptime check read them).
 

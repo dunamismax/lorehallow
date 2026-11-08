@@ -63,6 +63,7 @@ setup: ## Install project-local dependencies (safe to re-run)
 fmt: ## Format all code in place
 	cd $(ROOT)/server && gofmt -w $$(find . -name '*.go' -not -path './internal/pb/*')
 	cd $(ROOT)/web && gofmt -w .
+	cd $(ROOT) && npx --no-install biome check --write .
 	cd $(ROOT)/client && gdformat $(GD_SOURCES)
 	cd $(ROOT)/tools/art && uv run --frozen ruff format . && uv run --frozen ruff check --fix .
 	buf format -w $(ROOT)/proto
@@ -238,19 +239,35 @@ web-build: ## Build lorehallow.com into web/dist/ (no drafts)
 	cd $(ROOT)/web && go run ./cmd/lorehallow-web build
 
 .PHONY: web-lint
-web-lint: ## Website (Go): gofmt check, go vet, golangci-lint and govulncheck
+web-lint: web-go-lint web-ts-lint ## Website: every linter, for the Go generator and the TypeScript side
+
+.PHONY: web-test
+web-test: web-go-test web-ts-test ## Website: every test, for the Go generator and the TypeScript side
+
+.PHONY: web-go-lint
+web-go-lint: ## Website (Go generator, until BUILD.md 1.9): gofmt check, go vet, golangci-lint and govulncheck
 	@cd $(ROOT)/web && out="$$(gofmt -l .)" && if [ -n "$$out" ]; then echo "gofmt needed:"; echo "$$out"; exit 1; fi
 	cd $(ROOT)/web && go vet ./...
 	cd $(ROOT)/web && golangci-lint run ./...
 	cd $(ROOT)/web && go tool govulncheck ./...
 
-.PHONY: web-test
-web-test: ## Website (Go) tests: go test -race ./...
+.PHONY: web-go-test
+web-go-test: ## Website (Go generator, until BUILD.md 1.9): go test -race ./...
 	cd $(ROOT)/web && go test -race -count=1 ./...
 
+.PHONY: web-ts-lint
+web-ts-lint: ## Website (TypeScript): Biome, tsc --noEmit and npm audit
+	cd $(ROOT) && npx --no-install biome check .
+	cd $(ROOT)/web && npx --no-install tsc --noEmit -p .
+	cd $(ROOT) && npm audit --audit-level=moderate
+
+.PHONY: web-ts-test
+web-ts-test: ## Website (TypeScript): node --test, including the parser parity test against the Go parser
+	cd $(ROOT)/web && node --test 'tests/**/*.test.ts'
+
 .PHONY: buildmd-lint
-buildmd-lint: ## Fail on any BUILD.md format-contract violation
-	cd $(ROOT)/web && go run ./cmd/buildmd-lint ../BUILD.md
+buildmd-lint: ## Fail on any BUILD.md format-contract violation (the TypeScript parser)
+	cd $(ROOT) && node web/scripts/buildmd-lint.ts BUILD.md
 
 .PHONY: clean
 clean: ## Remove build output (bin/, Godot import cache)

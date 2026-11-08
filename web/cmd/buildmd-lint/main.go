@@ -1,9 +1,13 @@
 // Command buildmd-lint fails on any BUILD.md format-contract violation.
 //
 // Usage: buildmd-lint [path/to/BUILD.md]   (default ../BUILD.md, run from web/)
+//
+//	buildmd-lint -json file...   prints every file's parsed plan as one JSON
+//	                             array, for the TypeScript parser's parity test
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,6 +20,9 @@ func main() {
 }
 
 func run(args []string) int {
+	if len(args) > 0 && args[0] == "-json" {
+		return dump(args[1:])
+	}
 	path := "../BUILD.md"
 	if len(args) > 0 {
 		path = args[0]
@@ -48,5 +55,23 @@ func run(args []string) int {
 		msg += ", all phases done"
 	}
 	fmt.Println(msg)
+	return 0
+}
+
+// dump writes the parsed plan of every file as a JSON array.
+func dump(paths []string) int {
+	plans := make([]*buildmd.Plan, 0, len(paths))
+	for _, path := range paths {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "buildmd-lint: %v\n", err)
+			return 1
+		}
+		plans = append(plans, buildmd.Parse(string(data)))
+	}
+	if err := json.NewEncoder(os.Stdout).Encode(plans); err != nil {
+		fmt.Fprintf(os.Stderr, "buildmd-lint: %v\n", err)
+		return 1
+	}
 	return 0
 }
