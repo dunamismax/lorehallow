@@ -570,7 +570,7 @@ Pinned in Phase 0 (BUILD.md 0.3) to the latest stable releases at that time ([AD
 
 | Tool | Version | Notes |
 |---|---|---|
-| Go | 1.27.3 | |
+| Go | 1.27.4 | |
 | Godot | 4.7.2-stable | Standard build. Removed with the Godot client in BUILD.md 2.10 |
 | Python | 3.14.9 | Managed by uv |
 | uv | 0.13.7 | |
